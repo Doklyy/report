@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu mẫu Thông tin Khách hàng & Đối thủ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .section-title {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.75rem 1rem;
+            font-weight: bold;
+            border-left: 5px solid #f59e0b;
+            margin-bottom: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 0.875rem;
+        }
+        @media (min-width: 768px) {
+            .section-title { font-size: 1rem; }
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            border: 2px solid #fbbf24;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            background-color: #fffbeb;
+            transition: all 0.3s ease;
+            font-size: 16px; /* Tránh iOS tự động zoom khi focus */
+        }
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            background-color: #fff8dc;
+        }
+        input[readonly] {
+            background-color: #f3f4f6 !important;
+            border-color: #d1d5db !important;
+            cursor: not-allowed;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .checkbox-group { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+        }
+        .checkbox-group label {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .checkbox-group label:hover {
+            background-color: #f3f4f6;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+            cursor: pointer;
+        }
+        .other-input {
+            border: none !important;
+            border-bottom: 2px solid #d1d5db !important;
+            border-radius: 0 !important;
+            padding: 0 0.5rem !important;
+            background: transparent !important;
+            width: auto !important;
+            flex-grow: 1;
+            margin-left: 0.5rem;
+        }
+        .other-input:focus {
+            box-shadow: none !important;
+            border-bottom-color: #f59e0b !important;
+        }
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        table {
+            min-width: 600px;
+            width: 100%;
+        }
+        table th {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+        }
+        table td {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        table input[type="number"] {
+            border: none;
+            background: transparent;
+            text-align: center;
+            width: 100%;
+            padding: 0.25rem;
+        }
+        .table-total {
+            background-color: #fef3c7 !important;
+            font-weight: bold;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .success-message {
+            display: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-8">
+    <div class="max-w-5xl mx-auto card p-4 md:p-6">
+        <h1 class="text-xl md:text-2xl font-bold text-center mb-2 text-gray-800">Báo cáo Thông tin Khách hàng & Chính sách Đối thủ</h1>
+        <p class="text-center text-gray-600 mb-6 text-sm">Vui lòng điền đầy đủ thông tin vào các mục dưới đây</p>
+
+        <div id="successMessage" class="success-message">
+            ✓ Dữ liệu đã được gửi thành công!
+        </div>
+        <div id="errorMessage" class="error-message">
+            ✗ Có lỗi xảy ra. Vui lòng thử lại.
+        </div>
+
+        <form id="reportForm">
+            <!-- I. THÔNG TIN KHÁCH HÀNG -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">I. Thông tin khách hàng</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+                    <div>
+                        <label class="block font-medium mb-1">Tên KH/Tên shop <span class="text-red-500">*</span></label>
+                        <input type="text" name="customerName" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Điện thoại <span class="text-red-500">*</span></label>
+                        <input type="tel" name="phone" class="bg-yellow-50" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Địa chỉ <span class="text-red-500">*</span></label>
+                        <input type="text" name="address" class="bg-yellow-50" required>
+                    </div>
+                </div>
+
+                <!-- Mức trọng lượng và Sản lượng -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-700 mb-3 text-sm">MỨC TRỌNG LƯỢNG & SẢN LƯỢNG HÀNG GỬI</h3>
+                    <div class="table-container">
+                        <table class="w-full text-xs border-collapse">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="min-w-[180px]">MỨC TRỌNG LƯỢNG (gram)</th>
+                                    <th colspan="4">SẢN LƯỢNG HÀNG GỬI</th>
+                                    <th rowspan="2" class="min-w-[80px]">Tổng</th>
+                                    <th rowspan="2" class="min-w-[80px]">Tỷ trọng %</th>
+                                </tr>
+                                <tr>
+                                    <th>Nội tỉnh</th>
+                                    <th>Nội miền</th>
+                                    <th>Cận miền</th>
+                                    <th>Liên miền</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weightLevelsTable">
+                                <tr>
+                                    <td class="border border-gray-300 p-2">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-xs">Từ</span>
+                                            <input type="number" name="weightFrom[]" class="w-20 bg-yellow-50 weight-from" step="0.01" placeholder="0">
+                                            <span class="text-xs">Đến</span>
+                                            <input type="number" name="weightTo[]" class="w-20 bg-yellow-50 weight-to" step="0.01" placeholder="0">
+                                            <span class="text-xs">(gram)</span>
+                                        </div>
+                                    </td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input" step="0.01" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input" step="0.01" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input" step="0.01" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input" step="0.01" value="0"></td>
+                                    <td class="border border-gray-300 p-2 table-total text-center" data-total="0">0</td>
+                                    <td class="border border-gray-300 p-2 text-center" data-percent="0%">0%</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-blue-50">
+                                    <td class="border border-gray-300 p-2 font-bold">Tổng sản lượng các mốc</td>
+                                    <td class="border border-gray-300 p-2"><input type="text" id="totalProvince" class="text-center bg-blue-100" readonly value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="text" id="totalRegion" class="text-center bg-blue-100" readonly value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="text" id="totalAdjacent" class="text-center bg-blue-100" readonly value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="text" id="totalInter" class="text-center bg-blue-100" readonly value="0"></td>
+                                    <td class="border border-gray-300 p-2 table-total text-center font-bold" id="grandTotal">0</td>
+                                    <td class="border border-gray-300 p-2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button type="button" onclick="addWeightLevel()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-medium py-2 px-4 rounded text-sm transition-colors">
+                            + Thêm mốc trọng lượng
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Đặc tính hàng hóa -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-700 mb-3 text-sm">Đặc tính hàng hóa</h3>
+                    <div class="checkbox-group">
+                        <label class="flex items-center gap-2"><input type="checkbox" name="productNormal" value="Thông thường"> Thông thường</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="productLiquid" value="Chất lỏng"> Chất lỏng</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="productFlammable" value="Dễ cháy"> Dễ cháy</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="productFragile" value="Dễ vỡ"> Dễ vỡ</label>
+                    </div>
+                </div>
+
+                <!-- Tỷ trọng hàng trên 1.2m -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block font-medium mb-1 text-sm">Tỷ trọng hàng có kích thước trên 1,2m</label>
+                        <input type="number" id="over12mRatio" class="bg-yellow-50" step="0.01" placeholder="Nhập số lượng">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-sm">Tỷ trọng % (tự động tính)</label>
+                        <input type="text" id="over12mPercent" class="bg-gray-100" readonly value="0%">
+                    </div>
+                </div>
+            </div>
+
+            <!-- II. NGÀNH HÀNG & ĐỐI THỦ -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">II. Ngành hàng & Đối thủ</div>
+                
+                <div class="mb-4">
+                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Ngành hàng:</p>
+                    <div class="checkbox-group text-[11px] md:text-xs">
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Hàng điện tử, điện lạnh, gia dụng"> Điện tử, gia dụng</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Hàng nông nghiệp - sản xuất"> Nông nghiệp</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Thuốc & Thực phẩm chức năng"> Thực phẩm CN</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Đồ nội thất và Trang trí nhà cửa"> Nội thất</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Cây cảnh và cây giống"> Cây cảnh</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Thực phẩm & đồ ăn nhanh"> Fast Food</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Phụ tùng ô tô, xe máy"> Phụ tùng xe</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Nông sản (Hoa quả, hạt, dược liệu...)"> Nông sản</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Mỹ phẩm & chăm sóc cá nhân"> Mỹ phẩm</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Thiết bị Công nghiệp và máy móc"> Thiết bị CN</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Đồ thể thao và phụ kiện fitness"> Fitness</label>
+                        <label class="flex items-center gap-2 p-1 border rounded bg-gray-50"><input type="checkbox" name="industry" value="Thời trang (quần áo, phụ kiện)"> Thời trang</label>
+                        <div class="flex items-center gap-2 p-1 border rounded bg-gray-50 col-span-full sm:col-auto">
+                            <input type="checkbox" id="checkboxOther">
+                            <input type="text" id="inputOther" class="other-input" placeholder="Khác..." oninput="handleOtherInput(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Đối thủ đang phục vụ:</p>
+                    <div class="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 text-[10px] md:text-xs">
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="VNPost"> VNPost</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="GHN"> GHN</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="GHTK"> GHTK</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="J&T"> J&T</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="SPX"> SPX</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="Best"> Best</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="Nhất tín"> Nhất tín</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="Xanh SM"> Xanh SM</label>
+                        <label class="flex flex-col items-center justify-center p-2 border rounded bg-white text-center gap-1 cursor-pointer hover:bg-gray-50"><input type="checkbox" name="competitor" value="Xe tự có"> Xe tự có</label>
+                    </div>
+                    <div class="mt-3">
+                        <label class="text-xs font-medium">Đối thủ khác:</label>
+                        <input type="text" name="competitorOther" class="bg-yellow-50 text-xs mt-1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- III. CHÍNH SÁCH ĐỐI THỦ -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">III. Chính sách đối thủ</div>
+                <p class="text-[10px] text-gray-500 mb-2 italic">* Vuốt sang phải để xem đầy đủ bảng giá</p>
+                <div class="table-container">
+                    <table class="w-full text-[11px] border-collapse" id="competitorPriceTable">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 p-1" rowspan="2">TRỌNG LƯỢNG</th>
+                                <th class="border border-gray-300 p-1 text-center" colspan="4">GIÁ ĐỐI THỦ</th>
+                                <th class="border border-gray-300 p-1 text-center" colspan="4">Đơn giá bình quân</th>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 p-1">N.Tỉnh</th>
+                                <th class="border border-gray-300 p-1">N.Miền</th>
+                                <th class="border border-gray-300 p-1">C.Miền</th>
+                                <th class="border border-gray-300 p-1">L.Miền</th>
+                                <th class="border border-gray-300 p-1">N.Tỉnh</th>
+                                <th class="border border-gray-300 p-1">N.Miền</th>
+                                <th class="border border-gray-300 p-1">C.Miền</th>
+                                <th class="border border-gray-300 p-1">L.Miền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
+                    <div>
+                        <label class="block font-medium mb-1">Tỷ lệ hoàn hiện tại</label>
+                        <input type="number" name="currentReturnRate" class="bg-yellow-50" step="0.01" placeholder="Nhập số hoàn">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Tỷ lệ hoàn đối thủ miễn phí cho khách hàng</label>
+                        <input type="number" name="competitorFreeReturnRate" class="bg-yellow-50" step="0.01">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium mb-1">Các chính sách đặc thù khác mà đối thủ đang áp dụng</label>
+                        <textarea name="competitorOtherPolicies" class="bg-yellow-50 h-24"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IV. CHÍNH SÁCH ĐỀ XUẤT -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">IV. Chính sách đề xuất</div>
+                <p class="text-[10px] text-gray-500 mb-2 italic">* Vuốt sang phải để xem đầy đủ bảng giá</p>
+                <div class="table-container">
+                    <table class="w-full text-[11px] border-collapse" id="proposedPriceTable">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 p-1" rowspan="2">TRỌNG LƯỢNG</th>
+                                <th class="border border-gray-300 p-1 text-center" colspan="4">GIÁ ĐỀ XUẤT</th>
+                                <th class="border border-gray-300 p-1 text-center" colspan="4">Đơn giá bình quân</th>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <th class="border border-gray-300 p-1">N.Tỉnh</th>
+                                <th class="border border-gray-300 p-1">N.Miền</th>
+                                <th class="border border-gray-300 p-1">C.Miền</th>
+                                <th class="border border-gray-300 p-1">L.Miền</th>
+                                <th class="border border-gray-300 p-1">N.Tỉnh</th>
+                                <th class="border border-gray-300 p-1">N.Miền</th>
+                                <th class="border border-gray-300 p-1">C.Miền</th>
+                                <th class="border border-gray-300 p-1">L.Miền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
+                    <div>
+                        <label class="block font-medium mb-1">Các chính sách đặc thù khác cần đề xuất</label>
+                        <textarea name="proposedOtherPolicies" class="bg-yellow-50 h-24"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Tỷ lệ hoàn đề xuất</label>
+                        <input type="number" name="proposedReturnRate" class="bg-yellow-50" step="0.01" placeholder="Nhập số hoàn">
+                    </div>
+                </div>
+            </div>
+
+            <!-- V. THÔNG TIN NGƯỜI BÁO CÁO -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">V. Thông tin người báo cáo</div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block font-medium mb-1">Họ và tên <span class="text-red-500">*</span></label>
+                        <input type="text" name="reporterName" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Chức danh <span class="text-red-500">*</span></label>
+                        <input type="text" name="title" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Điện thoại <span class="text-red-500">*</span></label>
+                        <input type="tel" name="reporterPhone" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Chi nhánh <span class="text-red-500">*</span></label>
+                        <input type="text" name="branch" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Tên bưu cục <span class="text-red-500">*</span></label>
+                        <input type="text" name="postOfficeName" class="bg-yellow-50" required>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Mã bưu cục <span class="text-red-500">*</span></label>
+                        <input type="text" name="postOfficeCode" class="bg-yellow-50" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-6 pb-10">
+                <button type="submit" class="btn-submit w-full md:w-auto text-white font-bold py-4 px-16 rounded-lg uppercase text-lg">
+                    Gửi báo cáo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
