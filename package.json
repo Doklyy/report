@@ -1,0 +1,19 @@
+{
+  "name": "customer-report-form",
+  "version": "1.0.0",
+  "description": "Form báo cáo thông tin khách hàng & chính sách đối thủ",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000",
+    "dev": "npx http-server -p 8000 -o"
+  },
+  "keywords": [
+    "form",
+    "customer-report",
+    "google-sheets"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
