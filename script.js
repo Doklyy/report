@@ -65,41 +65,47 @@ function addWeightLevel() {
     const tbody = document.getElementById('weightLevelsTable');
     const rowCount = tbody.children.length;
     
-    // Hiển thị nút xóa cho tất cả các dòng nếu có nhiều hơn 1 dòng
-    const allRows = tbody.querySelectorAll('tr');
-    if (allRows.length > 0) {
-        allRows.forEach(r => {
-            const deleteBtn = r.querySelector('button');
-            if (deleteBtn) deleteBtn.style.display = 'inline-block';
-        });
-    }
-    
     const row = document.createElement('tr');
     row.innerHTML = `
         <td class="border border-gray-300 p-2">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs text-gray-500">Từ</span>
-                <input type="number" name="weightFrom[]" class="w-20 bg-yellow-50 weight-from border border-amber-300 rounded p-1 text-center font-bold" step="0.01" placeholder="0">
-                <span class="text-gray-400">-</span>
-                <span class="text-xs text-gray-500">Đến</span>
-                <input type="number" name="weightTo[]" class="w-20 bg-yellow-50 weight-to border border-amber-300 rounded p-1 text-center font-bold" step="0.01" placeholder="0">
+                <div class="flex-1">
+                    <span class="text-xs text-gray-500 block mb-1">Từ</span>
+                    <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                </div>
+                <span class="mt-6 text-gray-400">-</span>
+                <div class="flex-1">
+                    <span class="text-xs text-gray-500 block mb-1">Đến</span>
+                    <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                </div>
                 <span class="text-xs text-gray-500">(gram)</span>
             </div>
         </td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
         <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
         <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
         <td class="border border-gray-300 p-2 text-center">
-            <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded transition-colors">
-                Xóa
-            </button>
+            <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded transition-colors font-medium">Xóa</button>
         </td>
     `;
     
     tbody.appendChild(row);
+    
+    // Hiển thị nút xóa cho tất cả các dòng
+    const allRows = tbody.querySelectorAll('tr');
+    allRows.forEach(r => {
+        const deleteBtn = r.querySelector('button[onclick*="removeWeightLevel"]');
+        if (deleteBtn) {
+            if (allRows.length > 1) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        }
+    });
     
     // Attach event listeners to new inputs
     const volumeInputs = row.querySelectorAll('.volume-input');
@@ -136,14 +142,18 @@ function removeWeightLevel(button) {
         row.remove();
     }
     
-    // Ẩn nút xóa nếu chỉ còn 1 dòng
+    // Hiển thị/ẩn nút xóa sau khi xóa
     const remainingRows = tbody.querySelectorAll('tr');
-    if (remainingRows.length === 1) {
-        const deleteBtn = remainingRows[0].querySelector('button');
+    remainingRows.forEach(r => {
+        const deleteBtn = r.querySelector('button[onclick*="removeWeightLevel"]');
         if (deleteBtn) {
-            deleteBtn.style.display = 'none';
+            if (remainingRows.length > 1) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
         }
-    }
+    });
     
     // Recalculate totals after removal
     calculateTotals();
@@ -162,28 +172,29 @@ function calculateRowTotal(row) {
     
     const totalCell = row.querySelector('[data-total]');
     if (totalCell) {
-        // Format number with commas for large numbers
+        // Format number with commas (không có số thập phân)
         const formattedTotal = formatNumber(total);
         totalCell.textContent = formattedTotal;
-        totalCell.setAttribute('data-total', total.toFixed(2));
+        totalCell.setAttribute('data-total', total.toString());
         
         // Calculate percentage for this row
-        const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/,/g, '')) || 0;
+        const grandTotalEl = document.getElementById('grandTotal');
+        const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
         const percent = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
         const percentCell = row.querySelector('[data-percent]');
         if (percentCell) {
-            percentCell.textContent = percent.toFixed(2) + '%';
-            percentCell.setAttribute('data-percent', percent.toFixed(2) + '%');
+            percentCell.textContent = percent.toFixed(1) + '%';
+            percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
         }
     }
 }
 
-// Format number with commas
+// Format number with commas (không có số thập phân cho khối lượng)
 function formatNumber(num) {
     if (num === 0) return '0';
-    const parts = num.toFixed(2).split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return parts.join('.');
+    // Làm tròn về số nguyên (bỏ phần thập phân)
+    const rounded = Math.round(num);
+    return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // Calculate totals for all rows
@@ -248,6 +259,18 @@ function calculateTotals() {
             if (percentCell) {
                 percentCell.textContent = percent.toFixed(1) + '%';
                 percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
+            }
+        }
+    });
+    
+    // Hiển thị/ẩn nút xóa dựa trên số lượng dòng
+    rows.forEach((row, index) => {
+        const deleteBtn = row.querySelector('button[onclick*="removeWeightLevel"]');
+        if (deleteBtn) {
+            if (rows.length > 1) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
             }
         }
     });
