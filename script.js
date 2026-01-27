@@ -485,9 +485,9 @@ function collectFormData() {
         productFlammable: document.querySelector('input[name="productFlammable"]').checked,
         productFragile: document.querySelector('input[name="productFragile"]').checked,
         
-        // Industry
-        industries: Array.from(document.querySelectorAll('input[name="industry"]:checked')).map(cb => cb.value),
-        industryOther: document.getElementById('inputOther').value,
+        // Industry - chỉ lấy các checkbox được chọn
+        industries: Array.from(document.querySelectorAll('input[name="industry"]:checked')).map(cb => cb.value).filter(v => v && v.trim() !== ''),
+        industryOther: document.getElementById('inputOther') ? document.getElementById('inputOther').value.trim() : '',
         
         // Competitors
         competitors: Array.from(document.querySelectorAll('input[name="competitor"]:checked')).map(cb => cb.value),
