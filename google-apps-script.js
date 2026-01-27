@@ -24,8 +24,19 @@ function doPost(e) {
     const jsonData = JSON.parse(e.postData.contents);
     const rowData = jsonData.data;
     
-    // Open spreadsheet
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    // Open spreadsheet - với error handling tốt hơn
+    let ss;
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    } catch (error) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false, 
+          error: 'Cannot access spreadsheet. Please check: 1) Sheet ID is correct, 2) Script has permission to access the sheet, 3) Sheet exists and is not deleted. Error: ' + error.toString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     let sheet = ss.getSheetByName(SHEET_NAME);
     
     // Create sheet if it doesn't exist
@@ -151,8 +162,20 @@ function testDoPost() {
 // Function để đọc dữ liệu từ Sheets (Đồng bộ ngược: Sheets → Website)
 function doGet(e) {
   try {
-    // Mở spreadsheet
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    // Mở spreadsheet - với error handling tốt hơn
+    let ss;
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    } catch (error) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false, 
+          error: 'Cannot access spreadsheet. Please check: 1) Sheet ID is correct, 2) Script has permission to access the sheet, 3) Sheet exists and is not deleted. Error: ' + error.toString(),
+          data: []
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     let sheet = ss.getSheetByName(SHEET_NAME);
     
     // Nếu sheet không tồn tại, trả về empty
