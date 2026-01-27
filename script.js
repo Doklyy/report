@@ -325,6 +325,19 @@ function updateCompetitorPriceTable() {
     const tbody = document.querySelector('#competitorPriceTable tbody');
     if (!tbody) return;
     
+    // Lưu giá trị hiện tại của các input giá trước khi cập nhật
+    const existingRows = tbody.querySelectorAll('tr');
+    const savedPrices = [];
+    existingRows.forEach((existingRow, idx) => {
+        const saved = {
+            province: existingRow.querySelector(`input[name="competitorPrice_${idx}_province"]`)?.value || '',
+            region: existingRow.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
+            adjacent: existingRow.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
+            inter: existingRow.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || ''
+        };
+        savedPrices.push(saved);
+    });
+    
     tbody.innerHTML = '';
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     
@@ -336,16 +349,19 @@ function updateCompetitorPriceTable() {
         const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
         const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
         
+        // Khôi phục giá trị đã lưu nếu có
+        const saved = savedPrices[index] || {};
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
                 <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" readonly> - 
                 <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" readonly>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.province}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.region}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.adjacent}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.inter}"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
@@ -357,6 +373,11 @@ function updateCompetitorPriceTable() {
         priceInputs.forEach(input => {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'competitor'));
         });
+        
+        // Tính lại weighted average nếu có giá trị
+        if (saved.province || saved.region || saved.adjacent || saved.inter) {
+            setTimeout(() => calculateWeightedAverage(tr, index, 'competitor'), 100);
+        }
         
         tbody.appendChild(tr);
     });
@@ -548,42 +569,81 @@ function collectFormData() {
     return formData;
 }
 
-// Format data for Google Sheets
+// Format data for Google Sheets - Đảm bảo thứ tự khớp với headers trong Google Sheets
 function formatDataForSheets(formData) {
+    // Lấy tổng sản lượng từ DOM
+    const grandTotalEl = document.getElementById('grandTotal');
+    const grandTotal = grandTotalEl ? grandTotalEl.textContent.replace(/,/g, '') : '0';
+    
+    // Tính tỷ trọng sản lượng (nếu có)
+    const totalWeightLevels = formData.weightLevels.length;
+    
+    // Lấy các giá trị sản lượng từ DOM
+    const totalProvince = document.getElementById('totalProvince') ? document.getElementById('totalProvince').textContent.replace(/,/g, '') : '0';
+    const totalRegion = document.getElementById('totalRegion') ? document.getElementById('totalRegion').textContent.replace(/,/g, '') : '0';
+    const totalAdjacent = document.getElementById('totalAdjacent') ? document.getElementById('totalAdjacent').textContent.replace(/,/g, '') : '0';
+    const totalInter = document.getElementById('totalInter') ? document.getElementById('totalInter').textContent.replace(/,/g, '') : '0';
+    
+    // Tính tỷ trọng % (tỷ trọng của tổng sản lượng)
+    const totalAll = parseFloat(totalProvince) + parseFloat(totalRegion) + parseFloat(totalAdjacent) + parseFloat(totalInter);
+    const percentRatio = totalAll > 0 ? ((parseFloat(grandTotal) / totalAll) * 100).toFixed(2) + '%' : '0%';
+    
+    // Lấy đơn giá bình quân từ các bảng giá
+    const competitorAvgProvince = document.querySelector('input[name="competitorAvg_0_province"]') ? document.querySelector('input[name="competitorAvg_0_province"]').value : '';
+    const competitorAvgRegion = document.querySelector('input[name="competitorAvg_0_region"]') ? document.querySelector('input[name="competitorAvg_0_region"]').value : '';
+    const competitorAvgAdjacent = document.querySelector('input[name="competitorAvg_0_adjacent"]') ? document.querySelector('input[name="competitorAvg_0_adjacent"]').value : '';
+    const competitorAvgInter = document.querySelector('input[name="competitorAvg_0_inter"]') ? document.querySelector('input[name="competitorAvg_0_inter"]').value : '';
+    
+    const proposedAvgProvince = document.querySelector('input[name="proposedAvg_0_province"]') ? document.querySelector('input[name="proposedAvg_0_province"]').value : '';
+    const proposedAvgRegion = document.querySelector('input[name="proposedAvg_0_region"]') ? document.querySelector('input[name="proposedAvg_0_region"]').value : '';
+    const proposedAvgAdjacent = document.querySelector('input[name="proposedAvg_0_adjacent"]') ? document.querySelector('input[name="proposedAvg_0_adjacent"]').value : '';
+    const proposedAvgInter = document.querySelector('input[name="proposedAvg_0_inter"]') ? document.querySelector('input[name="proposedAvg_0_inter"]').value : '';
+    
+    // Thứ tự phải khớp với headers trong Google Sheets
     const row = [
-        formData.timestamp,
-        formData.customerName,
-        formData.phone,
-        formData.address,
-        formData.weightLevels.map(w => `${w.from}-${w.to}`).join('; '),
-        formData.grandTotal,
-        document.getElementById('totalProvince') ? document.getElementById('totalProvince').textContent.replace(/,/g, '') : '0',
-        document.getElementById('totalRegion') ? document.getElementById('totalRegion').textContent.replace(/,/g, '') : '0',
-        document.getElementById('totalAdjacent') ? document.getElementById('totalAdjacent').textContent.replace(/,/g, '') : '0',
-        document.getElementById('totalInter') ? document.getElementById('totalInter').textContent.replace(/,/g, '') : '0',
-        formData.productNormal ? 'Có' : 'Không',
-        formData.productLiquid ? 'Có' : 'Không',
-        formData.productFlammable ? 'Có' : 'Không',
-        formData.productFragile ? 'Có' : 'Không',
-        formData.industries.join('; '),
-        formData.industryOther,
-        formData.competitors.join('; '),
-        formData.competitorOther,
-        formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '),
-        formData.currentReturnRate,
-        formData.competitorFreeReturnRate,
-        formData.competitorOtherPolicies,
-        formData.over12mRatio,
-        formData.over12mPercent,
-        formData.proposedPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '),
-        formData.proposedOtherPolicies,
-        formData.proposedReturnRate,
-        formData.reporterName,
-        formData.title,
-        formData.reporterPhone,
-        formData.branch,
-        formData.postOfficeName,
-        formData.postOfficeCode
+        formData.timestamp,                                    // 1. Thời gian
+        formData.customerName,                                // 2. Tên KH/Tên shop
+        formData.phone,                                        // 3. Điện thoại
+        formData.address,                                      // 4. Địa chỉ
+        formData.weightLevels.map(w => `${w.from}-${w.to}`).join('; '), // 5. Các mốc trọng lượng
+        grandTotal,                                            // 6. Tổng sản lượng các mốc
+        totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
+        formData.over12mRatio || '',                          // 8. Tỷ trọng hàng trên 1.2m
+        formData.over12mPercent || '0%',                      // 9. Tỷ trọng % hàng trên 1.2m
+        totalProvince,                                         // 10. Sản lượng Nội tỉnh
+        totalRegion,                                           // 11. Sản lượng Nội miền
+        totalAdjacent,                                         // 12. Sản lượng Cận miền
+        totalInter,                                            // 13. Sản lượng Liên miền
+        grandTotal,                                            // 14. Tổng sản lượng
+        percentRatio,                                          // 15. Tỷ trọng %
+        formData.productNormal ? 'Có' : 'Không',              // 16. Hàng thông thường
+        formData.productLiquid ? 'Có' : 'Không',               // 17. Chất lỏng
+        formData.productFlammable ? 'Có' : 'Không',            // 18. Dễ cháy
+        formData.productFragile ? 'Có' : 'Không',              // 19. Dễ vỡ
+        formData.industries.join('; '),                        // 20. Ngành hàng
+        formData.competitors.join('; '),                       // 21. Đối thủ
+        formData.competitorOther || '',                        // 22. Đối thủ khác
+        formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 23. Giá đối thủ
+        competitorAvgProvince,                                 // 24. Đơn giá bình quân Nội tỉnh (ĐT)
+        competitorAvgRegion,                                  // 25. Đơn giá bình quân Nội miền (ĐT)
+        competitorAvgAdjacent,                                 // 26. Đơn giá bình quân Cận miền (ĐT)
+        competitorAvgInter,                                    // 27. Đơn giá bình quân Liên miền (ĐT)
+        formData.currentReturnRate || '',                      // 28. Tỷ lệ hoàn hiện tại
+        formData.competitorFreeReturnRate || '',               // 29. Tỷ lệ hoàn đối thủ miễn phí
+        formData.competitorOtherPolicies || '',                // 30. Chính sách đặc thù đối thủ
+        formData.proposedPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 31. Giá đề xuất
+        proposedAvgProvince,                                   // 32. Đơn giá bình quân Nội tỉnh (ĐX)
+        proposedAvgRegion,                                     // 33. Đơn giá bình quân Nội miền (ĐX)
+        proposedAvgAdjacent,                                   // 34. Đơn giá bình quân Cận miền (ĐX)
+        proposedAvgInter,                                      // 35. Đơn giá bình quân Liên miền (ĐX)
+        formData.proposedOtherPolicies || '',                  // 36. Chính sách đặc thù đề xuất
+        formData.proposedReturnRate || '',                     // 37. Tỷ lệ hoàn đề xuất
+        formData.reporterName || '',                           // 38. Họ và tên người báo cáo
+        formData.reporterPhone || '',                          // 39. Điện thoại người báo cáo
+        formData.postOfficeName || '',                         // 40. Tên Bưu cục
+        formData.title || '',                                  // 41. Chức danh
+        formData.branch || '',                                 // 42. Chi nhánh
+        formData.postOfficeCode || ''                          // 43. Mã Bưu cục
     ];
     
     return row;
