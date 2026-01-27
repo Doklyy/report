@@ -8,12 +8,9 @@ let weightLevels = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     setupEventListeners();
-    // Price tables will be initialized when first weight level is added
 });
 
 function initializeForm() {
-    // Price tables will be initialized when first weight level is added
-    
     // Kiểm tra và hiển thị nút xóa ban đầu
     const tbody = document.getElementById('weightLevelsTable');
     if (tbody) {
@@ -28,6 +25,9 @@ function initializeForm() {
                 }
             }
         });
+
+        // Khởi tạo bảng giá (III và IV) ngay khi tải trang, dựa trên các mốc trọng lượng hiện có
+        updatePriceTables();
     }
 }
 
