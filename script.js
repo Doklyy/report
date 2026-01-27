@@ -143,20 +143,8 @@ function addWeightLevel() {
     
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td class="border border-gray-300 p-2">
-            <div class="flex items-center gap-2 flex-wrap">
-                <div class="flex-1">
-                    <span class="text-xs text-gray-500 block mb-1">Từ</span>
-                    <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0">
-                </div>
-                <span class="mt-6 text-gray-400">-</span>
-                <div class="flex-1">
-                    <span class="text-xs text-gray-500 block mb-1">Đến</span>
-                    <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0">
-                </div>
-                <span class="text-xs text-gray-500">(gram)</span>
-            </div>
-        </td>
+        <td class="border border-gray-300 p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0"></td>
         <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
         <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
         <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
@@ -601,8 +589,11 @@ function collectFormData() {
         productFlammable: document.querySelector('input[name="productFlammable"]').checked,
         productFragile: document.querySelector('input[name="productFragile"]').checked,
         
-        // Industry - chỉ lấy các checkbox được chọn
-        industries: Array.from(document.querySelectorAll('input[name="industry"]:checked')).map(cb => cb.value).filter(v => v && v.trim() !== ''),
+        // Industry - chỉ lấy các checkbox được chọn (single select)
+        industries: (() => {
+            const checked = Array.from(document.querySelectorAll('input[name="industry"]:checked'));
+            return checked.length > 0 ? [checked[0].value] : [];
+        })(),
         industryOther: document.getElementById('inputOther') ? document.getElementById('inputOther').value.trim() : '',
         
         // Competitors
@@ -618,6 +609,8 @@ function collectFormData() {
         
         over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
         over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
+        over100kgRatio: document.getElementById('over100kgRatio') ? document.getElementById('over100kgRatio').value : '',
+        specificProduct: document.getElementById('specificProduct') ? document.getElementById('specificProduct').value.trim() : '',
         
         // Proposed prices
         proposedPrices: [],
@@ -744,16 +737,17 @@ function formatDataForSheets(formData) {
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         formData.over12mRatio || '',                          // 8. Tỷ trọng hàng trên 1.2m
         formData.over12mPercent || '0%',                      // 9. Tỷ trọng % hàng trên 1.2m
-        totalProvince,                                         // 10. Sản lượng Nội tỉnh
-        totalRegion,                                           // 11. Sản lượng Nội miền
-        totalAdjacent,                                         // 12. Sản lượng Cận miền
-        totalInter,                                            // 13. Sản lượng Liên miền
-        grandTotal,                                            // 14. Tổng sản lượng
-        percentRatio,                                          // 15. Tỷ trọng %
-        formData.productNormal ? 'Có' : 'Không',              // 16. Hàng thông thường
-        formData.productLiquid ? 'Có' : 'Không',               // 17. Chất lỏng
-        formData.productFlammable ? 'Có' : 'Không',            // 18. Dễ cháy
-        formData.productFragile ? 'Có' : 'Không',              // 19. Dễ vỡ
+        formData.over100kgRatio || '',                        // 10. Tỷ trọng hàng nguyên khối từ 100kg trở lên
+        totalProvince,                                         // 11. Sản lượng Nội tỉnh
+        totalRegion,                                           // 12. Sản lượng Nội miền
+        totalAdjacent,                                         // 13. Sản lượng Cận miền
+        totalInter,                                            // 14. Sản lượng Liên miền
+        grandTotal,                                            // 15. Tổng sản lượng
+        percentRatio,                                          // 16. Tỷ trọng %
+        formData.productNormal ? 'Có' : 'Không',              // 17. Hàng thông thường
+        formData.productLiquid ? 'Có' : 'Không',               // 18. Chất lỏng
+        formData.productFlammable ? 'Có' : 'Không',            // 19. Dễ cháy
+        formData.productFragile ? 'Có' : 'Không',              // 20. Dễ vỡ
         (() => {
             // Kết hợp industries và industryOther - NGÀNH HÀNG
             const industryList = formData.industries.filter(i => i && i.trim() !== '');
@@ -761,7 +755,8 @@ function formatDataForSheets(formData) {
                 industryList.push(formData.industryOther.trim());
             }
             return industryList.join('; ');
-        })(),                                                    // 20. Ngành hàng
+        })(),                                                    // 21. Ngành hàng
+        formData.specificProduct || '',                        // 22. Sản phẩm cụ thể
         (() => {
             // Kết hợp competitors và competitorOther - ĐỐI THỦ
             const competitorList = formData.competitors.filter(c => c && c.trim() !== '');
