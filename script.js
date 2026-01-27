@@ -132,18 +132,8 @@ function addWeightLevel() {
         });
     });
     
-    // Không tự động cập nhật bảng giá khi thay đổi trọng lượng
-    // Chỉ khởi tạo bảng giá một lần khi thêm hàng mới
-    const competitorTbody = document.querySelector('#competitorPriceTable tbody');
-    const proposedTbody = document.querySelector('#proposedPriceTable tbody');
-    
-    // Chỉ khởi tạo nếu bảng giá chưa có dữ liệu
-    if (competitorTbody && competitorTbody.querySelectorAll('tr').length === 0) {
-        updateCompetitorPriceTable();
-    }
-    if (proposedTbody && proposedTbody.querySelectorAll('tr').length === 0) {
-        updateProposedPriceTable();
-    }
+    // Khi thêm hàng mới, cập nhật lại bảng giá để đồng bộ trọng lượng
+    updatePriceTables();
 }
 
 // Remove weight level row
