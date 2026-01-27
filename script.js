@@ -515,7 +515,7 @@ function collectFormData() {
         reporterPhone: document.querySelector('input[name="reporterPhone"]').value,
         branch: document.querySelector('input[name="branch"]').value,
         postOfficeName: document.querySelector('input[name="postOfficeName"]').value,
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value : ''
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]').value
     };
     
     // Collect weight levels and volumes
@@ -526,8 +526,8 @@ function collectFormData() {
         const volumeInputs = row.querySelectorAll('.volume-input');
         
         formData.weightLevels.push({
-            from: fromInput ? (fromInput.value || '0') : '0',
-            to: toInput ? (toInput.value || '0') : '0'
+            from: fromInput ? fromInput.value : '',
+            to: toInput ? toInput.value : ''
         });
         
         formData.volumes.push({
@@ -556,24 +556,14 @@ function collectFormData() {
     // Collect proposed prices
     const proposedRows = document.querySelectorAll('#proposedPriceTable tbody tr');
     proposedRows.forEach((row, index) => {
-        const fromInput = row.querySelector(`input[name="proposedFrom_${index}"]`);
-        const toInput = row.querySelector(`input[name="proposedTo_${index}"]`);
-        const provinceInput = row.querySelector(`input[name="proposedPrice_${index}_province"]`);
-        const regionInput = row.querySelector(`input[name="proposedPrice_${index}_region"]`);
-        const adjacentInput = row.querySelector(`input[name="proposedPrice_${index}_adjacent"]`);
-        const interInput = row.querySelector(`input[name="proposedPrice_${index}_inter"]`);
-        
-        // Chỉ thêm nếu có ít nhất 1 giá trị
-        if (fromInput || toInput || provinceInput || regionInput || adjacentInput || interInput) {
-            formData.proposedPrices.push({
-                from: fromInput ? (fromInput.value || '0') : '0',
-                to: toInput ? (toInput.value || '0') : '0',
-                province: provinceInput ? (provinceInput.value || '') : '',
-                region: regionInput ? (regionInput.value || '') : '',
-                adjacent: adjacentInput ? (adjacentInput.value || '') : '',
-                inter: interInput ? (interInput.value || '') : ''
-            });
-        }
+        formData.proposedPrices.push({
+            from: row.querySelector(`input[name="proposedFrom_${index}"]`).value,
+            to: row.querySelector(`input[name="proposedTo_${index}"]`).value,
+            province: row.querySelector(`input[name="proposedPrice_${index}_province"]`).value,
+            region: row.querySelector(`input[name="proposedPrice_${index}_region"]`).value,
+            adjacent: row.querySelector(`input[name="proposedPrice_${index}_adjacent"]`).value,
+            inter: row.querySelector(`input[name="proposedPrice_${index}_inter"]`).value
+        });
     });
     
     return formData;
@@ -619,7 +609,7 @@ function formatDataForSheets(formData) {
             const from = (w.from && w.from.trim() !== '') ? w.from : '0';
             const to = (w.to && w.to.trim() !== '') ? w.to : '0';
             return `${from}-${to}`;
-        }).filter(w => w !== '0-0').join('; '), // 5. Các mốc trọng lượng
+        }).filter(w => w !== '0-0' && w !== '-').join('; '), // 5. Các mốc trọng lượng
         grandTotal,                                            // 6. Tổng sản lượng các mốc
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         formData.over12mRatio || '',                          // 8. Tỷ trọng hàng trên 1.2m
@@ -651,18 +641,7 @@ function formatDataForSheets(formData) {
             return competitorList.join('; ');
         })(),                                                    // 21. Đối thủ
         '',                                                      // 22. Đối thủ khác (đã được gộp vào Đối thủ ở trên)
-        formData.competitorPrices.map(p => {
-            const from = p.from || '0';
-            const to = p.to || '0';
-            const province = p.province || '';
-            const region = p.region || '';
-            const adjacent = p.adjacent || '';
-            const inter = p.inter || '';
-            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
-        }).filter(p => {
-            // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
-            return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
-        }).join(' | '), // 23. Giá đối thủ
+        formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 23. Giá đối thủ
         competitorAvgProvince,                                 // 24. Đơn giá bình quân Nội tỉnh (ĐT)
         competitorAvgRegion,                                  // 25. Đơn giá bình quân Nội miền (ĐT)
         competitorAvgAdjacent,                                 // 26. Đơn giá bình quân Cận miền (ĐT)
@@ -670,15 +649,7 @@ function formatDataForSheets(formData) {
         formData.currentReturnRate || '',                      // 28. Tỷ lệ hoàn hiện tại
         formData.competitorFreeReturnRate || '',               // 29. Tỷ lệ hoàn đối thủ miễn phí
         formData.competitorOtherPolicies || '',                // 30. Chính sách đặc thù đối thủ
-        formData.proposedPrices.map(p => {
-            const from = p.from || '0';
-            const to = p.to || '0';
-            const province = p.province || '';
-            const region = p.region || '';
-            const adjacent = p.adjacent || '';
-            const inter = p.inter || '';
-            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
-        }).filter(p => p !== '0-0: ///').join(' | '), // 31. Giá đề xuất
+        formData.proposedPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 31. Giá đề xuất
         proposedAvgProvince,                                   // 32. Đơn giá bình quân Nội tỉnh (ĐX)
         proposedAvgRegion,                                     // 33. Đơn giá bình quân Nội miền (ĐX)
         proposedAvgAdjacent,                                   // 34. Đơn giá bình quân Cận miền (ĐX)
