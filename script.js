@@ -40,6 +40,7 @@ function setupEventListeners() {
             if (row) {
                 calculateRowTotal(row);
                 calculateTotals();
+                calculateOver12mPercent();
             }
         }
     });
