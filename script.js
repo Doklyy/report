@@ -265,6 +265,9 @@ function calculateTotals() {
         grandTotalEl.setAttribute('data-total', grandTotal.toFixed(2));
     }
     
+    // Recalculate over 1.2m percent when totals change
+    calculateOver12mPercent();
+    
     // Calculate and update percentage by region
     const percentProvinceEl = document.getElementById('percentProvince');
     const percentRegionEl = document.getElementById('percentRegion');
