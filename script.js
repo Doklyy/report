@@ -686,7 +686,7 @@ function formatDataForSheets(formData) {
         formData.postOfficeName || '',                         // 40. Tên Bưu cục
         formData.title || '',                                  // 41. Chức danh
         formData.branch || '',                                 // 42. Chi nhánh
-        formData.postOfficeCode || ''                          // 43. Mã Bưu cục
+        (formData.postOfficeCode || '').toString()            // 43. Mã Bưu cục (đảm bảo là string để giữ nguyên text)
     ];
     
     return row;
