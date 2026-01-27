@@ -361,8 +361,8 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_inter" class="p-0 text-center" readonly></td>
         `;
         
-        // Gắn sự kiện tính bình quân có trọng số
-        const priceInputs = tr.querySelectorAll('.bg-blue-50');
+        // Gắn sự kiện tính bình quân có trọng số - CHỈ lấy các ô giá, không lấy ô trọng lượng
+        const priceInputs = tr.querySelectorAll('input[name^="competitorPrice_"]');
         priceInputs.forEach(input => {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'competitor'));
             input.setAttribute('data-listener-added', 'true');
@@ -424,8 +424,8 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_inter" class="p-0 text-center" readonly></td>
         `;
         
-        // Add event listeners for weighted average calculation
-        const priceInputs = tr.querySelectorAll('.bg-yellow-50');
+        // Add event listeners for weighted average calculation - CHỈ lấy các ô giá, không lấy ô trọng lượng
+        const priceInputs = tr.querySelectorAll('input[name^="proposedPrice_"]');
         priceInputs.forEach(input => {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'proposed'));
             input.setAttribute('data-listener-added', 'true');
@@ -446,9 +446,10 @@ function calculateWeightedAverage(priceRow, levelIndex, type) {
     if (!volumeRow) return;
     
     const volumeInputs = volumeRow.querySelectorAll('.volume-input');
+    // CHỈ lấy các ô giá, không lấy ô trọng lượng (dùng selector theo name attribute)
     const priceInputs = type === 'competitor' 
-        ? priceRow.querySelectorAll('.bg-blue-50')
-        : priceRow.querySelectorAll('.bg-yellow-50');
+        ? priceRow.querySelectorAll('input[name^="competitorPrice_"]')
+        : priceRow.querySelectorAll('input[name^="proposedPrice_"]');
     const avgInputs = priceRow.querySelectorAll('input[readonly]');
     
     const grandTotalEl = document.getElementById('grandTotal');
