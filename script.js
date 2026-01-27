@@ -93,8 +93,8 @@ function addWeightLevel() {
         <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
         <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
         <td class="border border-gray-300 p-2 text-center">
-            <button type="button" onclick="removeWeightLevel(this)" class="text-red-400 hover:text-red-600">
-                🗑️
+            <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded transition-colors">
+                Xóa
             </button>
         </td>
     `;
@@ -132,15 +132,20 @@ function removeWeightLevel(button) {
     }
     
     const row = button.closest('tr');
-    row.remove();
+    if (row) {
+        row.remove();
+    }
     
     // Ẩn nút xóa nếu chỉ còn 1 dòng
     const remainingRows = tbody.querySelectorAll('tr');
     if (remainingRows.length === 1) {
         const deleteBtn = remainingRows[0].querySelector('button');
-        if (deleteBtn) deleteBtn.style.display = 'none';
+        if (deleteBtn) {
+            deleteBtn.style.display = 'none';
+        }
     }
     
+    // Recalculate totals after removal
     calculateTotals();
     updatePriceTables();
 }
