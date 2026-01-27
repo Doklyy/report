@@ -40,7 +40,6 @@ function doPost(e) {
         'Các mốc trọng lượng',
         'Tổng sản lượng các mốc',
         'Tỷ trọng sản lượng',
-        'Tỷ trọng hàng trên 1.2m',
         'Sản lượng Nội tỉnh',
         'Sản lượng Nội miền',
         'Sản lượng Cận miền',
