@@ -515,7 +515,7 @@ function collectFormData() {
         reporterPhone: document.querySelector('input[name="reporterPhone"]').value,
         branch: document.querySelector('input[name="branch"]').value,
         postOfficeName: document.querySelector('input[name="postOfficeName"]').value,
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]').value
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value : ''
     };
     
     // Collect weight levels and volumes
