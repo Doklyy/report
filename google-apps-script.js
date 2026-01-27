@@ -73,7 +73,6 @@ function doPost(e) {
         'Dễ vỡ',
         'Ngành hàng',
         'Đối thủ',
-        'Đối thủ khác',
         'Giá đối thủ',
         'Đơn giá bình quân Nội tỉnh (ĐT)',
         'Đơn giá bình quân Nội miền (ĐT)',

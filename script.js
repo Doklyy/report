@@ -664,22 +664,21 @@ function formatDataForSheets(formData) {
         formData.productFlammable ? 'Có' : 'Không',            // 18. Dễ cháy
         formData.productFragile ? 'Có' : 'Không',              // 19. Dễ vỡ
         (() => {
-            // Kết hợp industries và industryOther
-            const industryList = formData.industries.filter(i => i && i.trim() !== '');
-            if (formData.industryOther && formData.industryOther.trim() !== '') {
-                industryList.push(formData.industryOther.trim());
-            }
-            return industryList.join('; ');
-        })(),                                                    // 20. Ngành hàng
-        (() => {
-            // Kết hợp competitors và competitorOther
+            // Kết hợp competitors và competitorOther - ĐỐI THỦ vào cột Ngành hàng
             const competitorList = formData.competitors.filter(c => c && c.trim() !== '');
             if (formData.competitorOther && formData.competitorOther.trim() !== '') {
                 competitorList.push(formData.competitorOther.trim());
             }
             return competitorList.join('; ');
-        })(),                                                    // 21. Đối thủ
-        '',                                                      // 22. Đối thủ khác (đã được gộp vào Đối thủ ở trên)
+        })(),                                                    // 20. Ngành hàng (thực chất là Đối thủ)
+        (() => {
+            // Kết hợp industries và industryOther - NGÀNH HÀNG vào cột Đối thủ
+            const industryList = formData.industries.filter(i => i && i.trim() !== '');
+            if (formData.industryOther && formData.industryOther.trim() !== '') {
+                industryList.push(formData.industryOther.trim());
+            }
+            return industryList.join('; ');
+        })(),                                                    // 21. Đối thủ (thực chất là Ngành hàng)
         formData.competitorPrices.map(p => {
             const from = (p.from && p.from.trim() !== '') ? p.from : '0';
             const to = (p.to && p.to.trim() !== '') ? p.to : '0';
