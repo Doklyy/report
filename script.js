@@ -50,9 +50,13 @@ function setupEventListeners() {
         }
     });
 
-    // Weight level inputs
-    // Không tự động cập nhật bảng giá khi thay đổi trọng lượng
-    // Bảng giá chỉ được khởi tạo một lần và giữ nguyên trọng lượng
+    // Weight level inputs: khi thay đổi mốc trọng lượng thì bảng giá (III, IV)
+    // phải cập nhật lại TRỌNG LƯỢNG tương ứng, nhưng giữ nguyên giá đã nhập
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
+            updatePriceTables();
+        }
+    });
 
 
     // Attach listeners to existing rows
@@ -325,61 +329,59 @@ function updateCompetitorPriceTable() {
     const tbody = document.querySelector('#competitorPriceTable tbody');
     if (!tbody) return;
     
-    // Chỉ khởi tạo bảng nếu chưa có dữ liệu (lần đầu tiên)
+    // Lưu lại giá đã nhập trước khi cập nhật trọng lượng
     const existingRows = tbody.querySelectorAll('tr');
-    if (existingRows.length > 0) {
-        // Bảng đã có dữ liệu, chỉ cập nhật weighted average, không thay đổi trọng lượng
-        existingRows.forEach((row, index) => {
-            const priceInputs = row.querySelectorAll('.bg-blue-50');
-            priceInputs.forEach(input => {
-                // Đảm bảo event listener chỉ được thêm một lần
-                if (!input.hasAttribute('data-listener-added')) {
-                    input.addEventListener('input', () => calculateWeightedAverage(row, index, 'competitor'));
-                    input.setAttribute('data-listener-added', 'true');
-                }
-            });
-            // Tính lại weighted average
-            calculateWeightedAverage(row, index, 'competitor');
-        });
-        return;
-    }
+    const savedPrices = [];
+    existingRows.forEach((row, idx) => {
+        savedPrices[idx] = {
+            province: row.querySelector(`input[name="competitorPrice_${idx}_province"]`)?.value || '',
+            region: row.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
+            adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
+            inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || ''
+        };
+    });
     
-    // Lần đầu tiên: Khởi tạo bảng từ bảng trọng lượng
+    tbody.innerHTML = '';
+    
+    // Khởi tạo lại bảng từ bảng trọng lượng, luôn bám theo MỨC TRỌNG LƯỢNG & SẢN LƯỢNG HÀNG GỬI
     const rows = document.querySelectorAll('#weightLevelsTable tr');
-    
     if (rows.length === 0) return;
     
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
-        const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
-        const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
+        const fromValue = fromInput ? (fromInput.value || '') : '';
+        const toValue = toInput ? (toInput.value || '') : '';
         
-        // Luôn tạo hàng, kể cả khi trọng lượng là 0-0
-        // if (fromValue === 0 && toValue === 0) return; // Đã xóa để luôn hiển thị bảng
+        const saved = savedPrices[index] || {};
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1"> - 
-                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1">
+                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly> - 
+                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.province}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.region}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.adjacent}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.inter}"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_inter" class="p-0 text-center" readonly></td>
         `;
         
-        // Add event listeners for weighted average calculation
+        // Gắn sự kiện tính bình quân có trọng số
         const priceInputs = tr.querySelectorAll('.bg-blue-50');
         priceInputs.forEach(input => {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'competitor'));
             input.setAttribute('data-listener-added', 'true');
         });
+        
+        // Nếu đã có giá, tính lại bình quân
+        if (saved.province || saved.region || saved.adjacent || saved.inter) {
+            calculateWeightedAverage(tr, index, 'competitor');
+        }
         
         tbody.appendChild(tr);
     });
@@ -389,24 +391,19 @@ function updateProposedPriceTable() {
     const tbody = document.querySelector('#proposedPriceTable tbody');
     if (!tbody) return;
     
-    // Chỉ khởi tạo bảng nếu chưa có dữ liệu (lần đầu tiên)
+    // Lưu lại giá đã nhập trước khi cập nhật trọng lượng
     const existingRows = tbody.querySelectorAll('tr');
-    if (existingRows.length > 0) {
-        // Bảng đã có dữ liệu, chỉ cập nhật weighted average, không thay đổi trọng lượng
-        existingRows.forEach((row, index) => {
-            const priceInputs = row.querySelectorAll('.bg-yellow-50');
-            priceInputs.forEach(input => {
-                // Đảm bảo event listener chỉ được thêm một lần
-                if (!input.hasAttribute('data-listener-added')) {
-                    input.addEventListener('input', () => calculateWeightedAverage(row, index, 'proposed'));
-                    input.setAttribute('data-listener-added', 'true');
-                }
-            });
-            // Tính lại weighted average
-            calculateWeightedAverage(row, index, 'proposed');
-        });
-        return;
-    }
+    const savedPrices = [];
+    existingRows.forEach((row, idx) => {
+        savedPrices[idx] = {
+            province: row.querySelector(`input[name="proposedPrice_${idx}_province"]`)?.value || '',
+            region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
+            adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
+            inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || ''
+        };
+    });
+    
+    tbody.innerHTML = '';
     
     // Lần đầu tiên: Khởi tạo bảng từ bảng trọng lượng
     const rows = document.querySelectorAll('#weightLevelsTable tr');
@@ -416,22 +413,21 @@ function updateProposedPriceTable() {
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
-        const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
-        const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
+        const fromValue = fromInput ? (fromInput.value || '') : '';
+        const toValue = toInput ? (toInput.value || '') : '';
         
-        // Luôn tạo hàng, kể cả khi trọng lượng là 0-0
-        // if (fromValue === 0 && toValue === 0) return; // Đã xóa để luôn hiển thị bảng
+        const saved = savedPrices[index] || {};
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1"> - 
-                <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1">
+                <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly> - 
+                <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.province}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.region}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.adjacent}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.inter}"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
@@ -444,6 +440,11 @@ function updateProposedPriceTable() {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'proposed'));
             input.setAttribute('data-listener-added', 'true');
         });
+        
+        // Nếu đã có giá, tính lại bình quân
+        if (saved.province || saved.region || saved.adjacent || saved.inter) {
+            calculateWeightedAverage(tr, index, 'proposed');
+        }
         
         tbody.appendChild(tr);
     });
