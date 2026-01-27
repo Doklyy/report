@@ -620,7 +620,14 @@ function formatDataForSheets(formData) {
         formData.productLiquid ? 'Có' : 'Không',               // 17. Chất lỏng
         formData.productFlammable ? 'Có' : 'Không',            // 18. Dễ cháy
         formData.productFragile ? 'Có' : 'Không',              // 19. Dễ vỡ
-        formData.industries.join('; '),                        // 20. Ngành hàng
+        (() => {
+            // Kết hợp industries và industryOther
+            const industryList = formData.industries.filter(i => i && i.trim() !== '');
+            if (formData.industryOther && formData.industryOther.trim() !== '') {
+                industryList.push(formData.industryOther.trim());
+            }
+            return industryList.join('; ');
+        })(),                                                    // 20. Ngành hàng
         formData.competitors.join('; '),                       // 21. Đối thủ
         formData.competitorOther || '',                        // 22. Đối thủ khác
         formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 23. Giá đối thủ
