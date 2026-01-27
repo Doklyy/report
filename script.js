@@ -8,12 +8,11 @@ let weightLevels = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     setupEventListeners();
-    updatePriceTables();
+    // Price tables will be initialized when first weight level is added
 });
 
 function initializeForm() {
-    // Tables will be populated when weight levels are added
-    updatePriceTables();
+    // Price tables will be initialized when first weight level is added
     
     // Kiểm tra và hiển thị nút xóa ban đầu
     const tbody = document.getElementById('weightLevelsTable');
