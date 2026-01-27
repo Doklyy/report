@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyY78-vMsIQQUZtWJZRF8lg2ukp26g4i9cN-KlNL0UobeDh2AqumgBs3CyZrVOdFe3ARg/exec'; // Thay bằng URL của Google Apps Script
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5bADIT3IsfPQ5xH_IbjR-3DMq9dIvjCbv0Di0E1EjBENTAHHIOn52IS5N9vxME4ZmkA/exec'; // Thay bằng URL của Google Apps Script
 
 // Weight levels data
 let weightLevels = [];
@@ -604,7 +604,7 @@ async function handleFormSubmit(e) {
         const rowData = formatDataForSheets(formData);
         
         // Send to Google Sheets
-        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw_MNwSdjW0r8a9ezK_GAs6cpw2fHPA1ZeiHYMyASqn5Drwq9NVM8NaOweqBmH8BIcB8A/exec') {
+        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw5bADIT3IsfPQ5xH_IbjR-3DMq9dIvjCbv0Di0E1EjBENTAHHIOn52IS5N9vxME4ZmkA/exec') {
             await sendToGoogleSheets(rowData);
             showMessage('success');
         } else {
