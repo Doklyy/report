@@ -325,20 +325,26 @@ function updateCompetitorPriceTable() {
     const tbody = document.querySelector('#competitorPriceTable tbody');
     if (!tbody) return;
     
-    // Lưu giá trị hiện tại của các input giá trước khi cập nhật
+    // Chỉ khởi tạo bảng nếu chưa có dữ liệu (lần đầu tiên)
     const existingRows = tbody.querySelectorAll('tr');
-    const savedPrices = [];
-    existingRows.forEach((existingRow, idx) => {
-        const saved = {
-            province: existingRow.querySelector(`input[name="competitorPrice_${idx}_province"]`)?.value || '',
-            region: existingRow.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
-            adjacent: existingRow.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
-            inter: existingRow.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || ''
-        };
-        savedPrices.push(saved);
-    });
+    if (existingRows.length > 0) {
+        // Bảng đã có dữ liệu, chỉ cập nhật weighted average, không thay đổi trọng lượng
+        existingRows.forEach((row, index) => {
+            const priceInputs = row.querySelectorAll('.bg-blue-50');
+            priceInputs.forEach(input => {
+                // Đảm bảo event listener chỉ được thêm một lần
+                if (!input.hasAttribute('data-listener-added')) {
+                    input.addEventListener('input', () => calculateWeightedAverage(row, index, 'competitor'));
+                    input.setAttribute('data-listener-added', 'true');
+                }
+            });
+            // Tính lại weighted average
+            calculateWeightedAverage(row, index, 'competitor');
+        });
+        return;
+    }
     
-    tbody.innerHTML = '';
+    // Lần đầu tiên: Khởi tạo bảng từ bảng trọng lượng
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     
     if (rows.length === 0) return;
@@ -349,19 +355,19 @@ function updateCompetitorPriceTable() {
         const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
         const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
         
-        // Khôi phục giá trị đã lưu nếu có
-        const saved = savedPrices[index] || {};
+        // Chỉ tạo hàng nếu có giá trị trọng lượng
+        if (fromValue === 0 && toValue === 0) return;
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" readonly> - 
-                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" readonly>
+                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1"> - 
+                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1">
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.province}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.region}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.adjacent}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.inter}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
@@ -372,12 +378,8 @@ function updateCompetitorPriceTable() {
         const priceInputs = tr.querySelectorAll('.bg-blue-50');
         priceInputs.forEach(input => {
             input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'competitor'));
+            input.setAttribute('data-listener-added', 'true');
         });
-        
-        // Tính lại weighted average nếu có giá trị
-        if (saved.province || saved.region || saved.adjacent || saved.inter) {
-            setTimeout(() => calculateWeightedAverage(tr, index, 'competitor'), 100);
-        }
         
         tbody.appendChild(tr);
     });
