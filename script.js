@@ -534,13 +534,13 @@ function collectFormData() {
         proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]').value,
         proposedReturnRate: document.querySelector('input[name="proposedReturnRate"]').value,
         
-        // Reporter information
-        reporterName: document.querySelector('input[name="reporterName"]').value,
-        title: document.querySelector('input[name="title"]').value,
-        reporterPhone: document.querySelector('input[name="reporterPhone"]').value,
-        branch: document.querySelector('input[name="branch"]').value,
-        postOfficeName: document.querySelector('input[name="postOfficeName"]').value,
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]').value
+        // Reporter information - đảm bảo lấy đúng giá trị
+        reporterName: document.querySelector('input[name="reporterName"]') ? document.querySelector('input[name="reporterName"]').value : '',
+        title: document.querySelector('input[name="title"]') ? document.querySelector('input[name="title"]').value : '',
+        reporterPhone: document.querySelector('input[name="reporterPhone"]') ? document.querySelector('input[name="reporterPhone"]').value : '',
+        branch: document.querySelector('input[name="branch"]') ? document.querySelector('input[name="branch"]').value : '',
+        postOfficeName: document.querySelector('input[name="postOfficeName"]') ? document.querySelector('input[name="postOfficeName"]').value : '',
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value : ''
     };
     
     // Collect weight levels and volumes
