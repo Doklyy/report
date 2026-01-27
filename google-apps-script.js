@@ -118,10 +118,20 @@ function doPost(e) {
     Logger.log('Received data length: ' + rowData.length);
     Logger.log('First 5 fields: ' + rowData.slice(0, 5).join(', '));
     
-    // Append new row
+    // Append new row - đảm bảo tất cả giá trị là string để giữ nguyên format
     try {
-      sheet.appendRow(rowData);
-      Logger.log('Row appended successfully');
+      // Convert tất cả giá trị thành string để tránh Google Sheets tự động format
+      const stringRowData = rowData.map(cell => {
+        if (cell === null || cell === undefined) {
+          return '';
+        }
+        // Đảm bảo là string, không để Google Sheets tự động format số
+        return String(cell);
+      });
+      
+      sheet.appendRow(stringRowData);
+      Logger.log('Row appended successfully. Row number: ' + sheet.getLastRow());
+      Logger.log('First 5 cells: ' + stringRowData.slice(0, 5).join(', '));
     } catch (appendError) {
       Logger.log('Error appending row: ' + appendError.toString());
       return ContentService

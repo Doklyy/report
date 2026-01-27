@@ -674,7 +674,18 @@ function formatDataForSheets(formData) {
         formData.currentReturnRate || '',                      // 28. Tỷ lệ hoàn hiện tại
         formData.competitorFreeReturnRate || '',               // 29. Tỷ lệ hoàn đối thủ miễn phí
         formData.competitorOtherPolicies || '',                // 30. Chính sách đặc thù đối thủ
-        formData.proposedPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 31. Giá đề xuất
+        formData.proposedPrices.map(p => {
+            const from = (p.from && p.from.trim() !== '') ? p.from : '0';
+            const to = (p.to && p.to.trim() !== '') ? p.to : '0';
+            const province = p.province || '';
+            const region = p.region || '';
+            const adjacent = p.adjacent || '';
+            const inter = p.inter || '';
+            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
+        }).filter(p => {
+            // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
+            return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
+        }).join(' | '), // 31. Giá đề xuất
         proposedAvgProvince,                                   // 32. Đơn giá bình quân Nội tỉnh (ĐX)
         proposedAvgRegion,                                     // 33. Đơn giá bình quân Nội miền (ĐX)
         proposedAvgAdjacent,                                   // 34. Đơn giá bình quân Cận miền (ĐX)
