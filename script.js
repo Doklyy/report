@@ -428,8 +428,6 @@ function collectFormData() {
         weightLevels: [],
         volumes: [],
         grandTotal: document.getElementById('grandTotal').textContent,
-        over12mRatio: document.getElementById('over12mRatio').value,
-        over12mPercent: document.getElementById('over12mPercent').value,
         
         // Product characteristics
         productNormal: document.querySelector('input[name="productNormal"]').checked,
@@ -527,8 +525,6 @@ function formatDataForSheets(formData) {
         formData.address,
         formData.weightLevels.map(w => `${w.from}-${w.to}`).join('; '),
         formData.grandTotal,
-        formData.over12mRatio,
-        formData.over12mPercent,
         document.getElementById('totalProvince').value,
         document.getElementById('totalRegion').value,
         document.getElementById('totalAdjacent').value,
