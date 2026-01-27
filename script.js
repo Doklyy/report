@@ -647,7 +647,18 @@ function formatDataForSheets(formData) {
             return competitorList.join('; ');
         })(),                                                    // 21. Đối thủ
         '',                                                      // 22. Đối thủ khác (đã được gộp vào Đối thủ ở trên)
-        formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 23. Giá đối thủ
+        formData.competitorPrices.map(p => {
+            const from = p.from || '0';
+            const to = p.to || '0';
+            const province = p.province || '';
+            const region = p.region || '';
+            const adjacent = p.adjacent || '';
+            const inter = p.inter || '';
+            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
+        }).filter(p => {
+            // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
+            return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
+        }).join(' | '), // 23. Giá đối thủ
         competitorAvgProvince,                                 // 24. Đơn giá bình quân Nội tỉnh (ĐT)
         competitorAvgRegion,                                  // 25. Đơn giá bình quân Nội miền (ĐT)
         competitorAvgAdjacent,                                 // 26. Đơn giá bình quân Cận miền (ĐT)
