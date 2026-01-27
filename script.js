@@ -482,7 +482,10 @@ function calculateWeightedAverage(priceRow, levelIndex, type) {
     const priceInputs = type === 'competitor' 
         ? priceRow.querySelectorAll('input[name^="competitorPrice_"]')
         : priceRow.querySelectorAll('input[name^="proposedPrice_"]');
-    const avgInputs = priceRow.querySelectorAll('input[readonly]');
+    // CHỈ lấy các ô "Đơn giá bình quân", KHÔNG lấy các ô trọng lượng (cũng đang readonly)
+    const avgInputs = type === 'competitor'
+        ? priceRow.querySelectorAll('input[name^="competitorAvg_"]')
+        : priceRow.querySelectorAll('input[name^="proposedAvg_"]');
     
     const grandTotalEl = document.getElementById('grandTotal');
     const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
