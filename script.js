@@ -47,7 +47,15 @@ function setupEventListeners() {
                 calculateRowTotal(row);
                 calculateTotals();
                 calculateOver12mPercent();
+                updateComparisonTable();
             }
+        }
+    });
+    
+    // Price inputs - update comparison table
+    document.addEventListener('input', function(e) {
+        if (e.target.name && (e.target.name.includes('competitorPrice_') || e.target.name.includes('proposedPrice_'))) {
+            updateComparisonTable();
         }
     });
 
@@ -380,7 +388,9 @@ function updateCompetitorPriceTable() {
             province: row.querySelector(`input[name="competitorPrice_${idx}_province"]`)?.value || '',
             region: row.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
-            inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || ''
+            inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || '',
+            currentReturnRate: row.querySelector(`input[name="competitorCurrentReturnRate_${idx}"]`)?.value || '',
+            competitorReturnRate: row.querySelector(`input[name="competitorReturnRate_${idx}"]`)?.value || ''
         };
     });
     
@@ -404,6 +414,8 @@ function updateCompetitorPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
+        const savedCurrentReturnRate = saved.currentReturnRate || '';
+        const savedCompetitorReturnRate = saved.competitorReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -415,27 +427,9 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_province" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_region" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_inter" class="p-0 text-center" readonly></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCompetitorReturnRate}" placeholder="Tỷ lệ hoàn đối thủ"></td>
         `;
-        
-        // Gắn sự kiện tính bình quân có trọng số - CHỈ lấy các ô giá, không lấy ô trọng lượng
-        const priceInputs = tr.querySelectorAll('input[name^="competitorPrice_"]');
-        priceInputs.forEach(input => {
-            // Đảm bảo chỉ tính toán, KHÔNG gọi updatePriceTables
-            input.addEventListener('input', function(e) {
-                e.stopPropagation(); // Ngăn event bubble lên
-                calculateWeightedAverage(tr, index, 'competitor');
-            });
-            input.setAttribute('data-listener-added', 'true');
-        });
-        
-        // Nếu đã có giá, tính lại bình quân
-        if (saved.province || saved.region || saved.adjacent || saved.inter) {
-            calculateWeightedAverage(tr, index, 'competitor');
-        }
         
         tbody.appendChild(tr);
     });
@@ -458,7 +452,9 @@ function updateProposedPriceTable() {
             province: row.querySelector(`input[name="proposedPrice_${idx}_province"]`)?.value || '',
             region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
-            inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || ''
+            inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || '',
+            currentReturnRate: row.querySelector(`input[name="proposedCurrentReturnRate_${idx}"]`)?.value || '',
+            proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || ''
         };
     });
     
@@ -483,6 +479,8 @@ function updateProposedPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
+        const savedCurrentReturnRate = saved.currentReturnRate || '';
+        const savedProposedReturnRate = saved.proposedReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -494,65 +492,16 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_province" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_region" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_inter" class="p-0 text-center" readonly></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedCurrentReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>
         `;
-        
-        // Add event listeners for weighted average calculation - CHỈ lấy các ô giá, không lấy ô trọng lượng
-        const priceInputs = tr.querySelectorAll('input[name^="proposedPrice_"]');
-        priceInputs.forEach(input => {
-            // Đảm bảo chỉ tính toán, KHÔNG gọi updatePriceTables
-            input.addEventListener('input', function(e) {
-                e.stopPropagation(); // Ngăn event bubble lên
-                calculateWeightedAverage(tr, index, 'proposed');
-            });
-            input.setAttribute('data-listener-added', 'true');
-        });
-        
-        // Nếu đã có giá, tính lại bình quân
-        if (saved.province || saved.region || saved.adjacent || saved.inter) {
-            calculateWeightedAverage(tr, index, 'proposed');
-        }
         
         tbody.appendChild(tr);
     });
 }
 
-// Calculate weighted average: Bình quân có trọng số = SUM(Sản lượng mốc i * Đơn giá mốc i) / Tổng sản lượng
-function calculateWeightedAverage(priceRow, levelIndex, type) {
-    const volumeRow = document.querySelectorAll('#weightLevelsTable tr')[levelIndex];
-    if (!volumeRow) return;
-    
-    const volumeInputs = volumeRow.querySelectorAll('.volume-input');
-    // CHỈ lấy các ô giá, không lấy ô trọng lượng (dùng selector theo name attribute)
-    const priceInputs = type === 'competitor' 
-        ? priceRow.querySelectorAll('input[name^="competitorPrice_"]')
-        : priceRow.querySelectorAll('input[name^="proposedPrice_"]');
-    // CHỈ lấy các ô "Đơn giá bình quân", KHÔNG lấy các ô trọng lượng (cũng đang readonly)
-    const avgInputs = type === 'competitor'
-        ? priceRow.querySelectorAll('input[name^="competitorAvg_"]')
-        : priceRow.querySelectorAll('input[name^="proposedAvg_"]');
-    
-    const grandTotalEl = document.getElementById('grandTotal');
-    const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
-    
-    if (grandTotal === 0) {
-        avgInputs.forEach(input => input.value = '');
-        updateComparisonTable();
-        return;
-    }
-    
-    // Calculate weighted average for each zone
-    for (let i = 0; i < 4 && i < volumeInputs.length && i < priceInputs.length && i < avgInputs.length; i++) {
-        const volume = parseFloat(volumeInputs[i].value) || 0;
-        const price = parseFloat(priceInputs[i].value) || 0;
-        const weightedAvg = (volume * price) / grandTotal;
-        avgInputs[i].value = isNaN(weightedAvg) ? '' : formatNumber(weightedAvg);
-    }
-    
-    // Cập nhật bảng so sánh sau khi tính xong bình quân
+// Cập nhật bảng so sánh khi giá hoặc sản lượng thay đổi
+function updateComparisonOnChange() {
     updateComparisonTable();
 }
 
@@ -603,8 +552,6 @@ function collectFormData() {
         // Competitor prices
         competitorPrices: [],
         
-        currentReturnRate: document.querySelector('input[name="currentReturnRate"]').value,
-        competitorFreeReturnRate: document.querySelector('input[name="competitorFreeReturnRate"]').value,
         competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim(),
         
         over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
@@ -658,7 +605,9 @@ function collectFormData() {
             province: row.querySelector(`input[name="competitorPrice_${index}_province"]`).value,
             region: row.querySelector(`input[name="competitorPrice_${index}_region"]`).value,
             adjacent: row.querySelector(`input[name="competitorPrice_${index}_adjacent"]`).value,
-            inter: row.querySelector(`input[name="competitorPrice_${index}_inter"]`).value
+            inter: row.querySelector(`input[name="competitorPrice_${index}_inter"]`).value,
+            currentReturnRate: row.querySelector(`input[name="competitorCurrentReturnRate_${index}"]`)?.value || '',
+            competitorReturnRate: row.querySelector(`input[name="competitorReturnRate_${index}"]`)?.value || ''
         });
     });
     
@@ -684,7 +633,9 @@ function collectFormData() {
                 province: provinceInput ? provinceInput.value : '',
                 region: regionInput ? regionInput.value : '',
                 adjacent: adjacentInput ? adjacentInput.value : '',
-                inter: interInput ? interInput.value : ''
+                inter: interInput ? interInput.value : '',
+                currentReturnRate: row.querySelector(`input[name="proposedCurrentReturnRate_${index}"]`)?.value || '',
+                proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || ''
             });
         }
     });
@@ -711,16 +662,12 @@ function formatDataForSheets(formData) {
     const totalAll = parseFloat(totalProvince) + parseFloat(totalRegion) + parseFloat(totalAdjacent) + parseFloat(totalInter);
     const percentRatio = totalAll > 0 ? ((parseFloat(grandTotal) / totalAll) * 100).toFixed(2) + '%' : '0%';
     
-    // Lấy đơn giá bình quân từ các bảng giá
-    const competitorAvgProvince = document.querySelector('input[name="competitorAvg_0_province"]') ? document.querySelector('input[name="competitorAvg_0_province"]').value : '';
-    const competitorAvgRegion = document.querySelector('input[name="competitorAvg_0_region"]') ? document.querySelector('input[name="competitorAvg_0_region"]').value : '';
-    const competitorAvgAdjacent = document.querySelector('input[name="competitorAvg_0_adjacent"]') ? document.querySelector('input[name="competitorAvg_0_adjacent"]').value : '';
-    const competitorAvgInter = document.querySelector('input[name="competitorAvg_0_inter"]') ? document.querySelector('input[name="competitorAvg_0_inter"]').value : '';
+    // Lấy tỷ lệ hoàn từ các ô trong bảng (lấy từ dòng đầu tiên)
+    const competitorCurrentReturnRate = document.querySelector('input[name="competitorCurrentReturnRate_0"]') ? document.querySelector('input[name="competitorCurrentReturnRate_0"]').value : '';
+    const competitorReturnRate = document.querySelector('input[name="competitorReturnRate_0"]') ? document.querySelector('input[name="competitorReturnRate_0"]').value : '';
     
-    const proposedAvgProvince = document.querySelector('input[name="proposedAvg_0_province"]') ? document.querySelector('input[name="proposedAvg_0_province"]').value : '';
-    const proposedAvgRegion = document.querySelector('input[name="proposedAvg_0_region"]') ? document.querySelector('input[name="proposedAvg_0_region"]').value : '';
-    const proposedAvgAdjacent = document.querySelector('input[name="proposedAvg_0_adjacent"]') ? document.querySelector('input[name="proposedAvg_0_adjacent"]').value : '';
-    const proposedAvgInter = document.querySelector('input[name="proposedAvg_0_inter"]') ? document.querySelector('input[name="proposedAvg_0_inter"]').value : '';
+    const proposedCurrentReturnRate = document.querySelector('input[name="proposedCurrentReturnRate_0"]') ? document.querySelector('input[name="proposedCurrentReturnRate_0"]').value : '';
+    const proposedReturnRate = document.querySelector('input[name="proposedReturnRate_0"]') ? document.querySelector('input[name="proposedReturnRate_0"]').value : '';
     
     // Thứ tự phải khớp với headers trong Google Sheets
     const row = [
@@ -777,12 +724,8 @@ function formatDataForSheets(formData) {
             // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
             return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
         }).join(' | '), // 23. Giá đối thủ
-        competitorAvgProvince,                                 // 24. Đơn giá bình quân Nội tỉnh (ĐT)
-        competitorAvgRegion,                                  // 25. Đơn giá bình quân Nội miền (ĐT)
-        competitorAvgAdjacent,                                 // 26. Đơn giá bình quân Cận miền (ĐT)
-        competitorAvgInter,                                    // 27. Đơn giá bình quân Liên miền (ĐT)
-        formData.currentReturnRate || '',                      // 28. Tỷ lệ hoàn hiện tại
-        formData.competitorFreeReturnRate || '',               // 29. Tỷ lệ hoàn đối thủ miễn phí
+        competitorCurrentReturnRate || '',                     // 24. Tỷ lệ hoàn hiện tại
+        competitorReturnRate || '',                            // 25. Tỷ lệ hoàn đối thủ
         formData.competitorOtherPolicies || '',                // 30. Chính sách đặc thù đối thủ
         formData.proposedPrices.map(p => {
             const from = (p.from && p.from.trim() !== '') ? p.from : '0';
@@ -796,12 +739,9 @@ function formatDataForSheets(formData) {
             // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
             return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
         }).join(' | '), // 31. Giá đề xuất
-        proposedAvgProvince,                                   // 32. Đơn giá bình quân Nội tỉnh (ĐX)
-        proposedAvgRegion,                                     // 33. Đơn giá bình quân Nội miền (ĐX)
-        proposedAvgAdjacent,                                   // 34. Đơn giá bình quân Cận miền (ĐX)
-        proposedAvgInter,                                      // 35. Đơn giá bình quân Liên miền (ĐX)
-        formData.proposedOtherPolicies || '',                  // 36. Chính sách đặc thù đề xuất
-        formData.proposedReturnRate || '',                     // 37. Tỷ lệ hoàn đề xuất
+        formData.proposedOtherPolicies || '',                  // 26. Chính sách đặc thù đề xuất
+        proposedCurrentReturnRate || '',                       // 27. Tỷ lệ hoàn hiện tại (ĐX)
+        proposedReturnRate || '',                              // 28. Tỷ lệ hoàn đề xuất
         formData.reporterName || '',                           // 38. Họ và tên người báo cáo
         formData.reporterPhone || '',                          // 39. Điện thoại người báo cáo
         formData.postOfficeName || '',                         // 40. Tên Bưu cục
@@ -896,15 +836,60 @@ async function handleFormSubmit(e) {
 
 // Cập nhật bảng so sánh đơn giá bình quân (mình - đối thủ - % chênh lệch)
 function updateComparisonTable() {
-    const competitorProvince = document.querySelector('input[name="competitorAvg_0_province"]')?.value || '';
-    const competitorRegion = document.querySelector('input[name="competitorAvg_0_region"]')?.value || '';
-    const competitorAdjacent = document.querySelector('input[name="competitorAvg_0_adjacent"]')?.value || '';
-    const competitorInter = document.querySelector('input[name="competitorAvg_0_inter"]')?.value || '';
+    // Tính đơn giá bình quân từ các giá đã nhập và tổng sản lượng
+    const grandTotalEl = document.getElementById('grandTotal');
+    const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
     
-    const proposedProvince = document.querySelector('input[name="proposedAvg_0_province"]')?.value || '';
-    const proposedRegion = document.querySelector('input[name="proposedAvg_0_region"]')?.value || '';
-    const proposedAdjacent = document.querySelector('input[name="proposedAvg_0_adjacent"]')?.value || '';
-    const proposedInter = document.querySelector('input[name="proposedAvg_0_inter"]')?.value || '';
+    let competitorAvgProvince = 0, competitorAvgRegion = 0, competitorAvgAdjacent = 0, competitorAvgInter = 0;
+    let proposedAvgProvince = 0, proposedAvgRegion = 0, proposedAvgAdjacent = 0, proposedAvgInter = 0;
+    
+    if (grandTotal > 0) {
+        const weightRows = document.querySelectorAll('#weightLevelsTable tr');
+        const competitorRows = document.querySelectorAll('#competitorPriceTable tbody tr');
+        const proposedRows = document.querySelectorAll('#proposedPriceTable tbody tr');
+        
+        weightRows.forEach((weightRow, idx) => {
+            const volumeInputs = weightRow.querySelectorAll('.volume-input');
+            const competitorRow = competitorRows[idx];
+            const proposedRow = proposedRows[idx];
+            
+            if (competitorRow && volumeInputs.length >= 4) {
+                const competitorPriceInputs = competitorRow.querySelectorAll('input[name^="competitorPrice_"]');
+                for (let i = 0; i < 4 && i < volumeInputs.length && i < competitorPriceInputs.length; i++) {
+                    const volume = parseFloat(volumeInputs[i].value) || 0;
+                    const price = parseFloat(competitorPriceInputs[i].value) || 0;
+                    const weightedAvg = (volume * price) / grandTotal;
+                    if (i === 0) competitorAvgProvince += weightedAvg;
+                    else if (i === 1) competitorAvgRegion += weightedAvg;
+                    else if (i === 2) competitorAvgAdjacent += weightedAvg;
+                    else if (i === 3) competitorAvgInter += weightedAvg;
+                }
+            }
+            
+            if (proposedRow && volumeInputs.length >= 4) {
+                const proposedPriceInputs = proposedRow.querySelectorAll('input[name^="proposedPrice_"]');
+                for (let i = 0; i < 4 && i < volumeInputs.length && i < proposedPriceInputs.length; i++) {
+                    const volume = parseFloat(volumeInputs[i].value) || 0;
+                    const price = parseFloat(proposedPriceInputs[i].value) || 0;
+                    const weightedAvg = (volume * price) / grandTotal;
+                    if (i === 0) proposedAvgProvince += weightedAvg;
+                    else if (i === 1) proposedAvgRegion += weightedAvg;
+                    else if (i === 2) proposedAvgAdjacent += weightedAvg;
+                    else if (i === 3) proposedAvgInter += weightedAvg;
+                }
+            }
+        });
+    }
+    
+    const competitorProvince = competitorAvgProvince > 0 ? competitorAvgProvince.toFixed(2) : '';
+    const competitorRegion = competitorAvgRegion > 0 ? competitorAvgRegion.toFixed(2) : '';
+    const competitorAdjacent = competitorAvgAdjacent > 0 ? competitorAvgAdjacent.toFixed(2) : '';
+    const competitorInter = competitorAvgInter > 0 ? competitorAvgInter.toFixed(2) : '';
+    
+    const proposedProvince = proposedAvgProvince > 0 ? proposedAvgProvince.toFixed(2) : '';
+    const proposedRegion = proposedAvgRegion > 0 ? proposedAvgRegion.toFixed(2) : '';
+    const proposedAdjacent = proposedAvgAdjacent > 0 ? proposedAvgAdjacent.toFixed(2) : '';
+    const proposedInter = proposedAvgInter > 0 ? proposedAvgInter.toFixed(2) : '';
     
     const cells = {
         province: document.getElementById('compareProvince'),
