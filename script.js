@@ -52,11 +52,6 @@ function setupEventListeners() {
         }
     });
 
-    // Over 1.2m ratio calculation
-    const over12mInput = document.getElementById('over12mRatio');
-    if (over12mInput) {
-        over12mInput.addEventListener('input', calculateOver12mPercent);
-    }
 
     // Attach listeners to existing rows
     const existingRows = document.querySelectorAll('#weightLevelsTable tr');
@@ -66,7 +61,6 @@ function setupEventListeners() {
             input.addEventListener('input', function() {
                 calculateRowTotal(row);
                 calculateTotals();
-                calculateOver12mPercent();
             });
         });
     });
@@ -129,7 +123,6 @@ function addWeightLevel() {
         input.addEventListener('input', function() {
             calculateRowTotal(row);
             calculateTotals();
-            calculateOver12mPercent();
         });
     });
     
@@ -292,23 +285,6 @@ function calculateTotals() {
     });
 }
 
-// Calculate over 1.2m percentage: Tỷ trọng = (Số lượng hàng trên 1.2m / Tổng sản lượng) * 100
-function calculateOver12mPercent() {
-    const over12m = parseFloat(document.getElementById('over12mRatio').value) || 0;
-    const grandTotalEl = document.getElementById('grandTotal');
-    const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
-    
-    const over12mPercentEl = document.getElementById('over12mPercent');
-    if (!over12mPercentEl) return;
-    
-    if (grandTotal === 0) {
-        over12mPercentEl.value = '0%';
-        return;
-    }
-    
-    const percent = (over12m / grandTotal) * 100;
-    over12mPercentEl.value = percent.toFixed(2) + '%';
-}
 
 // Update competitor and proposed price tables based on weight levels
 function updatePriceTables() {
