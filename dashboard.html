@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Báo Cáo Tổng Hợp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tr:hover {
+            background: #f3f4f6;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">📊 Dashboard Báo Cáo Tổng Hợp</h1>
+            <p class="text-white opacity-90">Tổng hợp tất cả dữ liệu từ form báo cáo</p>
+        </div>
+
+        <!-- Thống kê tổng quan -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+                <div class="stat-label">Tổng số báo cáo</div>
+                <div class="stat-number" id="totalReports">0</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="stat-label">Tổng sản lượng</div>
+                <div class="stat-number" id="totalVolume">0</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="stat-label">Số khách hàng</div>
+                <div class="stat-number" id="totalCustomers">0</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="stat-label">Tỷ lệ hoàn TB</div>
+                <div class="stat-number" id="avgReturnRate">0%</div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4">📈 Sản lượng theo khu vực</h2>
+                <canvas id="volumeChart"></canvas>
+            </div>
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4">🏢 Top 5 Ngành hàng</h2>
+                <canvas id="industryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4">⚔️ Đối thủ được sử dụng</h2>
+                <canvas id="competitorChart"></canvas>
+            </div>
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4">📅 Báo cáo theo thời gian</h2>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng dữ liệu chi tiết -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">📋 Dữ liệu chi tiết</h2>
+                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
+                    🔄 Làm mới
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Tên KH</th>
+                            <th>Điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Tổng sản lượng</th>
+                            <th>Ngành hàng</th>
+                            <th>Đối thủ</th>
+                            <th>Tỷ lệ hoàn</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Đang tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1SL2FNOlL0bWt7ED5E5A8PYcOJL-QBOZKpmoxh34ywbxmW-yY0cuGj26cU4BaZUzczA/exec';
+        
+        let volumeChart, industryChart, competitorChart, timeChart;
+
+        // Load dữ liệu khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    processData(result.data);
+                } else {
+                    showError('Không thể tải dữ liệu');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Có lỗi xảy ra khi tải dữ liệu');
+            }
+        }
+
+        function processData(data) {
+            if (!data || data.length === 0) {
+                showError('Chưa có dữ liệu');
+                return;
+            }
+
+            // Cập nhật thống kê
+            updateStats(data);
+            
+            // Vẽ biểu đồ
+            drawCharts(data);
+            
+            // Hiển thị bảng
+            displayTable(data);
+        }
+
+        function updateStats(data) {
+            const totalReports = data.length;
+            document.getElementById('totalReports').textContent = totalReports;
+
+            // Tính tổng sản lượng
+            let totalVolume = 0;
+            data.forEach(row => {
+                const volume = parseFloat(row['Tổng sản lượng']) || 0;
+                totalVolume += volume;
+            });
+            document.getElementById('totalVolume').textContent = formatNumber(totalVolume);
+
+            // Đếm số khách hàng unique
+            const uniqueCustomers = new Set(data.map(row => row['Tên KH/Tên shop']));
+            document.getElementById('totalCustomers').textContent = uniqueCustomers.size;
+
+            // Tính tỷ lệ hoàn trung bình
+            let totalReturnRate = 0;
+            let count = 0;
+            data.forEach(row => {
+                const rate = parseFloat(row['Tỷ lệ hoàn đề xuất']) || parseFloat(row['Tỷ lệ hoàn hiện tại']) || 0;
+                if (rate > 0) {
+                    totalReturnRate += rate;
+                    count++;
+                }
+            });
+            const avgReturn = count > 0 ? (totalReturnRate / count).toFixed(1) : 0;
+            document.getElementById('avgReturnRate').textContent = avgReturn + '%';
+        }
+
+        function drawCharts(data) {
+            // Biểu đồ sản lượng theo khu vực
+            const volumeData = {
+                'Nội tỉnh': 0,
+                'Nội miền': 0,
+                'Cận miền': 0,
+                'Liên miền': 0
+            };
+            
+            data.forEach(row => {
+                volumeData['Nội tỉnh'] += parseFloat(row['Sản lượng Nội tỉnh']) || 0;
+                volumeData['Nội miền'] += parseFloat(row['Sản lượng Nội miền']) || 0;
+                volumeData['Cận miền'] += parseFloat(row['Sản lượng Cận miền']) || 0;
+                volumeData['Liên miền'] += parseFloat(row['Sản lượng Liên miền']) || 0;
+            });
+
+            if (volumeChart) volumeChart.destroy();
+            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+            volumeChart = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(volumeData),
+                    datasets: [{
+                        label: 'Sản lượng',
+                        data: Object.values(volumeData),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(245, 87, 108, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Biểu đồ ngành hàng
+            const industryCount = {};
+            data.forEach(row => {
+                const industries = (row['Ngành hàng'] || '').split(';').map(i => i.trim()).filter(i => i);
+                industries.forEach(ind => {
+                    industryCount[ind] = (industryCount[ind] || 0) + 1;
+                });
+            });
+            const topIndustries = Object.entries(industryCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (industryChart) industryChart.destroy();
+            const industryCtx = document.getElementById('industryChart').getContext('2d');
+            industryChart = new Chart(industryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: topIndustries.map(i => i[0]),
+                    datasets: [{
+                        data: topIndustries.map(i => i[1]),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(67, 233, 123, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            // Biểu đồ đối thủ
+            const competitorCount = {};
+            data.forEach(row => {
+                const competitors = (row['Đối thủ'] || '').split(';').map(c => c.trim()).filter(c => c);
+                competitors.forEach(comp => {
+                    competitorCount[comp] = (competitorCount[comp] || 0) + 1;
+                });
+            });
+
+            if (competitorChart) competitorChart.destroy();
+            const competitorCtx = document.getElementById('competitorChart').getContext('2d');
+            competitorChart = new Chart(competitorCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(competitorCount),
+                    datasets: [{
+                        data: Object.values(competitorCount),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(67, 233, 123, 0.8)',
+                            'rgba(79, 172, 254, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+
+            // Biểu đồ theo thời gian
+            const timeData = {};
+            data.forEach(row => {
+                const date = (row['Thời gian'] || '').split(' ')[0]; // Lấy phần ngày
+                if (date) {
+                    timeData[date] = (timeData[date] || 0) + 1;
+                }
+            });
+            const sortedDates = Object.keys(timeData).sort();
+
+            if (timeChart) timeChart.destroy();
+            const timeCtx = document.getElementById('timeChart').getContext('2d');
+            timeChart = new Chart(timeCtx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Số báo cáo',
+                        data: sortedDates.map(d => timeData[d]),
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function displayTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            // Sắp xếp theo thời gian mới nhất
+            const sortedData = [...data].sort((a, b) => {
+                return new Date(b['Thời gian']) - new Date(a['Thời gian']);
+            });
+
+            sortedData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row['Thời gian'] || ''}</td>
+                    <td>${row['Tên KH/Tên shop'] || ''}</td>
+                    <td>${row['Điện thoại'] || ''}</td>
+                    <td>${(row['Địa chỉ'] || '').substring(0, 30)}${(row['Địa chỉ'] || '').length > 30 ? '...' : ''}</td>
+                    <td>${formatNumber(parseFloat(row['Tổng sản lượng']) || 0)}</td>
+                    <td>${(row['Ngành hàng'] || '').substring(0, 30)}${(row['Ngành hàng'] || '').length > 30 ? '...' : ''}</td>
+                    <td>${(row['Đối thủ'] || '').substring(0, 30)}${(row['Đối thủ'] || '').length > 30 ? '...' : ''}</td>
+                    <td>${row['Tỷ lệ hoàn đề xuất'] || row['Tỷ lệ hoàn hiện tại'] || '0'}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function showError(message) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = `<tr><td colspan="8" class="loading">${message}</td></tr>`;
+        }
+
+        async function refreshData() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Đang tải dữ liệu...</td></tr>';
+            await loadData();
+        }
+    </script>
+</body>
+</html>
