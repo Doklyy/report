@@ -346,10 +346,16 @@ function updateCompetitorPriceTable() {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
         // Luôn lấy giá trị từ bảng đầu tiên, không dùng giá trị đã lưu
-        const fromValue = fromInput ? (fromInput.value || '') : '';
-        const toValue = toInput ? (toInput.value || '') : '';
+        const fromValue = fromInput ? (fromInput.value || '0') : '0';
+        const toValue = toInput ? (toInput.value || '0') : '0';
         
         const saved = savedPrices[index] || {};
+        
+        // Đảm bảo các giá trị không phải undefined
+        const savedProvince = saved.province || '';
+        const savedRegion = saved.region || '';
+        const savedAdjacent = saved.adjacent || '';
+        const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -357,10 +363,10 @@ function updateCompetitorPriceTable() {
                 <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
                 <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.province}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.region}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.adjacent}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.inter}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${savedProvince}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="competitorAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
@@ -419,10 +425,16 @@ function updateProposedPriceTable() {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
         // Luôn lấy giá trị từ bảng đầu tiên, không dùng giá trị đã lưu
-        const fromValue = fromInput ? (fromInput.value || '') : '';
-        const toValue = toInput ? (toInput.value || '') : '';
+        const fromValue = fromInput ? (fromInput.value || '0') : '0';
+        const toValue = toInput ? (toInput.value || '0') : '0';
         
         const saved = savedPrices[index] || {};
+        
+        // Đảm bảo các giá trị không phải undefined
+        const savedProvince = saved.province || '';
+        const savedRegion = saved.region || '';
+        const savedAdjacent = saved.adjacent || '';
+        const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -430,10 +442,10 @@ function updateProposedPriceTable() {
                 <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
                 <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.province}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.region}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.adjacent}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.inter}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProvince}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_province" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_region" class="p-0 text-center" readonly></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedAvg_${index}_adjacent" class="p-0 text-center" readonly></td>
