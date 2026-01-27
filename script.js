@@ -14,6 +14,22 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeForm() {
     // Tables will be populated when weight levels are added
     updatePriceTables();
+    
+    // Kiểm tra và hiển thị nút xóa ban đầu
+    const tbody = document.getElementById('weightLevelsTable');
+    if (tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const deleteBtn = row.querySelector('button[onclick*="removeWeightLevel"]');
+            if (deleteBtn) {
+                if (rows.length > 1) {
+                    deleteBtn.style.display = 'inline-block';
+                } else {
+                    deleteBtn.style.display = 'none';
+                }
+            }
+        });
+    }
 }
 
 function setupEventListeners() {
