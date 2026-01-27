@@ -37,11 +37,19 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
+    // Try to get the sheet by name, if not found, use the first sheet or create new
     let sheet = ss.getSheetByName(SHEET_NAME);
     
-    // Create sheet if it doesn't exist
+    // If sheet doesn't exist, try to use the first sheet (Sheet1) or create new
     if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
+      // Try to get the first sheet (usually named "Sheet1")
+      const firstSheet = ss.getSheets()[0];
+      if (firstSheet && firstSheet.getName() === 'Data') {
+        sheet = firstSheet;
+      } else {
+        // Create new sheet with name "Data"
+        sheet = ss.insertSheet(SHEET_NAME);
+      }
       // Add headers
       const headers = [
         'Thời gian',
