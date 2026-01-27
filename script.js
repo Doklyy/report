@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyu0hcTzI7vbX6elm86PbpVZVBNpmPPFjsb5Xi-qB_fcgFNkxaQCyzIXNQqdE-diIPovw/exec'; // Thay bằng URL của Google Apps Script
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyY78-vMsIQQUZtWJZRF8lg2ukp26g4i9cN-KlNL0UobeDh2AqumgBs3CyZrVOdFe3ARg/exec'; // Thay bằng URL của Google Apps Script
 
 // Weight levels data
 let weightLevels = [];
@@ -557,10 +557,10 @@ function formatDataForSheets(formData) {
         formData.address,
         formData.weightLevels.map(w => `${w.from}-${w.to}`).join('; '),
         formData.grandTotal,
-        document.getElementById('totalProvince').value,
-        document.getElementById('totalRegion').value,
-        document.getElementById('totalAdjacent').value,
-        document.getElementById('totalInter').value,
+        document.getElementById('totalProvince') ? document.getElementById('totalProvince').textContent.replace(/,/g, '') : '0',
+        document.getElementById('totalRegion') ? document.getElementById('totalRegion').textContent.replace(/,/g, '') : '0',
+        document.getElementById('totalAdjacent') ? document.getElementById('totalAdjacent').textContent.replace(/,/g, '') : '0',
+        document.getElementById('totalInter') ? document.getElementById('totalInter').textContent.replace(/,/g, '') : '0',
         formData.productNormal ? 'Có' : 'Không',
         formData.productLiquid ? 'Có' : 'Không',
         formData.productFlammable ? 'Có' : 'Không',
@@ -639,16 +639,24 @@ async function handleFormSubmit(e) {
 
 // Send data to Google Sheets
 async function sendToGoogleSheets(rowData) {
-    const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: rowData })
-    });
-    
-    return response;
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ data: rowData })
+        });
+        
+        // Với no-cors mode, không thể đọc response nhưng request đã được gửi
+        // Nếu có lỗi, Google Apps Script sẽ xử lý và ghi log
+        console.log('Data sent to Google Sheets:', rowData);
+        return response;
+    } catch (error) {
+        console.error('Error sending to Google Sheets:', error);
+        throw error;
+    }
 }
 
 // Show success/error message

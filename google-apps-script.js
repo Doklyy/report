@@ -13,7 +13,7 @@
  */
 
 // Thay đổi ID này thành ID của Google Sheet của bạn
-const SPREADSHEET_ID = '1SmS6QoHdRmsB4IU9u7e1Y0x5-yrJAsY4yoFbHRyYVJo';
+const SPREADSHEET_ID = '1YjkGHzgWznniXi2eUU_EWWNRXzeshRnajxZYy-yndhU6eXqV2e0oK7hE';
 
 // Tên sheet để ghi dữ liệu
 const SHEET_NAME = 'Data';
