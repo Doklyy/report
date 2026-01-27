@@ -660,46 +660,68 @@ async function handleFormSubmit(e) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang gửi...';
         
+        // Collect và format dữ liệu
         const formData = collectFormData();
-        const rowData = formatDataForSheets(formData);
+        console.log('Form data collected:', formData);
         
-        // Send to Google Sheets
-        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw1SL2FNOlL0bWt7ED5E5A8PYcOJL-QBOZKpmoxh34ywbxmW-yY0cuGj26cU4BaZUzczA/exec') {
-            await sendToGoogleSheets(rowData);
-            showMessage('success');
-        } else {
-            // For testing
-            console.log('Form Data:', formData);
-            console.log('Sheet Row:', rowData);
-            showMessage('success');
+        const rowData = formatDataForSheets(formData);
+        console.log('Data formatted for Sheets:', rowData);
+        console.log('Data length:', rowData.length);
+        
+        // Validate dữ liệu trước khi gửi
+        if (!rowData || rowData.length === 0) {
+            throw new Error('Không có dữ liệu để gửi');
         }
         
-        submitBtn.textContent = 'Gửi thành công!';
+        // Send to Google Sheets
+        if (GOOGLE_SCRIPT_URL) {
+            console.log('Sending to Google Sheets URL:', GOOGLE_SCRIPT_URL);
+            await sendToGoogleSheets(rowData);
+            console.log('Data sent successfully!');
+            showMessage('success');
+        } else {
+            console.warn('GOOGLE_SCRIPT_URL is not set');
+            showMessage('error');
+        }
         
-        // Reset form after 2 seconds
+        submitBtn.textContent = '✓ Gửi thành công!';
+        submitBtn.style.backgroundColor = '#10b981';
+        
+        // Reset form after 3 seconds
         setTimeout(() => {
             document.getElementById('reportForm').reset();
             submitBtn.textContent = originalText;
+            submitBtn.style.backgroundColor = '';
             submitBtn.disabled = false;
             initializeForm();
             hideMessages();
-        }, 2000);
+        }, 3000);
         
     } catch (error) {
         console.error('Error submitting form:', error);
+        console.error('Error stack:', error.stack);
         showMessage('error');
-        submitBtn.textContent = originalText;
+        submitBtn.textContent = '✗ Gửi thất bại - Thử lại';
+        submitBtn.style.backgroundColor = '#ef4444';
         submitBtn.disabled = false;
         
         setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.style.backgroundColor = '';
             hideMessages();
-        }, 3000);
+        }, 5000);
     }
 }
 
 // Send data to Google Sheets
 async function sendToGoogleSheets(rowData) {
     try {
+        console.log('Sending data to Google Sheets:', {
+            url: GOOGLE_SCRIPT_URL,
+            dataLength: rowData.length,
+            firstFewFields: rowData.slice(0, 5)
+        });
+        
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -710,11 +732,21 @@ async function sendToGoogleSheets(rowData) {
         });
         
         // Với no-cors mode, không thể đọc response nhưng request đã được gửi
-        // Nếu có lỗi, Google Apps Script sẽ xử lý và ghi log
-        console.log('Data sent to Google Sheets:', rowData);
+        // Log để debug
+        console.log('Request sent successfully. Response status:', response.status);
+        console.log('Full data being sent:', rowData);
+        
+        // Đợi một chút để đảm bảo request được xử lý
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         return response;
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            data: rowData
+        });
         throw error;
     }
 }

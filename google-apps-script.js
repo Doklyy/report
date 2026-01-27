@@ -103,15 +103,50 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     }
     
+    // Validate rowData
+    if (!rowData || rowData.length === 0) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false, 
+          error: 'No data provided',
+          receivedData: rowData
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Log để debug
+    Logger.log('Received data length: ' + rowData.length);
+    Logger.log('First 5 fields: ' + rowData.slice(0, 5).join(', '));
+    
     // Append new row
-    sheet.appendRow(rowData);
+    try {
+      sheet.appendRow(rowData);
+      Logger.log('Row appended successfully');
+    } catch (appendError) {
+      Logger.log('Error appending row: ' + appendError.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false, 
+          error: 'Failed to append row: ' + appendError.toString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     
     // Auto-resize columns
-    sheet.autoResizeColumns(1, rowData.length);
+    try {
+      sheet.autoResizeColumns(1, rowData.length);
+    } catch (resizeError) {
+      Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
+    }
     
     // Return success response
     return ContentService
-      .createTextOutput(JSON.stringify({success: true, message: 'Data saved successfully'}))
+      .createTextOutput(JSON.stringify({
+        success: true, 
+        message: 'Data saved successfully',
+        rowNumber: sheet.getLastRow(),
+        dataLength: rowData.length
+      }))
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
