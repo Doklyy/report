@@ -570,6 +570,8 @@ function formatDataForSheets(formData) {
         formData.currentReturnRate,
         formData.competitorFreeReturnRate,
         formData.competitorOtherPolicies,
+        formData.over12mRatio,
+        formData.over12mPercent,
         formData.proposedPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '),
         formData.proposedOtherPolicies,
         formData.proposedReturnRate,
