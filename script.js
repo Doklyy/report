@@ -615,7 +615,11 @@ function formatDataForSheets(formData) {
         formData.customerName,                                // 2. Tên KH/Tên shop
         formData.phone,                                        // 3. Điện thoại
         formData.address,                                      // 4. Địa chỉ
-        formData.weightLevels.map(w => `${w.from}-${w.to}`).join('; '), // 5. Các mốc trọng lượng
+        formData.weightLevels.map(w => {
+            const from = (w.from && w.from.trim() !== '') ? w.from : '0';
+            const to = (w.to && w.to.trim() !== '') ? w.to : '0';
+            return `${from}-${to}`;
+        }).filter(w => w !== '0-0').join('; '), // 5. Các mốc trọng lượng
         grandTotal,                                            // 6. Tổng sản lượng các mốc
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         formData.over12mRatio || '',                          // 8. Tỷ trọng hàng trên 1.2m
