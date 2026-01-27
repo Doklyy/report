@@ -323,7 +323,12 @@ function updateCompetitorPriceTable() {
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
     existingRows.forEach((row, idx) => {
+        // Lưu cả trọng lượng để đảm bảo không bị thay đổi
+        const fromInput = row.querySelector(`input[name="competitorFrom_${idx}"]`);
+        const toInput = row.querySelector(`input[name="competitorTo_${idx}"]`);
         savedPrices[idx] = {
+            from: fromInput ? fromInput.value : '',
+            to: toInput ? toInput.value : '',
             province: row.querySelector(`input[name="competitorPrice_${idx}_province"]`)?.value || '',
             region: row.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
@@ -340,6 +345,7 @@ function updateCompetitorPriceTable() {
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
+        // Luôn lấy giá trị từ bảng đầu tiên, không dùng giá trị đã lưu
         const fromValue = fromInput ? (fromInput.value || '') : '';
         const toValue = toInput ? (toInput.value || '') : '';
         
@@ -348,8 +354,8 @@ function updateCompetitorPriceTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly> - 
-                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly>
+                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
+                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
             </td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.province}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${saved.region}"></td>
@@ -364,7 +370,11 @@ function updateCompetitorPriceTable() {
         // Gắn sự kiện tính bình quân có trọng số - CHỈ lấy các ô giá, không lấy ô trọng lượng
         const priceInputs = tr.querySelectorAll('input[name^="competitorPrice_"]');
         priceInputs.forEach(input => {
-            input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'competitor'));
+            // Đảm bảo chỉ tính toán, KHÔNG gọi updatePriceTables
+            input.addEventListener('input', function(e) {
+                e.stopPropagation(); // Ngăn event bubble lên
+                calculateWeightedAverage(tr, index, 'competitor');
+            });
             input.setAttribute('data-listener-added', 'true');
         });
         
@@ -385,7 +395,12 @@ function updateProposedPriceTable() {
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
     existingRows.forEach((row, idx) => {
+        // Lưu cả trọng lượng để đảm bảo không bị thay đổi
+        const fromInput = row.querySelector(`input[name="proposedFrom_${idx}"]`);
+        const toInput = row.querySelector(`input[name="proposedTo_${idx}"]`);
         savedPrices[idx] = {
+            from: fromInput ? fromInput.value : '',
+            to: toInput ? toInput.value : '',
             province: row.querySelector(`input[name="proposedPrice_${idx}_province"]`)?.value || '',
             region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
@@ -395,7 +410,7 @@ function updateProposedPriceTable() {
     
     tbody.innerHTML = '';
     
-    // Lần đầu tiên: Khởi tạo bảng từ bảng trọng lượng
+    // Khởi tạo lại bảng từ bảng trọng lượng, luôn bám theo MỨC TRỌNG LƯỢNG & SẢN LƯỢNG HÀNG GỬI
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     
     if (rows.length === 0) return;
@@ -403,6 +418,7 @@ function updateProposedPriceTable() {
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
+        // Luôn lấy giá trị từ bảng đầu tiên, không dùng giá trị đã lưu
         const fromValue = fromInput ? (fromInput.value || '') : '';
         const toValue = toInput ? (toInput.value || '') : '';
         
@@ -411,8 +427,8 @@ function updateProposedPriceTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly> - 
-                <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly>
+                <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
+                <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
             </td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.province}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${saved.region}"></td>
@@ -427,7 +443,11 @@ function updateProposedPriceTable() {
         // Add event listeners for weighted average calculation - CHỈ lấy các ô giá, không lấy ô trọng lượng
         const priceInputs = tr.querySelectorAll('input[name^="proposedPrice_"]');
         priceInputs.forEach(input => {
-            input.addEventListener('input', () => calculateWeightedAverage(tr, index, 'proposed'));
+            // Đảm bảo chỉ tính toán, KHÔNG gọi updatePriceTables
+            input.addEventListener('input', function(e) {
+                e.stopPropagation(); // Ngăn event bubble lên
+                calculateWeightedAverage(tr, index, 'proposed');
+            });
             input.setAttribute('data-listener-added', 'true');
         });
         
