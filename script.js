@@ -355,8 +355,8 @@ function updateCompetitorPriceTable() {
         const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
         const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
         
-        // Chỉ tạo hàng nếu có giá trị trọng lượng
-        if (fromValue === 0 && toValue === 0) return;
+        // Luôn tạo hàng, kể cả khi trọng lượng là 0-0
+        // if (fromValue === 0 && toValue === 0) return; // Đã xóa để luôn hiển thị bảng
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -419,8 +419,8 @@ function updateProposedPriceTable() {
         const fromValue = fromInput ? (parseFloat(fromInput.value) || 0) : 0;
         const toValue = toInput ? (parseFloat(toInput.value) || 0) : 0;
         
-        // Chỉ tạo hàng nếu có giá trị trọng lượng
-        if (fromValue === 0 && toValue === 0) return;
+        // Luôn tạo hàng, kể cả khi trọng lượng là 0-0
+        // if (fromValue === 0 && toValue === 0) return; // Đã xóa để luôn hiển thị bảng
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
