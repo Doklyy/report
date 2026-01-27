@@ -65,23 +65,38 @@ function addWeightLevel() {
     const tbody = document.getElementById('weightLevelsTable');
     const rowCount = tbody.children.length;
     
+    // Hiển thị nút xóa cho tất cả các dòng nếu có nhiều hơn 1 dòng
+    const allRows = tbody.querySelectorAll('tr');
+    if (allRows.length > 0) {
+        allRows.forEach(r => {
+            const deleteBtn = r.querySelector('button');
+            if (deleteBtn) deleteBtn.style.display = 'inline-block';
+        });
+    }
+    
     const row = document.createElement('tr');
     row.innerHTML = `
         <td class="border border-gray-300 p-2">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs">Từ</span>
-                <input type="number" name="weightFrom[]" class="w-20 bg-yellow-50 weight-from" step="0.01" placeholder="0">
-                <span class="text-xs">Đến</span>
-                <input type="number" name="weightTo[]" class="w-20 bg-yellow-50 weight-to" step="0.01" placeholder="0">
-                <span class="text-xs">(gram)</span>
+                <span class="text-xs text-gray-500">Từ</span>
+                <input type="number" name="weightFrom[]" class="w-20 bg-yellow-50 weight-from border border-amber-300 rounded p-1 text-center font-bold" step="0.01" placeholder="0">
+                <span class="text-gray-400">-</span>
+                <span class="text-xs text-gray-500">Đến</span>
+                <input type="number" name="weightTo[]" class="w-20 bg-yellow-50 weight-to border border-amber-300 rounded p-1 text-center font-bold" step="0.01" placeholder="0">
+                <span class="text-xs text-gray-500">(gram)</span>
             </div>
         </td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input" step="0.01" value="0"></td>
-        <td class="border border-gray-300 p-2 table-total text-center" data-total="0">0</td>
-        <td class="border border-gray-300 p-2 text-center" data-percent="0%">0%</td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="0.01" value="0"></td>
+        <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
+        <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
+        <td class="border border-gray-300 p-2 text-center">
+            <button type="button" onclick="removeWeightLevel(this)" class="text-red-400 hover:text-red-600">
+                🗑️
+            </button>
+        </td>
     `;
     
     tbody.appendChild(row);
@@ -103,6 +118,30 @@ function addWeightLevel() {
         });
     });
     
+    updatePriceTables();
+}
+
+// Remove weight level row
+function removeWeightLevel(button) {
+    const tbody = document.getElementById('weightLevelsTable');
+    const rows = tbody.querySelectorAll('tr');
+    
+    if (rows.length <= 1) {
+        alert('Phải có ít nhất 1 mốc trọng lượng');
+        return;
+    }
+    
+    const row = button.closest('tr');
+    row.remove();
+    
+    // Ẩn nút xóa nếu chỉ còn 1 dòng
+    const remainingRows = tbody.querySelectorAll('tr');
+    if (remainingRows.length === 1) {
+        const deleteBtn = remainingRows[0].querySelector('button');
+        if (deleteBtn) deleteBtn.style.display = 'none';
+    }
+    
+    calculateTotals();
     updatePriceTables();
 }
 
@@ -166,13 +205,32 @@ function calculateTotals() {
     const totalInterEl = document.getElementById('totalInter');
     const grandTotalEl = document.getElementById('grandTotal');
     
-    if (totalProvinceEl) totalProvinceEl.value = formatNumber(totalProvince);
-    if (totalRegionEl) totalRegionEl.value = formatNumber(totalRegion);
-    if (totalAdjacentEl) totalAdjacentEl.value = formatNumber(totalAdjacent);
-    if (totalInterEl) totalInterEl.value = formatNumber(totalInter);
+    if (totalProvinceEl) totalProvinceEl.textContent = formatNumber(totalProvince);
+    if (totalRegionEl) totalRegionEl.textContent = formatNumber(totalRegion);
+    if (totalAdjacentEl) totalAdjacentEl.textContent = formatNumber(totalAdjacent);
+    if (totalInterEl) totalInterEl.textContent = formatNumber(totalInter);
     if (grandTotalEl) {
         grandTotalEl.textContent = formatNumber(grandTotal);
         grandTotalEl.setAttribute('data-total', grandTotal.toFixed(2));
+    }
+    
+    // Calculate and update percentage by region
+    const percentProvinceEl = document.getElementById('percentProvince');
+    const percentRegionEl = document.getElementById('percentRegion');
+    const percentAdjacentEl = document.getElementById('percentAdjacent');
+    const percentInterEl = document.getElementById('percentInter');
+    
+    if (percentProvinceEl) {
+        percentProvinceEl.textContent = grandTotal > 0 ? (totalProvince / grandTotal * 100).toFixed(1) + '%' : '0%';
+    }
+    if (percentRegionEl) {
+        percentRegionEl.textContent = grandTotal > 0 ? (totalRegion / grandTotal * 100).toFixed(1) + '%' : '0%';
+    }
+    if (percentAdjacentEl) {
+        percentAdjacentEl.textContent = grandTotal > 0 ? (totalAdjacent / grandTotal * 100).toFixed(1) + '%' : '0%';
+    }
+    if (percentInterEl) {
+        percentInterEl.textContent = grandTotal > 0 ? (totalInter / grandTotal * 100).toFixed(1) + '%' : '0%';
     }
     
     // Recalculate percentages for all rows
@@ -183,8 +241,8 @@ function calculateTotals() {
             const percent = grandTotal > 0 ? (total / grandTotal) * 100 : 0;
             const percentCell = row.querySelector('[data-percent]');
             if (percentCell) {
-                percentCell.textContent = percent.toFixed(2) + '%';
-                percentCell.setAttribute('data-percent', percent.toFixed(2) + '%');
+                percentCell.textContent = percent.toFixed(1) + '%';
+                percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
             }
         }
     });
