@@ -556,14 +556,28 @@ function collectFormData() {
     // Collect proposed prices
     const proposedRows = document.querySelectorAll('#proposedPriceTable tbody tr');
     proposedRows.forEach((row, index) => {
-        formData.proposedPrices.push({
-            from: row.querySelector(`input[name="proposedFrom_${index}"]`).value,
-            to: row.querySelector(`input[name="proposedTo_${index}"]`).value,
-            province: row.querySelector(`input[name="proposedPrice_${index}_province"]`).value,
-            region: row.querySelector(`input[name="proposedPrice_${index}_region"]`).value,
-            adjacent: row.querySelector(`input[name="proposedPrice_${index}_adjacent"]`).value,
-            inter: row.querySelector(`input[name="proposedPrice_${index}_inter"]`).value
-        });
+        const fromInput = row.querySelector(`input[name="proposedFrom_${index}"]`);
+        const toInput = row.querySelector(`input[name="proposedTo_${index}"]`);
+        const provinceInput = row.querySelector(`input[name="proposedPrice_${index}_province"]`);
+        const regionInput = row.querySelector(`input[name="proposedPrice_${index}_region"]`);
+        const adjacentInput = row.querySelector(`input[name="proposedPrice_${index}_adjacent"]`);
+        const interInput = row.querySelector(`input[name="proposedPrice_${index}_inter"]`);
+        
+        // Chỉ thêm nếu có ít nhất 1 giá trị không rỗng
+        const hasValue = (fromInput && fromInput.value) || (toInput && toInput.value) || 
+                        (provinceInput && provinceInput.value) || (regionInput && regionInput.value) ||
+                        (adjacentInput && adjacentInput.value) || (interInput && interInput.value);
+        
+        if (hasValue) {
+            formData.proposedPrices.push({
+                from: fromInput ? fromInput.value : '',
+                to: toInput ? toInput.value : '',
+                province: provinceInput ? provinceInput.value : '',
+                region: regionInput ? regionInput.value : '',
+                adjacent: adjacentInput ? adjacentInput.value : '',
+                inter: interInput ? interInput.value : ''
+            });
+        }
     });
     
     return formData;
