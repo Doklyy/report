@@ -628,8 +628,15 @@ function formatDataForSheets(formData) {
             }
             return industryList.join('; ');
         })(),                                                    // 20. Ngành hàng
-        formData.competitors.join('; '),                       // 21. Đối thủ
-        formData.competitorOther || '',                        // 22. Đối thủ khác
+        (() => {
+            // Kết hợp competitors và competitorOther
+            const competitorList = formData.competitors.filter(c => c && c.trim() !== '');
+            if (formData.competitorOther && formData.competitorOther.trim() !== '') {
+                competitorList.push(formData.competitorOther.trim());
+            }
+            return competitorList.join('; ');
+        })(),                                                    // 21. Đối thủ
+        '',                                                      // 22. Đối thủ khác (đã được gộp vào Đối thủ ở trên)
         formData.competitorPrices.map(p => `${p.from}-${p.to}: ${p.province}/${p.region}/${p.adjacent}/${p.inter}`).join(' | '), // 23. Giá đối thủ
         competitorAvgProvince,                                 // 24. Đơn giá bình quân Nội tỉnh (ĐT)
         competitorAvgRegion,                                  // 25. Đơn giá bình quân Nội miền (ĐT)
