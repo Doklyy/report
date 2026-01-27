@@ -496,7 +496,7 @@ async function handleFormSubmit(e) {
         const rowData = formatDataForSheets(formData);
         
         // Send to Google Sheets
-        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
+        if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw_MNwSdjW0r8a9ezK_GAs6cpw2fHPA1ZeiHYMyASqn5Drwq9NVM8NaOweqBmH8BIcB8A/exec') {
             await sendToGoogleSheets(rowData);
             showMessage('success');
         } else {
@@ -557,3 +557,112 @@ function hideMessages() {
     document.getElementById('successMessage').style.display = 'none';
     document.getElementById('errorMessage').style.display = 'none';
 }
+
+// ============================================
+// ĐỒNG BỘ NGƯỢC: ĐỌC DỮ LIỆU TỪ GOOGLE SHEETS
+// ============================================
+
+// Function để đọc dữ liệu từ Google Sheets
+async function loadDataFromSheets() {
+    try {
+        // URL để đọc dữ liệu (dùng GET thay vì POST)
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch data');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            return result.data || [];
+        } else {
+            console.error('Error loading data:', result.error);
+            return [];
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        return [];
+    }
+}
+
+// Function để hiển thị dữ liệu lên website
+function displayData(data) {
+    const container = document.getElementById('dataDisplay');
+    if (!container) return;
+    
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">Chưa có dữ liệu nào được gửi</p>';
+        return;
+    }
+    
+    // Tạo bảng hiển thị dữ liệu
+    let html = `
+        <div class="mb-4 flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">Dữ liệu đã gửi (${data.length} bản ghi)</h2>
+            <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                🔄 Làm mới
+            </button>
+        </div>
+    `;
+    
+    html += '<div class="overflow-x-auto border rounded-lg">';
+    html += '<table class="w-full text-sm border-collapse">';
+    
+    // Header
+    if (data.length > 0) {
+        const headers = Object.keys(data[0]);
+        html += '<thead><tr class="bg-green-500 text-white">';
+        headers.forEach(header => {
+            html += `<th class="border border-gray-300 p-2 text-left">${header}</th>`;
+        });
+        html += '</tr></thead>';
+        
+        // Body - chỉ hiển thị 10 bản ghi gần nhất
+        const recentData = data.slice(-10).reverse();
+        html += '<tbody>';
+        recentData.forEach((row, index) => {
+            html += `<tr class="${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">`;
+            headers.forEach(header => {
+                const value = row[header] || '';
+                // Giới hạn độ dài để tránh bảng quá rộng
+                const displayValue = String(value).length > 50 
+                    ? String(value).substring(0, 50) + '...' 
+                    : value;
+                html += `<td class="border border-gray-300 p-2">${displayValue}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody>';
+    }
+    
+    html += '</table>';
+    html += '</div>';
+    
+    if (data.length > 10) {
+        html += `<p class="text-gray-600 text-sm mt-2">Hiển thị 10 bản ghi gần nhất. Tổng cộng: ${data.length} bản ghi</p>`;
+    }
+    
+    container.innerHTML = html;
+}
+
+// Function để refresh dữ liệu
+async function refreshData() {
+    const container = document.getElementById('dataDisplay');
+    if (container) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">Đang tải dữ liệu...</p>';
+    }
+    
+    const data = await loadDataFromSheets();
+    displayData(data);
+}
+
+// Load dữ liệu khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load dữ liệu từ Sheets sau khi form đã được khởi tạo
+    setTimeout(() => {
+        loadDataFromSheets().then(data => {
+            displayData(data);
+        });
+    }, 1000);
+});

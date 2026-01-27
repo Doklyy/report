@@ -13,7 +13,7 @@
  */
 
 // Thay đổi ID này thành ID của Google Sheet của bạn
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+const SPREADSHEET_ID = '1SmS6QoHdRmsB4IU9u7e1Y0x5-yrJAsY4yoFbHRyYVJo';
 
 // Tên sheet để ghi dữ liệu
 const SHEET_NAME = 'Data';
@@ -145,4 +145,67 @@ function testDoPost() {
   };
   
   doPost(mockEvent);
+}
+
+// Function để đọc dữ liệu từ Sheets (Đồng bộ ngược: Sheets → Website)
+function doGet(e) {
+  try {
+    // Mở spreadsheet
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(SHEET_NAME);
+    
+    // Nếu sheet không tồn tại, trả về empty
+    if (!sheet) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false, 
+          message: 'Sheet not found',
+          data: []
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Lấy tất cả dữ liệu
+    const data = sheet.getDataRange().getValues();
+    
+    // Nếu không có dữ liệu (chỉ có header hoặc rỗng)
+    if (data.length <= 1) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: true,
+          data: [],
+          headers: data.length > 0 ? data[0] : []
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Chuyển đổi thành JSON
+    const headers = data[0];
+    const rows = data.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = row[index] || '';
+      });
+      return obj;
+    });
+    
+    // Trả về JSON
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: true,
+        data: rows,
+        headers: headers,
+        total: rows.length
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString(),
+        data: []
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
