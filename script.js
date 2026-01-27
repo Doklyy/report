@@ -33,6 +33,12 @@ function initializeForm() {
 }
 
 function setupEventListeners() {
+    // Over 1.2m ratio calculation
+    const over12mInput = document.getElementById('over12mRatio');
+    if (over12mInput) {
+        over12mInput.addEventListener('input', calculateOver12mPercent);
+    }
+    
     // Volume inputs - calculate totals (using event delegation)
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('volume-input')) {
@@ -196,6 +202,26 @@ function calculateRowTotal(row) {
             percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
         }
     }
+}
+
+// Calculate over 1.2m percentage: Tỷ trọng = (Số lượng hàng trên 1.2m / Tổng sản lượng) * 100
+function calculateOver12mPercent() {
+    const over12mInput = document.getElementById('over12mRatio');
+    const over12mPercentEl = document.getElementById('over12mPercent');
+    
+    if (!over12mInput || !over12mPercentEl) return;
+    
+    const over12m = parseFloat(over12mInput.value) || 0;
+    const grandTotalEl = document.getElementById('grandTotal');
+    const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.textContent.replace(/,/g, '')) || 0 : 0;
+    
+    if (grandTotal === 0) {
+        over12mPercentEl.value = '0%';
+        return;
+    }
+    
+    const percent = (over12m / grandTotal) * 100;
+    over12mPercentEl.value = percent.toFixed(2) + '%';
 }
 
 // Format number with commas (không có số thập phân cho khối lượng)
@@ -449,6 +475,9 @@ function collectFormData() {
         currentReturnRate: document.querySelector('input[name="currentReturnRate"]').value,
         competitorFreeReturnRate: document.querySelector('input[name="competitorFreeReturnRate"]').value,
         competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]').value,
+        
+        over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
+        over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
         
         // Proposed prices
         proposedPrices: [],
