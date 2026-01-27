@@ -210,17 +210,17 @@
                                         <div class="flex items-center gap-2 flex-wrap">
                                             <div class="flex-1">
                                                 <span class="text-xs text-gray-500 block mb-1">Từ</span>
-                                                <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                                                <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0">
                                             </div>
                                             <span class="mt-6 text-gray-400">-</span>
                                             <div class="flex-1">
                                                 <span class="text-xs text-gray-500 block mb-1">Đến</span>
-                                                <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                                                <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0">
                                     </td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
                                     <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
                                     <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
                                     <td class="border border-gray-300 p-2 text-center">
@@ -424,15 +424,59 @@
                     </div>
                     <div class="w-full">
                         <label class="block font-medium mb-1">Chức danh <span class="text-red-500">*</span></label>
-                        <input type="text" name="title" class="bg-yellow-50 w-full" required>
+                        <select name="title" class="bg-yellow-50 w-full" required>
+                            <option value="">-- Chọn chức danh --</option>
+                            <option value="Nhân viên">Nhân viên</option>
+                            <option value="Tổ trưởng">Tổ trưởng</option>
+                            <option value="Phó phòng">Phó phòng</option>
+                            <option value="Trưởng phòng">Trưởng phòng</option>
+                            <option value="Giám đốc chi nhánh">Giám đốc chi nhánh</option>
+                            <option value="Khác">Khác</option>
+                        </select>
                     </div>
                     <div class="w-full">
                         <label class="block font-medium mb-1">Điện thoại <span class="text-red-500">*</span></label>
                         <input type="tel" name="reporterPhone" class="bg-yellow-50 w-full" required>
                     </div>
                     <div class="w-full">
-                        <label class="block font-medium mb-1">Chi nhánh <span class="text-red-500">*</span></label>
-                        <input type="text" name="branch" class="bg-yellow-50 w-full" required>
+                        <label class="block font-medium mb-1">Chi nhánh (34 mã cố định) <span class="text-red-500">*</span></label>
+                        <select name="branch" class="bg-yellow-50 w-full" required>
+                            <option value="">-- Chọn mã chi nhánh --</option>
+                            <option value="CBG">CBG</option>
+                            <option value="LSN">LSN</option>
+                            <option value="TNN">TNN</option>
+                            <option value="TQG">TQG</option>
+                            <option value="BNH">BNH</option>
+                            <option value="DBN">DBN</option>
+                            <option value="LCI">LCI</option>
+                            <option value="LCU">LCU</option>
+                            <option value="PHO">PHO</option>
+                            <option value="SLA">SLA</option>
+                            <option value="HPG">HPG</option>
+                            <option value="HYN">HYN</option>
+                            <option value="NBH">NBH</option>
+                            <option value="QNH">QNH</option>
+                            <option value="HTH">HTH</option>
+                            <option value="NAN">NAN</option>
+                            <option value="THA">THA</option>
+                            <option value="DNG">DNG</option>
+                            <option value="HUE">HUE</option>
+                            <option value="QNI">QNI</option>
+                            <option value="QTI">QTI</option>
+                            <option value="DLK">DLK</option>
+                            <option value="GLI">GLI</option>
+                            <option value="KHA">KHA</option>
+                            <option value="LDG">LDG</option>
+                            <option value="DNI">DNI</option>
+                            <option value="DTP">DTP</option>
+                            <option value="TNH">TNH</option>
+                            <option value="VLG">VLG</option>
+                            <option value="AGG">AGG</option>
+                            <option value="CMU">CMU</option>
+                            <option value="CTO">CTO</option>
+                            <option value="HNI">HNI</option>
+                            <option value="HCM">HCM</option>
+                        </select>
                     </div>
                     <div class="w-full">
                         <label class="block font-medium mb-1">Tên bưu cục <span class="text-red-500">*</span></label>
@@ -442,6 +486,32 @@
                         <label class="block font-medium mb-1">Mã bưu cục <span class="text-red-500">*</span></label>
                         <input type="text" name="postOfficeCode" class="bg-yellow-50 w-full" required>
                     </div>
+                </div>
+            </div>
+
+            <!-- VI. BẢNG SO SÁNH ĐƠN GIÁ BÌNH QUÂN -->
+            <div class="mb-8">
+                <div class="section-title text-blue-900 uppercase">VI. So sánh đơn giá bình quân</div>
+                <p class="text-[10px] text-gray-500 mb-2 italic">* So sánh giữa giá đề xuất và giá đối thủ theo từng khu vực</p>
+                <div class="table-container">
+                    <table class="w-full text-xs border-collapse" id="comparisonTable">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 p-1 text-center">Nội tỉnh</th>
+                                <th class="border border-gray-300 p-1 text-center">Nội miền</th>
+                                <th class="border border-gray-300 p-1 text-center">Cận miền</th>
+                                <th class="border border-gray-300 p-1 text-center">Liên miền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="align-top">
+                                <td class="border border-gray-300 p-1 text-[11px]" id="compareProvince"></td>
+                                <td class="border border-gray-300 p-1 text-[11px]" id="compareRegion"></td>
+                                <td class="border border-gray-300 p-1 text-[11px]" id="compareAdjacent"></td>
+                                <td class="border border-gray-300 p-1 text-[11px]" id="compareInter"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

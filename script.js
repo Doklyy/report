@@ -8,6 +8,7 @@ let weightLevels = [];
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     setupEventListeners();
+    restoreReporterInfoFromStorage();
 });
 
 function initializeForm() {
@@ -71,9 +72,68 @@ function setupEventListeners() {
         });
     });
 
+    // Giới hạn chọn duy nhất cho đặc tính hàng hóa
+    const productCheckboxes = document.querySelectorAll('input[name="productNormal"], input[name="productLiquid"], input[name="productFlammable"], input[name="productFragile"]');
+    productCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                productCheckboxes.forEach(other => {
+                    if (other !== this) other.checked = false;
+                });
+            }
+        });
+    });
+    
+    // Giới hạn chọn duy nhất cho ngành hàng (chọn ngành chính)
+    const industryCheckboxes = document.querySelectorAll('input[name="industry"]');
+    industryCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                industryCheckboxes.forEach(other => {
+                    if (other !== this) other.checked = false;
+                });
+            }
+        });
+    });
+    
     // Form submission
     const form = document.getElementById('reportForm');
     form.addEventListener('submit', handleFormSubmit);
+}
+
+// Lưu thông tin người báo cáo vào localStorage
+function saveReporterInfoToStorage(formData) {
+    try {
+        const data = {
+            reporterName: formData.reporterName || '',
+            title: formData.title || '',
+            branch: formData.branch || '',
+            postOfficeName: formData.postOfficeName || ''
+        };
+        localStorage.setItem('reporterInfo', JSON.stringify(data));
+    } catch (e) {
+        console.warn('Không thể lưu thông tin người báo cáo vào trình duyệt:', e);
+    }
+}
+
+// Khôi phục thông tin người báo cáo từ localStorage
+function restoreReporterInfoFromStorage() {
+    try {
+        const raw = localStorage.getItem('reporterInfo');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const nameInput = document.querySelector('input[name="reporterName"]');
+        const titleSelect = document.querySelector('select[name="title"]');
+        const branchSelect = document.querySelector('select[name="branch"]');
+        const poNameInput = document.querySelector('input[name="postOfficeName"]');
+        
+        if (nameInput && data.reporterName) nameInput.value = data.reporterName;
+        if (titleSelect && data.title) titleSelect.value = data.title;
+        if (branchSelect && data.branch) branchSelect.value = data.branch;
+        if (poNameInput && data.postOfficeName) poNameInput.value = data.postOfficeName;
+    } catch (e) {
+        console.warn('Không thể khôi phục thông tin người báo cáo từ trình duyệt:', e);
+    }
 }
 
 // Add weight level row
@@ -87,20 +147,20 @@ function addWeightLevel() {
             <div class="flex items-center gap-2 flex-wrap">
                 <div class="flex-1">
                     <span class="text-xs text-gray-500 block mb-1">Từ</span>
-                    <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                    <input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0">
                 </div>
                 <span class="mt-6 text-gray-400">-</span>
                 <div class="flex-1">
                     <span class="text-xs text-gray-500 block mb-1">Đến</span>
-                    <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to border border-amber-300 rounded p-1 text-center font-bold" step="1" placeholder="0">
+                    <input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0">
                 </div>
                 <span class="text-xs text-gray-500">(gram)</span>
             </div>
         </td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full border border-amber-300 rounded p-1 text-center font-bold" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
+        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
         <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
         <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
         <td class="border border-gray-300 p-2 text-center">
@@ -492,6 +552,7 @@ function calculateWeightedAverage(priceRow, levelIndex, type) {
     
     if (grandTotal === 0) {
         avgInputs.forEach(input => input.value = '');
+        updateComparisonTable();
         return;
     }
     
@@ -502,6 +563,9 @@ function calculateWeightedAverage(priceRow, levelIndex, type) {
         const weightedAvg = (volume * price) / grandTotal;
         avgInputs[i].value = isNaN(weightedAvg) ? '' : formatNumber(weightedAvg);
     }
+    
+    // Cập nhật bảng so sánh sau khi tính xong bình quân
+    updateComparisonTable();
 }
 
 // Calculate return rate: Tỷ lệ hoàn = (Số hoàn / Tổng gửi) * 100
@@ -522,9 +586,9 @@ function collectFormData() {
         timestamp: new Date().toLocaleString('vi-VN'),
         
         // Section I: Customer Information
-        customerName: document.querySelector('input[name="customerName"]').value,
-        phone: document.querySelector('input[name="phone"]').value,
-        address: document.querySelector('input[name="address"]').value,
+        customerName: document.querySelector('input[name="customerName"]').value.trim(),
+        phone: document.querySelector('input[name="phone"]').value.trim(),
+        address: document.querySelector('input[name="address"]').value.trim(),
         
         // Weight levels and volumes
         weightLevels: [],
@@ -543,14 +607,14 @@ function collectFormData() {
         
         // Competitors
         competitors: Array.from(document.querySelectorAll('input[name="competitor"]:checked')).map(cb => cb.value),
-        competitorOther: document.querySelector('input[name="competitorOther"]').value,
+        competitorOther: document.querySelector('input[name="competitorOther"]').value.trim(),
         
         // Competitor prices
         competitorPrices: [],
         
         currentReturnRate: document.querySelector('input[name="currentReturnRate"]').value,
         competitorFreeReturnRate: document.querySelector('input[name="competitorFreeReturnRate"]').value,
-        competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]').value,
+        competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim(),
         
         over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
         over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
@@ -558,16 +622,16 @@ function collectFormData() {
         // Proposed prices
         proposedPrices: [],
         
-        proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]').value,
-        proposedReturnRate: document.querySelector('input[name="proposedReturnRate"]').value,
+        proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]').value.trim(),
+        proposedReturnRate: document.querySelector('input[name="proposedReturnRate"]').value.trim(),
         
         // Reporter information - đảm bảo lấy đúng giá trị
-        reporterName: document.querySelector('input[name="reporterName"]') ? document.querySelector('input[name="reporterName"]').value : '',
-        title: document.querySelector('input[name="title"]') ? document.querySelector('input[name="title"]').value : '',
-        reporterPhone: document.querySelector('input[name="reporterPhone"]') ? document.querySelector('input[name="reporterPhone"]').value : '',
-        branch: document.querySelector('input[name="branch"]') ? document.querySelector('input[name="branch"]').value : '',
-        postOfficeName: document.querySelector('input[name="postOfficeName"]') ? document.querySelector('input[name="postOfficeName"]').value : '',
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value : ''
+        reporterName: document.querySelector('input[name="reporterName"]') ? document.querySelector('input[name="reporterName"]').value.trim() : '',
+        title: document.querySelector('select[name="title"]') ? document.querySelector('select[name="title"]').value : '',
+        reporterPhone: document.querySelector('input[name="reporterPhone"]') ? document.querySelector('input[name="reporterPhone"]').value.trim() : '',
+        branch: document.querySelector('select[name="branch"]') ? document.querySelector('select[name="branch"]').value : '',
+        postOfficeName: document.querySelector('input[name="postOfficeName"]') ? document.querySelector('input[name="postOfficeName"]').value.trim() : '',
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value.trim() : ''
     };
     
     // Collect weight levels and volumes
@@ -758,6 +822,21 @@ function formatDataForSheets(formData) {
 async function handleFormSubmit(e) {
     e.preventDefault();
     
+    // Validate số điện thoại: chỉ số, bắt đầu bằng 0
+    const customerPhoneInput = document.querySelector('input[name="phone"]');
+    const reporterPhoneInput = document.querySelector('input[name="reporterPhone"]');
+    const phoneRegex = /^0[0-9]{8,14}$/;
+    if (customerPhoneInput && !phoneRegex.test(customerPhoneInput.value.trim())) {
+        alert('Số điện thoại khách hàng phải bắt đầu bằng 0 và chỉ chứa số.');
+        customerPhoneInput.focus();
+        return;
+    }
+    if (reporterPhoneInput && !phoneRegex.test(reporterPhoneInput.value.trim())) {
+        alert('Số điện thoại người báo cáo phải bắt đầu bằng 0 và chỉ chứa số.');
+        reporterPhoneInput.focus();
+        return;
+    }
+    
     const submitBtn = document.querySelector('.btn-submit');
     const originalText = submitBtn.textContent;
     
@@ -767,6 +846,8 @@ async function handleFormSubmit(e) {
         
         // Collect và format dữ liệu
         const formData = collectFormData();
+        // Lưu thông tin người báo cáo cho lần sau
+        saveReporterInfoToStorage(formData);
         console.log('Form data collected:', formData);
         
         const rowData = formatDataForSheets(formData);
@@ -815,6 +896,57 @@ async function handleFormSubmit(e) {
             submitBtn.style.backgroundColor = '';
             hideMessages();
         }, 5000);
+    }
+}
+
+// Cập nhật bảng so sánh đơn giá bình quân (mình - đối thủ - % chênh lệch)
+function updateComparisonTable() {
+    const competitorProvince = document.querySelector('input[name="competitorAvg_0_province"]')?.value || '';
+    const competitorRegion = document.querySelector('input[name="competitorAvg_0_region"]')?.value || '';
+    const competitorAdjacent = document.querySelector('input[name="competitorAvg_0_adjacent"]')?.value || '';
+    const competitorInter = document.querySelector('input[name="competitorAvg_0_inter"]')?.value || '';
+    
+    const proposedProvince = document.querySelector('input[name="proposedAvg_0_province"]')?.value || '';
+    const proposedRegion = document.querySelector('input[name="proposedAvg_0_region"]')?.value || '';
+    const proposedAdjacent = document.querySelector('input[name="proposedAvg_0_adjacent"]')?.value || '';
+    const proposedInter = document.querySelector('input[name="proposedAvg_0_inter"]')?.value || '';
+    
+    const cells = {
+        province: document.getElementById('compareProvince'),
+        region: document.getElementById('compareRegion'),
+        adjacent: document.getElementById('compareAdjacent'),
+        inter: document.getElementById('compareInter')
+    };
+    
+    function buildCell(proposed, competitor) {
+        if (!cells.province) return '';
+        const p = parseFloat((proposed || '').toString().replace(/,/g, ''));
+        const c = parseFloat((competitor || '').toString().replace(/,/g, ''));
+        
+        if (isNaN(p) && isNaN(c)) return '';
+        
+        let diffText = '';
+        if (!isNaN(p) && !isNaN(c) && c !== 0) {
+            const diffPercent = ((p - c) / c) * 100;
+            const sign = diffPercent > 0 ? '+' : '';
+            diffText = `${sign}${diffPercent.toFixed(1)}%`;
+        }
+        
+        const pText = !isNaN(p) ? formatNumber(p) : (proposed || '');
+        const cText = !isNaN(c) ? formatNumber(c) : (competitor || '');
+        
+        return `
+            <div>ĐX: ${pText || '-'}</div>
+            <div>ĐT: ${cText || '-'}</div>
+            <div>Δ: ${diffText || '-'}</div>
+        `;
+    }
+    
+    if (cells.province) {
+        cells.province.innerHTML = buildCell(proposedProvince, competitorProvince);
+        cells.region.innerHTML = buildCell(proposedRegion, competitorRegion);
+        cells.adjacent.innerHTML = buildCell(proposedAdjacent, competitorAdjacent);
+        cells.inter.innerHTML = buildCell(proposedInter, competitorInter);
     }
 }
 
