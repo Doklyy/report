@@ -941,6 +941,12 @@ async function handleFormSubmit(e) {
         return;
     }
     
+    // Validate weight levels: Từ n < Đến n < Từ n+1 < Đến n+1
+    if (!validateWeightLevels()) {
+        alert('Vui lòng kiểm tra lại các mốc trọng lượng. Giá trị "Từ" phải nhỏ hơn "Đến" và các mốc không được chồng chéo.');
+        return;
+    }
+    
     const submitBtn = document.querySelector('.btn-submit');
     const originalText = submitBtn.textContent;
     
