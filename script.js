@@ -573,7 +573,7 @@ function collectFormData() {
         proposedPrices: [],
         
         proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]') ? document.querySelector('textarea[name="proposedOtherPolicies"]').value.trim() : '',
-        proposedReturnRate: document.querySelector('input[name="proposedReturnRate_0"]') ? document.querySelector('input[name="proposedReturnRate_0"]').value.trim() : '',
+        proposedReturnRate: '', // Sẽ được lấy từ proposedPrices sau
         
         // Reporter information - đảm bảo lấy đúng giá trị
         reporterName: document.querySelector('input[name="reporterName"]') ? document.querySelector('input[name="reporterName"]').value.trim() : '',
@@ -648,6 +648,11 @@ function collectFormData() {
             });
         }
     });
+    
+    // Lấy proposedReturnRate từ dòng đầu tiên của proposedPrices
+    if (formData.proposedPrices.length > 0 && formData.proposedPrices[0].proposedReturnRate) {
+        formData.proposedReturnRate = formData.proposedPrices[0].proposedReturnRate;
+    }
     
     return formData;
 }
