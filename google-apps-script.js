@@ -37,12 +37,10 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Try to get the sheet by name, if not found, use the first sheet or create new
     let sheet = ss.getSheetByName(SHEET_NAME);
     
-    // If sheet doesn't exist, try to use the first sheet (Sheet1) or create new
     if (!sheet) {
-      // Try to get the first sheet (usually named "Sheet1")
+
       const firstSheet = ss.getSheets()[0];
       if (firstSheet && firstSheet.getName() === 'Data') {
         sheet = firstSheet;
@@ -53,7 +51,7 @@ function doPost(e) {
       // Add headers
       const headers = [
         'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng',        'Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
+        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
         'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
         'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
         'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
