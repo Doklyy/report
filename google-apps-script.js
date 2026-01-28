@@ -55,7 +55,7 @@ function doPost(e) {
         'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
         'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
         'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
-        'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
+        'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
         'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
         'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
         'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
@@ -121,10 +121,10 @@ function doPost(e) {
           // 33-45 (Đơn giá bình quân ĐX đến Mã Bưu cục)
           
           const mergeRanges = [
-            { startCol: 1, endCol: 4 },      // Cột 1-4
-            { startCol: 6, endCol: 23 },     // Cột 6-23
-            { startCol: 25, endCol: 31 },    // Cột 25-31
-            { startCol: 33, endCol: 45 }     // Cột 33-45
+            { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
+            { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
+            { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
+            { startCol: 34, endCol: 46 }     // Cột 34-46: Đơn giá bình quân ĐX đến Mã Bưu cục
           ];
           
           mergeRanges.forEach(range => {
