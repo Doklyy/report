@@ -206,58 +206,59 @@
                 <div class="mb-6">
                     <h3 class="font-bold text-gray-700 mb-3 text-sm">MỨC TRỌNG LƯỢNG & SẢN LƯỢNG HÀNG GỬI</h3>
                     <p class="text-[10px] text-gray-500 mb-2 italic">* Vuốt sang phải để xem đầy đủ bảng giá</p>
-                    <div class="table-container">
-                        <table class="w-full text-sm border-collapse">
+                    <div class="table-container overflow-x-auto">
+                        <table class="w-full border-collapse" style="min-width: 600px;">
                             <thead>
                                 <tr class="bg-[#10b981] text-white">
-                                    <th colspan="2" class="p-2 border border-emerald-600">TRỌNG LƯỢNG (gram)</th>
-                                    <th colspan="4" class="p-2 border border-emerald-600">SẢN LƯỢNG HÀNG GỬI</th>
-                                    <th rowspan="2" class="min-w-[80px] p-2 border border-emerald-600">Tổng</th>
-                                    <th rowspan="2" class="min-w-[80px] p-2 border border-emerald-600">Tỷ trọng %</th>
-                                    <th rowspan="2" class="min-w-[50px] p-2 border border-emerald-600"></th>
+                                    <th colspan="2" class="p-1 md:p-2 border border-emerald-600 text-[10px] md:text-sm font-bold">TRỌNG LƯỢNG (gram)</th>
+                                    <th colspan="4" class="p-1 md:p-2 border border-emerald-600 text-[10px] md:text-sm font-bold">SẢN LƯỢNG HÀNG GỬI</th>
+                                    <th rowspan="2" class="min-w-[60px] md:min-w-[80px] p-1 md:p-2 border border-emerald-600 text-[10px] md:text-sm font-bold">Tổng</th>
+                                    <th rowspan="2" class="min-w-[60px] md:min-w-[80px] p-1 md:p-2 border border-emerald-600 text-[10px] md:text-sm font-bold">Tỷ trọng %</th>
+                                    <th rowspan="2" class="min-w-[40px] md:min-w-[50px] p-1 md:p-2 border border-emerald-600"></th>
                                 </tr>
                                 <tr class="bg-[#059669] text-white">
-                                    <th class="p-2 border border-emerald-700">Từ</th>
-                                    <th class="p-2 border border-emerald-700">Đến</th>
-                                    <th class="p-2 border border-emerald-700">Nội tỉnh</th>
-                                    <th class="p-2 border border-emerald-700">Nội miền</th>
-                                    <th class="p-2 border border-emerald-700">Cận miền</th>
-                                    <th class="p-2 border border-emerald-700">Liên miền</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Từ</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Đến</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Nội tỉnh</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Nội miền</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Cận miền</th>
+                                    <th class="p-1 md:p-2 border border-emerald-700 text-[10px] md:text-sm">Liên miền</th>
                                 </tr>
                             </thead>
                             <tbody id="weightLevelsTable">
                                 <tr>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-                                    <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
-                                    <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
-                                    <td class="border border-gray-300 p-2 text-center">
-                                        <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded transition-colors font-medium" id="deleteBtn0" style="display: none;">Xóa</button>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2 table-total text-center font-bold text-gray-800 responsive-text" data-total="0">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center text-gray-600 responsive-text" data-percent="0%">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center">
+                                        <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded transition-colors font-medium" id="deleteBtn0" style="display: none;">Xóa</button>
                                     </td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr class="bg-slate-100 font-bold border-t-2 border-gray-300">
-                                    <td class="border border-gray-300 p-2 text-left uppercase text-sm">Tổng sản lượng các mốc</td>
-                                    <td class="border border-gray-300 p-2 text-center bg-gray-50" id="totalProvince">0</td>
-                                    <td class="border border-gray-300 p-2 text-center bg-gray-50" id="totalRegion">0</td>
-                                    <td class="border border-gray-300 p-2 text-center bg-gray-50" id="totalAdjacent">0</td>
-                                    <td class="border border-gray-300 p-2 text-center bg-gray-50" id="totalInter">0</td>
-                                    <td class="border border-gray-300 p-2 table-total text-center font-bold bg-amber-100" id="grandTotal">0</td>
-                                    <td class="border border-gray-300 p-2 bg-white" colspan="2"></td>
+                                    <td colspan="2" class="border border-gray-300 p-1 md:p-2 text-left uppercase text-[10px] md:text-sm">Tổng sản lượng các mốc</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-gray-50 responsive-text" id="totalProvince">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-gray-50 responsive-text" id="totalRegion">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-gray-50 responsive-text" id="totalAdjacent">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-gray-50 responsive-text" id="totalInter">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 table-total text-center font-bold bg-amber-100 responsive-text" id="grandTotal">0</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-blue-50 responsive-text" id="regionPercentTotal">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 bg-white"></td>
                                 </tr>
                                 <tr class="bg-blue-50 font-bold border-t border-gray-300 italic">
-                                    <td class="border border-gray-300 p-2 text-left uppercase text-sm text-blue-700">Tỷ trọng % theo khu vực</td>
-                                    <td class="border border-gray-300 p-2 text-center" id="percentProvince">0%</td>
-                                    <td class="border border-gray-300 p-2 text-center" id="percentRegion">0%</td>
-                                    <td class="border border-gray-300 p-2 text-center" id="percentAdjacent">0%</td>
-                                    <td class="border border-gray-300 p-2 text-center" id="percentInter">0%</td>
-                                    <td class="border border-gray-300 p-2 text-center bg-blue-100">100%</td>
-                                    <td class="border border-gray-300 p-2 bg-white" colspan="2"></td>
+                                    <td colspan="2" class="border border-gray-300 p-1 md:p-2 text-left uppercase text-[10px] md:text-sm text-blue-700">Tỷ trọng % theo khu vực</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center responsive-text" id="percentProvince">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center responsive-text" id="percentRegion">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center responsive-text" id="percentAdjacent">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center responsive-text" id="percentInter">0%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 text-center bg-blue-100 responsive-text">100%</td>
+                                    <td class="border border-gray-300 p-1 md:p-2 bg-white" colspan="2"></td>
                                 </tr>
                             </tfoot>
                         </table>

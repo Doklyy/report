@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1SL2FNOlL0bWt7ED5E5A8PYcOJL-QBOZKpmoxh34ywbxmW-yY0cuGj26cU4BaZUzczA/exec'; // Thay bằng URL của Google Apps Script
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7fo6TcQIyb3D4AJzWvUzUR9Jxl0S8UiSxUmIAZ0RtMdymfUpEaCygbCkD2N_QEbw/exec'; // Google Apps Script URL
 
 // Weight levels data
 let weightLevels = [];
@@ -323,6 +323,7 @@ function calculateTotals() {
     const percentRegionEl = document.getElementById('percentRegion');
     const percentAdjacentEl = document.getElementById('percentAdjacent');
     const percentInterEl = document.getElementById('percentInter');
+    const regionPercentTotalEl = document.getElementById('regionPercentTotal');
     
     if (percentProvinceEl) {
         percentProvinceEl.textContent = grandTotal > 0 ? (totalProvince / grandTotal * 100).toFixed(1) + '%' : '0%';
@@ -335,6 +336,12 @@ function calculateTotals() {
     }
     if (percentInterEl) {
         percentInterEl.textContent = grandTotal > 0 ? (totalInter / grandTotal * 100).toFixed(1) + '%' : '0%';
+    }
+    // Update tỷ trọng % theo khu vực (tổng của các phần trăm)
+    if (regionPercentTotalEl) {
+        const totalPercent = grandTotal > 0 ? 
+            ((totalProvince + totalRegion + totalAdjacent + totalInter) / grandTotal * 100).toFixed(1) : 0;
+        regionPercentTotalEl.textContent = totalPercent + '%';
     }
     
     // Recalculate percentages for all rows
