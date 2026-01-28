@@ -219,15 +219,23 @@ function validateWeightLevels() {
     let isValid = true;
     let errorMessage = '';
     let errorRowIndex = -1;
+    const errorInputs = []; // Lưu các input bị lỗi để không reset border
     
-    // Reset border color cho tất cả các input
+    // Reset border color cho tất cả các input trước
     rows.forEach(row => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
-        if (fromInput) fromInput.style.borderColor = '';
-        if (toInput) toInput.style.borderColor = '';
+        if (fromInput) {
+            fromInput.style.borderColor = '';
+            fromInput.style.borderWidth = '';
+        }
+        if (toInput) {
+            toInput.style.borderColor = '';
+            toInput.style.borderWidth = '';
+        }
     });
     
+    // Kiểm tra từng dòng
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const fromInput = row.querySelector('.weight-from');
@@ -235,42 +243,51 @@ function validateWeightLevels() {
         
         if (!fromInput || !toInput) continue;
         
-        const from = parseFloat(fromInput.value) || 0;
-        const to = parseFloat(toInput.value) || 0;
+        const fromValue = fromInput.value.trim();
+        const toValue = toInput.value.trim();
+        const from = parseFloat(fromValue) || 0;
+        const to = parseFloat(toValue) || 0;
         
-        // Validate: Từ < Đến trong cùng 1 dòng (chỉ validate nếu cả 2 đều có giá trị > 0)
-        if (from > 0 && to > 0 && from >= to) {
-            isValid = false;
-            errorMessage = `Dòng ${i + 1}: Giá trị "Từ" (${from}) phải nhỏ hơn "Đến" (${to})`;
-            errorRowIndex = i;
-            fromInput.style.borderColor = 'red';
-            toInput.style.borderColor = 'red';
-            break;
-        } else if (from > 0 || to > 0) {
-            // Nếu chỉ có 1 trong 2 giá trị, reset border
-            fromInput.style.borderColor = '';
-            toInput.style.borderColor = '';
+        // Bỏ qua validation nếu cả 2 ô đều trống
+        if (!fromValue && !toValue) {
+            continue;
         }
         
-        // Validate: Đến n < Từ n+1 (chỉ validate nếu cả 2 dòng đều có giá trị)
-        if (i < rows.length - 1) {
+        // Validate: Từ < Đến trong cùng 1 dòng
+        // Chỉ validate nếu cả 2 đều có giá trị
+        if (fromValue && toValue) {
+            if (from >= to) {
+                isValid = false;
+                errorMessage = `Dòng ${i + 1}: Giá trị "Từ" (${from}) phải nhỏ hơn "Đến" (${to})`;
+                errorRowIndex = i;
+                fromInput.style.borderColor = 'red';
+                fromInput.style.borderWidth = '2px';
+                toInput.style.borderColor = 'red';
+                toInput.style.borderWidth = '2px';
+                errorInputs.push(fromInput, toInput);
+                break; // Dừng lại khi tìm thấy lỗi đầu tiên
+            }
+        }
+        
+        // Validate: Đến n < Từ n+1 (chỉ validate nếu có dòng tiếp theo)
+        if (i < rows.length - 1 && toValue) {
             const nextRow = rows[i + 1];
             const nextFromInput = nextRow.querySelector('.weight-from');
             if (nextFromInput) {
-                const nextFrom = parseFloat(nextFromInput.value) || 0;
+                const nextFromValue = nextFromInput.value.trim();
+                const nextFrom = parseFloat(nextFromValue) || 0;
                 
-                // Chỉ validate nếu cả 2 dòng đều có giá trị hợp lệ
-                if (to > 0 && nextFrom > 0 && to >= nextFrom) {
+                // Chỉ validate nếu dòng tiếp theo có giá trị "Từ"
+                if (nextFromValue && to >= nextFrom) {
                     isValid = false;
                     errorMessage = `Dòng ${i + 1} và ${i + 2}: "Đến" của dòng ${i + 1} (${to}) phải nhỏ hơn "Từ" của dòng ${i + 2} (${nextFrom}). Các mốc trọng lượng không được chồng chéo.`;
                     errorRowIndex = i;
                     toInput.style.borderColor = 'red';
+                    toInput.style.borderWidth = '2px';
                     nextFromInput.style.borderColor = 'red';
-                    break;
-                } else {
-                    // Reset border nếu không có lỗi
-                    toInput.style.borderColor = '';
-                    nextFromInput.style.borderColor = '';
+                    nextFromInput.style.borderWidth = '2px';
+                    errorInputs.push(toInput, nextFromInput);
+                    break; // Dừng lại khi tìm thấy lỗi đầu tiên
                 }
             }
         }
@@ -294,7 +311,9 @@ function validateWeightLevels() {
         errorDiv.style.display = 'block';
         // Scroll đến dòng có lỗi
         if (errorRowIndex >= 0 && rows[errorRowIndex]) {
-            rows[errorRowIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+                rows[errorRowIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
     } else {
         errorDiv.style.display = 'none';
@@ -1254,3 +1273,4 @@ function hideMessages() {
 // PHẦN ĐỌC VÀ HIỂN THỊ DỮ LIỆU ĐÃ BỊ XÓA
 // Dữ liệu chỉ được gửi lên Google Sheets, không hiển thị trên website
 // ============================================
+
