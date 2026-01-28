@@ -901,61 +901,69 @@ function formatDataForSheets(formData) {
     
     // Tạo mảng các rows - mỗi mốc trọng lượng = 1 row
     const rows = [];
-    
-    // Các thông tin chung (sẽ được merge)
+
+    // Helper: đảm bảo giá trị tỷ lệ/tỷ trọng luôn có ký tự %
+    const formatPercentValue = (val) => {
+        if (val === null || val === undefined) return '';
+        const str = String(val).trim();
+        if (!str) return '';
+        return str.endsWith('%') ? str : str + '%';
+    };
+
+    // Các thông tin chung (sẽ được merge) - phải KHỚP 1-1 với headers trong Apps Script
     const commonData = [
         formData.timestamp,                                    // 1. Thời gian
-        formData.customerName,                                // 2. Tên KH/Tên shop
+        formData.customerName,                                 // 2. Tên KH/Tên shop
         formData.phone,                                        // 3. Điện thoại
         formData.address,                                      // 4. Địa chỉ
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng cho mỗi row)
         grandTotal,                                            // 6. Tổng sản lượng các mốc
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         percentByArea,                                         // 8. Tỷ trọng % theo khu vực
-        formData.over12mRatio || '',                          // 9. Tỷ trọng hàng trên 1.2m
-        formData.over100kgRatio || '',                        // 10. Tỷ trọng hàng nguyên khối từ 100kg trở lên
+        formatPercentValue(formData.over12mRatio || ''),       // 9. Tỷ trọng hàng trên 1.2m
+        formatPercentValue(formData.over100kgRatio || ''),     // 10. Tỷ trọng hàng nguyên khối từ 100kg trở lên
         totalProvince,                                         // 11. Sản lượng Nội tỉnh
         totalRegion,                                           // 12. Sản lượng Nội miền
         totalAdjacent,                                         // 13. Sản lượng Cận miền
         totalInter,                                            // 14. Sản lượng Liên miền
         grandTotal,                                            // 15. Tổng sản lượng
         percentRatio,                                          // 16. Tỷ trọng %
-        formData.productNormal ? 'Có' : 'Không',              // 17. Hàng thông thường
+        formData.productNormal ? 'Có' : 'Không',               // 17. Hàng thông thường
         formData.productLiquid ? 'Có' : 'Không',               // 18. Chất lỏng
         formData.productFlammable ? 'Có' : 'Không',            // 19. Dễ cháy
         formData.productFragile ? 'Có' : 'Không',              // 20. Dễ vỡ
-        (() => {
-            // Kết hợp industries và industryOther - NGÀNH HÀNG
+        (() => {                                               // 21. Ngành hàng
             const industryList = formData.industries.filter(i => i && i.trim() !== '');
             if (formData.industryOther && formData.industryOther.trim() !== '') {
                 industryList.push(formData.industryOther.trim());
             }
             return industryList.join('; ');
-        })(),                                                    // 21. Ngành hàng
-        formData.competitors.length > 0 ? formData.competitors[0] : '', // 22. Đối thủ (chỉ 1)
-        '',                                                    // 23. Đối thủ khác (không dùng nữa, để trống)
-        '',                                                    // 24. Giá đối thủ (sẽ điền riêng cho mỗi row)
-        competitorAvg.province || '',                          // 25. Đơn giá bình quân Nội tỉnh (ĐT)
-        competitorAvg.region || '',                            // 26. Đơn giá bình quân Nội miền (ĐT)
-        competitorAvg.adjacent || '',                          // 27. Đơn giá bình quân Cận miền (ĐT)
-        competitorAvg.inter || '',                             // 28. Đơn giá bình quân Liên miền (ĐT)
-        competitorCurrentReturnRate || '',                     // 29. Tỷ lệ hoàn hiện tại
-        competitorReturnRate || '',                            // 30. Tỷ lệ hoàn đối thủ miễn phí
-        formData.competitorOtherPolicies || '',                // 31. Chính sách đặc thù đối thủ
-        '',                                                    // 32. Giá đề xuất (sẽ điền riêng cho mỗi row)
-        proposedAvg.province || '',                            // 33. Đơn giá bình quân Nội tỉnh (ĐX)
-        proposedAvg.region || '',                              // 34. Đơn giá bình quân Nội miền (ĐX)
-        proposedAvg.adjacent || '',                            // 35. Đơn giá bình quân Cận miền (ĐX)
-        proposedAvg.inter || '',                               // 36. Đơn giá bình quân Liên miền (ĐX)
-        formData.proposedOtherPolicies || '',                  // 37. Chính sách đặc thù đề xuất
-        proposedReturnRate || '',                             // 38. Tỷ lệ hoàn đề xuất
-        comparisonAvg,                                         // 39. So sánh đơn giá bình quân
-        formData.reporterName || '',                           // 40. Họ và tên người báo cáo
-        formData.reporterPhone || '',                          // 41. Điện thoại người báo cáo
-        formData.postOfficeName || '',                         // 42. Tên Bưu cục
-        formData.title || '',                                  // 43. Chức danh
-        formData.branch || '',                                 // 44. Chi nhánh
-        (formData.postOfficeCode || '').toString()            // 45. Mã Bưu cục
+        })(),
+        formData.specificProduct || '',                        // 22. Tên sản phẩm
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ
+        '',                                                    // 24. Đối thủ khác
+        '',                                                    // 25. Giá đối thủ (sẽ điền riêng cho mỗi row)
+        competitorAvg.province || '',                          // 26. Đơn giá bình quân Nội tỉnh (ĐT)
+        competitorAvg.region || '',                            // 27. Đơn giá bình quân Nội miền (ĐT)
+        competitorAvg.adjacent || '',                          // 28. Đơn giá bình quân Cận miền (ĐT)
+        competitorAvg.inter || '',                             // 29. Đơn giá bình quân Liên miền (ĐT)
+        formatPercentValue(competitorCurrentReturnRate || ''), // 30. Tỷ lệ hoàn hiện tại
+        formatPercentValue(competitorReturnRate || ''),        // 31. Tỷ lệ hoàn đối thủ miễn phí
+        formData.competitorOtherPolicies || '',                // 32. Chính sách đặc thù đối thủ
+        '',                                                    // 33. Giá đề xuất (sẽ điền riêng cho mỗi row)
+        proposedAvg.province || '',                            // 34. Đơn giá bình quân Nội tỉnh (ĐX)
+        proposedAvg.region || '',                              // 35. Đơn giá bình quân Nội miền (ĐX)
+        proposedAvg.adjacent || '',                            // 36. Đơn giá bình quân Cận miền (ĐX)
+        proposedAvg.inter || '',                               // 37. Đơn giá bình quân Liên miền (ĐX)
+        formData.proposedOtherPolicies || '',                  // 38. Chính sách đặc thù đề xuất
+        formatPercentValue(proposedReturnRate || ''),          // 39. Tỷ lệ hoàn đề xuất
+        comparisonAvg,                                         // 40. So sánh đơn giá bình quân
+        formData.reporterName || '',                           // 41. Họ và tên người báo cáo
+        formData.reporterPhone || '',                          // 42. Điện thoại người báo cáo
+        formData.postOfficeName || '',                         // 43. Tên Bưu cục
+        formData.title || '',                                  // 44. Chức danh
+        formData.branch || '',                                 // 45. Chi nhánh
+        (formData.postOfficeCode || '').toString()             // 46. Mã Bưu cục
     ];
     
     // Tạo 1 row cho mỗi mốc trọng lượng
@@ -984,31 +992,19 @@ function formatDataForSheets(formData) {
         
         // 5. Các mốc trọng lượng
         row[4] = weightRange;
-        // 24. Giá đối thủ
-        row[23] = competitorPriceStr;
-        // 32. Giá đề xuất
-        row[31] = proposedPriceStr;
+        // 25. Giá đối thủ (0-based index 24)
+        row[24] = competitorPriceStr;
+        // 33. Giá đề xuất (0-based index 32)
+        row[32] = proposedPriceStr;
         
         // Với các mốc thứ 2 trở đi, chỉ hiển thị cột theo mốc (mốc trọng lượng, giá...),
         // còn các thông tin chung để trống để bảng dễ nhìn hơn (giống layout bạn mô tả).
         if (index > 0) {
-            // Các cột thông tin chung cần làm trống trên các dòng tiếp theo
-            const commonCols = [
-                0, 1, 2, 3,             // Thời gian, Tên KH, Điện thoại, Địa chỉ
-                5, 6, 7, 8, 9,          // Tổng sản lượng các mốc, Tỷ trọng sản lượng, Tỷ trọng % theo khu vực, Tỷ trọng >1.2m, >100kg
-                10, 11, 12, 13, 14, 15, // Sản lượng khu vực + Tổng sản lượng
-                16, 17, 18, 19, 20, 21, 22, // Tỷ trọng %, Hàng thông thường → Ngành hàng (và Tên sản phẩm nếu có)
-                24, 25, 26, 27, 28, 29, 30, // Đơn giá bình quân ĐT, tỷ lệ hoàn, CS đặc thù đối thủ
-                32, 33, 34, 35, 36, 37, 38, 39, // Đơn giá bình quân ĐX, CS đề xuất, Tỷ lệ hoàn đề xuất, So sánh đơn giá
-                40, 41, 42, 43, 44, 45   // Thông tin người báo cáo, bưu cục, chi nhánh, mã bưu cục
-            ];
-            
-            commonCols.forEach(colIndex => {
-                // Không động vào cột mốc trọng lượng (4), giá đối thủ (23), giá đề xuất (31)
-                if (colIndex >= 0 && colIndex < row.length) {
-                    row[colIndex] = '';
-                }
-            });
+            for (let colIndex = 0; colIndex < row.length; colIndex++) {
+                // Giữ lại chỉ 3 cột thay đổi theo từng mốc: 5 (mốc trọng lượng), 25 (Giá đối thủ), 33 (Giá đề xuất)
+                if (colIndex === 4 || colIndex === 24 || colIndex === 32) continue;
+                row[colIndex] = '';
+            }
         }
         
         rows.push(row);
