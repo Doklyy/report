@@ -129,7 +129,15 @@ function doPost(e) {
           
           mergeRanges.forEach(range => {
             try {
-              sheet.getRange(startRow, range.startCol, numRows, range.endCol - range.startCol + 1).mergeVertically();
+              // Merge từng cột một
+              for (let col = range.startCol; col <= range.endCol; col++) {
+                const rangeToMerge = sheet.getRange(startRow, col, numRows, 1);
+                rangeToMerge.merge();
+                // Đặt giá trị vào ô đầu tiên (nếu chưa có)
+                if (rangeToMerge.getValue() === '') {
+                  rangeToMerge.setValue(stringRowsData[0][col - 1]);
+                }
+              }
             } catch (mergeError) {
               Logger.log('Warning: Could not merge columns ' + range.startCol + '-' + range.endCol + ': ' + mergeError.toString());
             }
