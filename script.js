@@ -151,16 +151,16 @@ function addWeightLevel() {
     
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td class="border border-gray-300 p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-1 text-center font-bold" step="1" placeholder="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-1 text-center font-bold" step="1" placeholder="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-1 text-center font-bold bg-white" step="1" value="0"></td>
-        <td class="border border-gray-300 p-2 table-total text-center font-bold text-gray-800" data-total="0">0</td>
-        <td class="border border-gray-300 p-2 text-center text-gray-600" data-percent="0%">0%</td>
-        <td class="border border-gray-300 p-2 text-center">
-            <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded transition-colors font-medium">Xóa</button>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeInter[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2 table-total text-center font-bold text-gray-800 responsive-text" data-total="0">0</td>
+        <td class="border border-gray-300 p-1 md:p-2 text-center text-gray-600 responsive-text" data-percent="0%">0%</td>
+        <td class="border border-gray-300 p-1 md:p-2 text-center">
+            <button type="button" onclick="removeWeightLevel(this)" class="bg-red-500 hover:bg-red-600 text-white text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded transition-colors font-medium">Xóa</button>
         </td>
     `;
     

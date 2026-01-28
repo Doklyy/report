@@ -33,6 +33,25 @@
             transition: all 0.3s ease;
             font-size: 16px; /* Tránh iOS tự động zoom khi focus */
         }
+        .responsive-input {
+            font-size: clamp(10px, 2.5vw, 16px) !important;
+            min-width: 0;
+            max-width: 100%;
+        }
+        .responsive-text {
+            font-size: clamp(10px, 2.5vw, 14px);
+        }
+        @media (max-width: 640px) {
+            .responsive-input {
+                font-size: clamp(9px, 3vw, 12px) !important;
+            }
+            .responsive-text {
+                font-size: clamp(9px, 3vw, 12px);
+            }
+            table {
+                font-size: 10px;
+            }
+        }
         input[type="text"]:focus, input[type="number"]:focus, input[type="tel"]:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #f59e0b !important;
