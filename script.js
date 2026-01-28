@@ -679,12 +679,12 @@ function formatDataForSheets(formData) {
     const totalAll = parseFloat(totalProvince) + parseFloat(totalRegion) + parseFloat(totalAdjacent) + parseFloat(totalInter);
     const percentRatio = totalAll > 0 ? ((parseFloat(grandTotal) / totalAll) * 100).toFixed(2) + '%' : '0%';
     
-    // Tính tỷ trọng % theo khu vực
-    const totalVolume = parseFloat(totalProvince) + parseFloat(totalRegion) + parseFloat(totalAdjacent) + parseFloat(totalInter);
-    const percentProvince = totalVolume > 0 ? ((parseFloat(totalProvince) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentRegion = totalVolume > 0 ? ((parseFloat(totalRegion) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentAdjacent = totalVolume > 0 ? ((parseFloat(totalAdjacent) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentInter = totalVolume > 0 ? ((parseFloat(totalInter) / totalVolume) * 100).toFixed(2) + '%' : '0%';
+    // Tính tỷ trọng % theo khu vực (dựa trên grandTotal để khớp với hiển thị trong bảng)
+    const grandTotalNum = parseFloat(grandTotal) || 0;
+    const percentProvince = grandTotalNum > 0 ? ((parseFloat(totalProvince) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
+    const percentRegion = grandTotalNum > 0 ? ((parseFloat(totalRegion) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
+    const percentAdjacent = grandTotalNum > 0 ? ((parseFloat(totalAdjacent) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
+    const percentInter = grandTotalNum > 0 ? ((parseFloat(totalInter) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
     const percentByArea = `${percentProvince}/${percentRegion}/${percentAdjacent}/${percentInter}`;
     
     // Lấy tỷ lệ hoàn từ các ô trong bảng (lấy từ dòng đầu tiên)
