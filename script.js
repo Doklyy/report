@@ -420,8 +420,11 @@ function updateCompetitorPriceTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
-                <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
+                <span class="inline-flex items-center gap-1">
+                    <input type="number" name="competitorFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled>
+                    <span>-</span>
+                    <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
+                </span>
             </td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${savedProvince}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
@@ -485,8 +488,11 @@ function updateProposedPriceTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
-                <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled> - 
-                <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
+                <span class="inline-flex items-center gap-1">
+                    <input type="number" name="proposedFrom_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${fromValue}" step="1" readonly disabled>
+                    <span>-</span>
+                    <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
+                </span>
             </td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProvince}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
