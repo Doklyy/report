@@ -557,12 +557,12 @@ function collectFormData() {
         
         // Competitors
         competitors: Array.from(document.querySelectorAll('input[name="competitor"]:checked')).map(cb => cb.value),
-        competitorOther: document.querySelector('input[name="competitorOther"]').value.trim(),
+        competitorOther: document.querySelector('input[name="competitorOther"]') ? document.querySelector('input[name="competitorOther"]').value.trim() : '',
         
         // Competitor prices
         competitorPrices: [],
         
-        competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim(),
+        competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]') ? document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim() : '',
         
         over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
         over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
@@ -572,8 +572,8 @@ function collectFormData() {
         // Proposed prices
         proposedPrices: [],
         
-        proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]').value.trim(),
-        proposedReturnRate: document.querySelector('input[name="proposedReturnRate"]').value.trim(),
+        proposedOtherPolicies: document.querySelector('textarea[name="proposedOtherPolicies"]') ? document.querySelector('textarea[name="proposedOtherPolicies"]').value.trim() : '',
+        proposedReturnRate: document.querySelector('input[name="proposedReturnRate_0"]') ? document.querySelector('input[name="proposedReturnRate_0"]').value.trim() : '',
         
         // Reporter information - đảm bảo lấy đúng giá trị
         reporterName: document.querySelector('input[name="reporterName"]') ? document.querySelector('input[name="reporterName"]').value.trim() : '',
