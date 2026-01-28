@@ -22,18 +22,8 @@ function doPost(e) {
   try {
     // Parse JSON data
     const jsonData = JSON.parse(e.postData.contents);
-    let rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
+    const rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
     const mergeCells = jsonData.mergeCells !== false; // Mặc định là true
-    
-    // Log để debug
-    Logger.log('Received data type: ' + typeof rowsData);
-    Logger.log('Is array: ' + Array.isArray(rowsData));
-    Logger.log('Number of rows: ' + (Array.isArray(rowsData) ? rowsData.length : 1));
-    if (Array.isArray(rowsData) && rowsData.length > 0) {
-      Logger.log('First row is array: ' + Array.isArray(rowsData[0]));
-      Logger.log('First row length: ' + (Array.isArray(rowsData[0]) ? rowsData[0].length : 'N/A'));
-      Logger.log('First row first 5 values: ' + (Array.isArray(rowsData[0]) ? rowsData[0].slice(0, 5).join(', ') : rowsData[0]));
-    }
     
     // Open spreadsheet - với error handling tốt hơn
     let ss;
@@ -82,7 +72,7 @@ function doPost(e) {
     }
     
     // Validate rowsData
-    if (!rowsData || (Array.isArray(rowsData) && rowsData.length === 0)) {
+    if (!rowsData || rowsData.length === 0) {
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
@@ -92,20 +82,9 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Đảm bảo rowsData là mảng các mảng (mảng 2 chiều)
-    // Nếu rowsData[0] là mảng, thì rowsData đã là mảng các rows rồi
-    // Nếu rowsData[0] không phải mảng, thì rowsData là 1 row đơn, cần wrap thành mảng
-    let rowsToAppend;
-    if (!Array.isArray(rowsData)) {
-      // Nếu không phải mảng, wrap thành mảng
-      rowsToAppend = [rowsData];
-    } else if (rowsData.length > 0 && Array.isArray(rowsData[0])) {
-      // Nếu là mảng các mảng (đúng format)
-      rowsToAppend = rowsData;
-    } else {
-      // Nếu là mảng 1 chiều (1 row), wrap thành mảng các rows
-      rowsToAppend = [rowsData];
-    }
+    // Kiểm tra xem rowsData là mảng hay là 1 row đơn
+    const isArray = Array.isArray(rowsData[0]);
+    const rowsToAppend = isArray ? rowsData : [rowsData];
     
     // Log để debug
     Logger.log('Received number of rows: ' + rowsToAppend.length);
