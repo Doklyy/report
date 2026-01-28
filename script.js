@@ -680,7 +680,7 @@ function formatDataForSheets(formData) {
     const competitorCurrentReturnRate = document.querySelector('input[name="competitorCurrentReturnRate_0"]') ? document.querySelector('input[name="competitorCurrentReturnRate_0"]').value : '';
     const competitorReturnRate = document.querySelector('input[name="competitorReturnRate_0"]') ? document.querySelector('input[name="competitorReturnRate_0"]').value : '';
     
-    const proposedReturnRate = document.querySelector('input[name="proposedReturnRate_0"]') ? document.querySelector('input[name="proposedReturnRate_0"]').value : '';
+    const proposedReturnRate = formData.proposedReturnRate || '';
     
     // Tính đơn giá bình quân cho đối thủ và đề xuất
     const calculateWeightedAverage = (prices, volumes) => {
@@ -725,14 +725,6 @@ function formatDataForSheets(formData) {
     
     const competitorAvg = calculateWeightedAverage(formData.competitorPrices, volumes);
     const proposedAvg = calculateWeightedAverage(formData.proposedPrices, volumes);
-    
-    // Tính tỷ trọng % theo khu vực (tỷ trọng của từng khu vực trong tổng)
-    const totalVolume = parseFloat(totalProvince) + parseFloat(totalRegion) + parseFloat(totalAdjacent) + parseFloat(totalInter);
-    const percentProvince = totalVolume > 0 ? ((parseFloat(totalProvince) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentRegion = totalVolume > 0 ? ((parseFloat(totalRegion) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentAdjacent = totalVolume > 0 ? ((parseFloat(totalAdjacent) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentInter = totalVolume > 0 ? ((parseFloat(totalInter) / totalVolume) * 100).toFixed(2) + '%' : '0%';
-    const percentByArea = `${percentProvince}/${percentRegion}/${percentAdjacent}/${percentInter}`;
     
     // Thứ tự phải khớp với headers trong Google Sheets
     const row = [
