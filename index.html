@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biểu mẫu Thông tin Khách hàng & Đối thủ</title>
+    <title>Đề xuất chính sách giá hàng nặng</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -299,7 +299,7 @@
                 <div class="section-title text-blue-900 uppercase">II. Ngành hàng & Đối thủ</div>
                 
                 <div class="mb-4">
-                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Ngành hàng:</p>
+                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Ngành hàng: <span class="text-red-500">*</span></p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                         <label class="flex items-center gap-2 p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="industry" value="Hàng điện tử, điện lạnh, gia dụng" class="w-4 h-4"> Hàng điện tử, điện lạnh, gia dụng</label>
                         <label class="flex items-center gap-2 p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="industry" value="Đồ nội thất và Trang trí nhà cửa" class="w-4 h-4"> Đồ nội thất và Trang trí nhà cửa</label>
@@ -321,30 +321,26 @@
                         </div>
                     </div>
                     <div class="mt-3">
-                        <label class="block font-medium mb-1 text-sm">Sản phẩm cụ thể:</label>
-                        <input type="text" name="specificProduct" id="specificProduct" class="bg-yellow-50 w-full" placeholder="Nhập tên sản phẩm cụ thể">
+                        <label class="block font-medium mb-1 text-sm">Sản phẩm cụ thể: <span class="text-red-500">*</span></label>
+                        <input type="text" name="specificProduct" id="specificProduct" class="bg-yellow-50 w-full" placeholder="Nhập tên sản phẩm cụ thể" required>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Đối thủ đang phục vụ:</p>
+                    <p class="font-bold text-xs mb-2 italic underline text-blue-700 uppercase">Đối thủ đang phục vụ: <span class="text-red-500">*</span></p>
                     <div class="flex flex-wrap gap-2 text-sm">
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="VNpost" class="w-4 h-4"> VNpost</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="GHN" class="w-4 h-4"> GHN</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="GHTK" class="w-4 h-4"> GHTK</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="J&T" class="w-4 h-4"> J&T</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="SPX" class="w-4 h-4"> SPX</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Best" class="w-4 h-4"> Best</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Nhất tín" class="w-4 h-4"> Nhất tín</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Lalamove" class="w-4 h-4"> Lalamove</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="ahamove" class="w-4 h-4"> ahamove</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Xanh SM" class="w-4 h-4"> Xanh SM</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Xe chành" class="w-4 h-4"> Xe chành</label>
-                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="competitor" value="Xe tự có" class="w-4 h-4"> Xe tự có</label>
-                    </div>
-                    <div class="mt-3">
-                        <label class="text-sm font-medium">Đối thủ khác nếu có (ghi rõ):</label>
-                        <input type="text" name="competitorOther" class="bg-yellow-50 text-sm mt-1 w-full md:w-1/2">
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="VNpost" class="w-4 h-4" required> VNpost</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="GHN" class="w-4 h-4" required> GHN</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="GHTK" class="w-4 h-4" required> GHTK</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="J&T" class="w-4 h-4" required> J&T</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="SPX" class="w-4 h-4" required> SPX</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Best" class="w-4 h-4" required> Best</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Nhất tín" class="w-4 h-4" required> Nhất tín</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Lalamove" class="w-4 h-4" required> Lalamove</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="ahamove" class="w-4 h-4" required> ahamove</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Xanh SM" class="w-4 h-4" required> Xanh SM</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Xe chành" class="w-4 h-4" required> Xe chành</label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"><input type="radio" name="competitor" value="Xe tự có" class="w-4 h-4" required> Xe tự có</label>
                     </div>
                 </div>
             </div>

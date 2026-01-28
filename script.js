@@ -555,9 +555,12 @@ function collectFormData() {
         })(),
         industryOther: document.getElementById('inputOther') ? document.getElementById('inputOther').value.trim() : '',
         
-        // Competitors
-        competitors: Array.from(document.querySelectorAll('input[name="competitor"]:checked')).map(cb => cb.value),
-        competitorOther: document.querySelector('input[name="competitorOther"]') ? document.querySelector('input[name="competitorOther"]').value.trim() : '',
+        // Competitors - chỉ lấy 1 đối thủ (radio button)
+        competitors: (() => {
+            const checked = document.querySelector('input[name="competitor"]:checked');
+            return checked ? [checked.value] : [];
+        })(),
+        competitorOther: '', // Không còn dùng nữa
         
         // Competitor prices
         competitorPrices: [],
@@ -759,14 +762,7 @@ function formatDataForSheets(formData) {
             }
             return industryList.join('; ');
         })(),                                                    // 20. Ngành hàng
-        (() => {
-            // Kết hợp competitors và competitorOther - ĐỐI THỦ
-            const competitorList = formData.competitors.filter(c => c && c.trim() !== '');
-            if (formData.competitorOther && formData.competitorOther.trim() !== '') {
-                competitorList.push(formData.competitorOther.trim());
-            }
-            return competitorList.join('; ');
-        })(),                                                    // 21. Đối thủ
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 21. Đối thủ (chỉ 1)
         formData.competitorPrices.map(p => {
             const from = (p.from && p.from.trim() !== '') ? p.from : '0';
             const to = (p.to && p.to.trim() !== '') ? p.to : '0';
