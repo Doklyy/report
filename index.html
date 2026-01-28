@@ -253,7 +253,7 @@
                 <!-- Đặc tính hàng hóa -->
                 <div class="mb-6">
                     <h3 class="font-bold text-gray-700 mb-3 text-sm">Đặc tính hàng hóa</h3>
-                    <div class="checkbox-group">
+                    <div class="checkbox-group flex flex-wrap gap-4">
                         <label class="flex items-center gap-2"><input type="checkbox" name="productNormal" value="Thông thường"> Thông thường</label>
                         <label class="flex items-center gap-2"><input type="checkbox" name="productLiquid" value="Chất lỏng"> Chất lỏng</label>
                         <label class="flex items-center gap-2"><input type="checkbox" name="productFlammable" value="Dễ cháy"> Dễ cháy</label>
@@ -375,14 +375,13 @@
                             <tr class="bg-gray-100">
                                 <th class="border border-gray-300 p-1" rowspan="2">TRỌNG LƯỢNG (gam)</th>
                                 <th class="border border-gray-300 p-1 text-center" colspan="4">GIÁ ĐỀ XUẤT</th>
-                                <th class="border border-gray-300 p-1 text-center">Tỷ lệ hoàn đề xuất</th>
+                                <th class="border border-gray-300 p-1 text-center" rowspan="2">Tỷ lệ hoàn đề xuất</th>
                             </tr>
                             <tr class="bg-gray-50">
                                 <th class="border border-gray-300 p-1">N.Tỉnh</th>
                                 <th class="border border-gray-300 p-1">N.Miền</th>
                                 <th class="border border-gray-300 p-1">C.Miền</th>
                                 <th class="border border-gray-300 p-1">L.Miền</th>
-                                <th class="border border-gray-300 p-1">Tỷ lệ hoàn đề xuất</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -436,13 +435,14 @@
                         <label class="block font-medium mb-1">Chức danh <span class="text-red-500">*</span></label>
                         <select name="title" class="bg-yellow-50 w-full" required>
                             <option value="">-- Chọn chức danh --</option>
-                            <option value="TBC">TBC</option>
-                            <option value="NVVH">NVVH</option>
-                            <option value="Nhân viên bưu tá">Nhân viên bưu tá</option>
                             <option value="NVKD">NVKD</option>
-                            <option value="NVĐHKLD">NVĐHKLD</option>
-                            <option value="BGĐCN">BGĐCN</option>
-                            <option value="Khác">Khác</option>
+                            <option value="NVVH">NVVH</option>
+                            <option value="NV Bưu tá">NV Bưu tá</option>
+                            <option value="Trưởng Bưu cục">Trưởng Bưu cục</option>
+                            <option value="NV QLKD">NV QLKD</option>
+                            <option value="TP DVCP">TP DVCP</option>
+                            <option value="Ban giám đốc CN">Ban giám đốc CN</option>
+                            <option value="Chức danh khác">Chức danh khác</option>
                         </select>
                     </div>
                     <div class="w-full">
