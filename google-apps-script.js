@@ -53,8 +53,8 @@ function doPost(e) {
       // Add headers
       const headers = [
         'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
-        'Tỷ trọng % hàng trên 1.2m', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
+        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng',        'Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
+        'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
         'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
         'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
         'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',

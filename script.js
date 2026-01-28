@@ -752,7 +752,7 @@ function formatDataForSheets(formData) {
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         percentByArea,                                         // 8. Tỷ trọng % theo khu vực
         formData.over12mRatio || '',                          // 9. Tỷ trọng hàng trên 1.2m
-        formData.over12mPercent || '0%',                      // 10. Tỷ trọng % hàng trên 1.2m
+        formData.over100kgRatio || '',                        // 10. Tỷ trọng hàng nguyên khối từ 100kg trở lên
         totalProvince,                                         // 11. Sản lượng Nội tỉnh
         totalRegion,                                           // 12. Sản lượng Nội miền
         totalAdjacent,                                         // 13. Sản lượng Cận miền
