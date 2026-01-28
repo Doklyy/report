@@ -61,8 +61,10 @@ function setupEventListeners() {
 
     // Weight level inputs: khi thay đổi mốc trọng lượng thì bảng giá (III, IV)
     // phải cập nhật lại TRỌNG LƯỢNG tương ứng, nhưng giữ nguyên giá đã nhập
+    // Và validate: Từ n < Đến n < Từ n+1 < Đến n+1
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
+            validateWeightLevels();
             updatePriceTables();
         }
     });
@@ -188,6 +190,9 @@ function addWeightLevel() {
         });
     });
     
+    // Validate weight levels
+    validateWeightLevels();
+    
     // Khi thêm hàng mới, cập nhật lại bảng giá để đồng bộ trọng lượng
     updatePriceTables();
 }
@@ -219,6 +224,9 @@ function removeWeightLevel(button) {
             }
         }
     });
+    
+    // Validate weight levels sau khi xóa
+    validateWeightLevels();
     
     // Recalculate totals after removal
     calculateTotals();
