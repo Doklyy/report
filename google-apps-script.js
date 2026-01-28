@@ -22,7 +22,8 @@ function doPost(e) {
   try {
     // Parse JSON data
     const jsonData = JSON.parse(e.postData.contents);
-    const rowData = jsonData.data;
+    const rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
+    const mergeCells = jsonData.mergeCells !== false; // Mặc định là true
     
     // Open spreadsheet - với error handling tốt hơn
     let ss;
@@ -40,7 +41,6 @@ function doPost(e) {
     let sheet = ss.getSheetByName(SHEET_NAME);
     
     if (!sheet) {
-
       const firstSheet = ss.getSheets()[0];
       if (firstSheet && firstSheet.getName() === 'Data') {
         sheet = firstSheet;
@@ -71,48 +71,87 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     }
     
-    // Validate rowData
-    if (!rowData || rowData.length === 0) {
+    // Validate rowsData
+    if (!rowsData || rowsData.length === 0) {
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
           error: 'No data provided',
-          receivedData: rowData
+          receivedData: rowsData
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Log để debug
-    Logger.log('Received data length: ' + rowData.length);
-    Logger.log('First 5 fields: ' + rowData.slice(0, 5).join(', '));
+    // Kiểm tra xem rowsData là mảng hay là 1 row đơn
+    const isArray = Array.isArray(rowsData[0]);
+    const rowsToAppend = isArray ? rowsData : [rowsData];
     
-    // Append new row - đảm bảo tất cả giá trị là string để giữ nguyên format
+    // Log để debug
+    Logger.log('Received number of rows: ' + rowsToAppend.length);
+    Logger.log('First row first 5 fields: ' + (rowsToAppend[0] ? rowsToAppend[0].slice(0, 5).join(', ') : ''));
+    
+    // Lấy số dòng hiện tại
+    const startRow = sheet.getLastRow() + 1;
+    
+    // Append tất cả các rows
     try {
       // Convert tất cả giá trị thành string để tránh Google Sheets tự động format
-      const stringRowData = rowData.map(cell => {
-        if (cell === null || cell === undefined) {
-          return '';
-        }
-        // Đảm bảo là string, không để Google Sheets tự động format số
-        return String(cell);
+      const stringRowsData = rowsToAppend.map(row => {
+        return row.map(cell => {
+          if (cell === null || cell === undefined) {
+            return '';
+          }
+          return String(cell);
+        });
       });
       
-      sheet.appendRow(stringRowData);
-      Logger.log('Row appended successfully. Row number: ' + sheet.getLastRow());
-      Logger.log('First 5 cells: ' + stringRowData.slice(0, 5).join(', '));
+      // Ghi tất cả các rows vào sheet
+      const numRows = stringRowsData.length;
+      const numCols = stringRowsData[0] ? stringRowsData[0].length : 0;
+      
+      if (numRows > 0 && numCols > 0) {
+        sheet.getRange(startRow, 1, numRows, numCols).setValues(stringRowsData);
+        Logger.log('Rows appended successfully. Start row: ' + startRow + ', Number of rows: ' + numRows);
+        
+        // Merge các ô chung nếu có nhiều hơn 1 row và mergeCells = true
+        if (numRows > 1 && mergeCells) {
+          // Các cột cần merge: 1-4 (Thời gian, Tên KH, Điện thoại, Địa chỉ)
+          // 6-23 (Tổng sản lượng đến Đối thủ khác)
+          // 25-31 (Đơn giá bình quân ĐT đến Chính sách đặc thù đối thủ)
+          // 33-45 (Đơn giá bình quân ĐX đến Mã Bưu cục)
+          
+          const mergeRanges = [
+            { startCol: 1, endCol: 4 },      // Cột 1-4
+            { startCol: 6, endCol: 23 },     // Cột 6-23
+            { startCol: 25, endCol: 31 },    // Cột 25-31
+            { startCol: 33, endCol: 45 }     // Cột 33-45
+          ];
+          
+          mergeRanges.forEach(range => {
+            try {
+              sheet.getRange(startRow, range.startCol, numRows, range.endCol - range.startCol + 1).mergeVertically();
+            } catch (mergeError) {
+              Logger.log('Warning: Could not merge columns ' + range.startCol + '-' + range.endCol + ': ' + mergeError.toString());
+            }
+          });
+          
+          Logger.log('Cells merged successfully');
+        }
+      }
     } catch (appendError) {
-      Logger.log('Error appending row: ' + appendError.toString());
+      Logger.log('Error appending rows: ' + appendError.toString());
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
-          error: 'Failed to append row: ' + appendError.toString()
+          error: 'Failed to append rows: ' + appendError.toString()
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
     // Auto-resize columns
     try {
-      sheet.autoResizeColumns(1, rowData.length);
+      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 45;
+      sheet.autoResizeColumns(1, numCols);
     } catch (resizeError) {
       Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
     }
@@ -122,8 +161,8 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({
         success: true, 
         message: 'Data saved successfully',
-        rowNumber: sheet.getLastRow(),
-        dataLength: rowData.length
+        startRow: startRow,
+        numberOfRows: rowsToAppend.length
       }))
       .setMimeType(ContentService.MimeType.JSON);
       
