@@ -811,33 +811,52 @@ function formatDataForSheets(formData) {
         formData.proposedOtherPolicies || '',                  // 37. Chính sách đặc thù đề xuất
         formData.proposedReturnRate || '',                     // 38. Tỷ lệ hoàn đề xuất
         (() => {
-            // So sánh đơn giá bình quân: Mình / Đối thủ / % chênh lệch
-            const ownProvince = proposedAvg.province || '0';
-            const ownRegion = proposedAvg.region || '0';
-            const ownAdjacent = proposedAvg.adjacent || '0';
+            // So sánh đơn giá bình quân: Format giống "Tỷ trọng % theo khu vực"
+            // Mỗi khu vực: Mình/Đối thủ/% chênh lệch, ngăn cách bằng "/"
+            const ownProvince = proposedAvg.province || '';
+            const ownRegion = proposedAvg.region || '';
+            const ownAdjacent = proposedAvg.adjacent || '';
             const ownInter = proposedAvg.inter || '0';
             
-            const compProvince = competitorAvg.province || '0';
-            const compRegion = competitorAvg.region || '0';
-            const compAdjacent = competitorAvg.adjacent || '0';
-            const compInter = competitorAvg.inter || '0';
+            const compProvince = competitorAvg.province || '';
+            const compRegion = competitorAvg.region || '';
+            const compAdjacent = competitorAvg.adjacent || '';
+            const compInter = competitorAvg.inter || '';
             
             // Tính % chênh lệch: ((Mình - Đối thủ) / Đối thủ) * 100
             const calcPercentDiff = (own, comp) => {
                 const ownNum = parseFloat(own) || 0;
                 const compNum = parseFloat(comp) || 0;
-                if (compNum === 0) return ownNum > 0 ? '100%' : '0%';
+                if (compNum === 0) {
+                    if (ownNum > 0) return '+100.0%';
+                    return '0.0%';
+                }
                 const diff = ((ownNum - compNum) / compNum) * 100;
-                return diff.toFixed(1) + '%';
+                const sign = diff >= 0 ? '+' : '';
+                return sign + diff.toFixed(1) + '%';
             };
             
-            const percentProvince = calcPercentDiff(ownProvince, compProvince);
-            const percentRegion = calcPercentDiff(ownRegion, compRegion);
-            const percentAdjacent = calcPercentDiff(ownAdjacent, compAdjacent);
-            const percentInter = calcPercentDiff(ownInter, compInter);
+            const formatValue = (val) => {
+                const num = parseFloat(val);
+                return isNaN(num) ? '' : num.toFixed(2);
+            };
             
-            // Format: Mình/Đối thủ/% chênh lệch cho mỗi khu vực
-            return `${ownProvince}/${compProvince}/${percentProvince} | ${ownRegion}/${compRegion}/${percentRegion} | ${ownAdjacent}/${compAdjacent}/${percentAdjacent} | ${ownInter}/${compInter}/${percentInter}`;
+            const formatCell = (own, comp) => {
+                const ownFormatted = formatValue(own);
+                const compFormatted = formatValue(comp);
+                const percentDiff = calcPercentDiff(own, comp);
+                
+                if (!ownFormatted && !compFormatted) return '';
+                return `${ownFormatted || '0'}/${compFormatted || '0'}/${percentDiff}`;
+            };
+            
+            const cellProvince = formatCell(ownProvince, compProvince);
+            const cellRegion = formatCell(ownRegion, compRegion);
+            const cellAdjacent = formatCell(ownAdjacent, compAdjacent);
+            const cellInter = formatCell(ownInter, compInter);
+            
+            // Format giống "Tỷ trọng % theo khu vực": Nội tỉnh/Nội miền/Cận miền/Liên miền
+            return `${cellProvince}/${cellRegion}/${cellAdjacent}/${cellInter}`;
         })(),                                                 // 39. So sánh đơn giá bình quân
         formData.reporterName || '',                           // 40. Họ và tên người báo cáo
         formData.reporterPhone || '',                          // 41. Điện thoại người báo cáo
