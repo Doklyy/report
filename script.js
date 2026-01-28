@@ -456,7 +456,6 @@ function updateProposedPriceTable() {
             region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || '',
-            currentReturnRate: row.querySelector(`input[name="proposedCurrentReturnRate_${idx}"]`)?.value || '',
             proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || ''
         };
     });
@@ -482,7 +481,6 @@ function updateProposedPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        const savedCurrentReturnRate = saved.currentReturnRate || '';
         const savedProposedReturnRate = saved.proposedReturnRate || '';
         
         const tr = document.createElement('tr');
@@ -498,7 +496,6 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedCurrentReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>
         `;
         
@@ -640,7 +637,6 @@ function collectFormData() {
                 region: regionInput ? regionInput.value : '',
                 adjacent: adjacentInput ? adjacentInput.value : '',
                 inter: interInput ? interInput.value : '',
-                currentReturnRate: row.querySelector(`input[name="proposedCurrentReturnRate_${index}"]`)?.value || '',
                 proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || ''
             });
         }
@@ -672,7 +668,6 @@ function formatDataForSheets(formData) {
     const competitorCurrentReturnRate = document.querySelector('input[name="competitorCurrentReturnRate_0"]') ? document.querySelector('input[name="competitorCurrentReturnRate_0"]').value : '';
     const competitorReturnRate = document.querySelector('input[name="competitorReturnRate_0"]') ? document.querySelector('input[name="competitorReturnRate_0"]').value : '';
     
-    const proposedCurrentReturnRate = document.querySelector('input[name="proposedCurrentReturnRate_0"]') ? document.querySelector('input[name="proposedCurrentReturnRate_0"]').value : '';
     const proposedReturnRate = document.querySelector('input[name="proposedReturnRate_0"]') ? document.querySelector('input[name="proposedReturnRate_0"]').value : '';
     
     // Thứ tự phải khớp với headers trong Google Sheets
@@ -746,8 +741,7 @@ function formatDataForSheets(formData) {
             return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
         }).join(' | '), // 31. Giá đề xuất
         formData.proposedOtherPolicies || '',                  // 26. Chính sách đặc thù đề xuất
-        proposedCurrentReturnRate || '',                       // 27. Tỷ lệ hoàn hiện tại (ĐX)
-        proposedReturnRate || '',                              // 28. Tỷ lệ hoàn đề xuất
+        proposedReturnRate || '',                              // 27. Tỷ lệ hoàn đề xuất
         formData.reporterName || '',                           // 38. Họ và tên người báo cáo
         formData.reporterPhone || '',                          // 39. Điện thoại người báo cáo
         formData.postOfficeName || '',                         // 40. Tên Bưu cục
@@ -776,6 +770,18 @@ async function handleFormSubmit(e) {
         alert('Số điện thoại người báo cáo phải bắt đầu bằng 0 và chỉ chứa số.');
         reporterPhoneInput.focus();
         return;
+    }
+    
+    // Validate tên bưu cục: không có khoảng trắng ở đầu và cuối
+    const postOfficeNameInput = document.querySelector('input[name="postOfficeName"]');
+    if (postOfficeNameInput) {
+        const value = postOfficeNameInput.value;
+        if (value !== value.trim()) {
+            alert('Tên bưu cục không được có khoảng trắng ở đầu và cuối. Vui lòng nhập lại.');
+            postOfficeNameInput.focus();
+            postOfficeNameInput.value = value.trim();
+            return;
+        }
     }
     
     const submitBtn = document.querySelector('.btn-submit');
