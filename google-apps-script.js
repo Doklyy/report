@@ -1,303 +1,90 @@
-/**
- * Google Apps Script để nhận dữ liệu từ form và ghi vào Google Sheets
- * 
- * HƯỚNG DẪN SỬ DỤNG:
- * 1. Mở Google Sheets mới
- * 2. Vào Extensions > Apps Script
- * 3. Xóa code mặc định và dán code này vào
- * 4. Thay đổi SPREADSHEET_ID thành ID của Google Sheet của bạn
- * 5. Lưu và chạy hàm doPost để tạo trigger
- * 6. Deploy > New deployment > chọn Web app
- * 7. Chọn "Execute as: Me" và "Who has access: Anyone"
- * 8. Copy URL và dán vào biến GOOGLE_SCRIPT_URL trong file script.js
- */
-
-// Thay đổi ID này thành ID của Google Sheet của bạn
-const SPREADSHEET_ID = '1SmS6QoHdRmsB4IU9u7e1Y0x5-yrJAsY4yoFbHRyYVJo';
-
-// Tên sheet để ghi dữ liệu
-const SHEET_NAME = 'Data';
-
 function doPost(e) {
   try {
-    // Parse JSON data
+    // 1. Nhận & parse JSON từ web
     const jsonData = JSON.parse(e.postData.contents);
-    const rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
-    const mergeCells = jsonData.mergeCells !== false; // Mặc định là true
-    
-    // Open spreadsheet - với error handling tốt hơn
-    let ss;
-    try {
-      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    } catch (error) {
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          success: false, 
-          error: 'Cannot access spreadsheet. Please check: 1) Sheet ID is correct, 2) Script has permission to access the sheet, 3) Sheet exists and is not deleted. Error: ' + error.toString()
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    let sheet = ss.getSheetByName(SHEET_NAME);
-    
-    if (!sheet) {
-      const firstSheet = ss.getSheets()[0];
-      if (firstSheet && firstSheet.getName() === 'Data') {
-        sheet = firstSheet;
-      } else {
-        // Create new sheet with name "Data"
-        sheet = ss.insertSheet(SHEET_NAME);
-      }
-      // Add headers
-      const headers = [
-        'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
-        'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
-        'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
-        'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
-        'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
-        'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
-        'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
-        'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
-        'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
-        'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
-        'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất','So sánh đơn giá bình quân ','Họ và tên người báo cáo',
-        'Điện thoại người báo cáo', 'Tên Bưu cục', 'Chức danh', 'Chi nhánh', 'Mã Bưu cục'
-      ];
-      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
-      sheet.getRange(1, 1, 1, headers.length).setBackground('#4CAF50');
-      sheet.getRange(1, 1, 1, headers.length).setFontColor('white');
-      sheet.setFrozenRows(1);
-    }
-    
-    // Validate rowsData
+    const rowsData = jsonData.data;           // Mảng các row (mỗi mốc trọng lượng = 1 row)
+    const mergeCells = jsonData.mergeCells !== false; // Mặc định = true
+
+    // 2. Kiểm tra dữ liệu
     if (!rowsData || rowsData.length === 0) {
       return ContentService
         .createTextOutput(JSON.stringify({
-          success: false, 
+          success: false,
           error: 'No data provided',
           receivedData: rowsData
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    
-    // Kiểm tra xem rowsData là mảng hay là 1 row đơn
-    const isArray = Array.isArray(rowsData[0]);
-    const rowsToAppend = isArray ? rowsData : [rowsData];
-    
-    // Log để debug
-    Logger.log('Received number of rows: ' + rowsToAppend.length);
-    Logger.log('First row first 5 fields: ' + (rowsToAppend[0] ? rowsToAppend[0].slice(0, 5).join(', ') : ''));
-    
-    // Lấy số dòng hiện tại
-    const startRow = sheet.getLastRow() + 1;
-    
-    // Append tất cả các rows
-    try {
-      // Convert tất cả giá trị thành string để tránh Google Sheets tự động format
-      const stringRowsData = rowsToAppend.map(row => {
-        return row.map(cell => {
-          if (cell === null || cell === undefined) {
-            return '';
-          }
-          return String(cell);
-        });
-      });
-      
-      // Ghi tất cả các rows vào sheet
-      const numRows = stringRowsData.length;
-      const numCols = stringRowsData[0] ? stringRowsData[0].length : 0;
-      
-      if (numRows > 0 && numCols > 0) {
-        sheet.getRange(startRow, 1, numRows, numCols).setValues(stringRowsData);
-        Logger.log('Rows appended successfully. Start row: ' + startRow + ', Number of rows: ' + numRows);
-        
-        // Merge các ô chung nếu có nhiều hơn 1 row và mergeCells = true
-        if (numRows > 1 && mergeCells) {
-          // Các cột cần merge: 1-4 (Thời gian, Tên KH, Điện thoại, Địa chỉ)
-          // 6-23 (Tổng sản lượng đến Đối thủ khác)
-          // 25-31 (Đơn giá bình quân ĐT đến Chính sách đặc thù đối thủ)
-          // 33-45 (Đơn giá bình quân ĐX đến Mã Bưu cục)
-          
-          const mergeRanges = [
-            { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
-            { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
-            { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
-            { startCol: 34, endCol: 46 }     // Cột 34-46: Đơn giá bình quân ĐX đến Mã Bưu cục
-          ];
-          
-          mergeRanges.forEach(range => {
-            try {
-              // Merge từng cột một
-              for (let col = range.startCol; col <= range.endCol; col++) {
-                const rangeToMerge = sheet.getRange(startRow, col, numRows, 1);
-                rangeToMerge.merge();
-                // Đặt giá trị vào ô đầu tiên (nếu chưa có)
-                if (rangeToMerge.getValue() === '') {
-                  rangeToMerge.setValue(stringRowsData[0][col - 1]);
-                }
-              }
-            } catch (mergeError) {
-              Logger.log('Warning: Could not merge columns ' + range.startCol + '-' + range.endCol + ': ' + mergeError.toString());
-            }
-          });
-          
-          Logger.log('Cells merged successfully');
-        }
-      }
-    } catch (appendError) {
-      Logger.log('Error appending rows: ' + appendError.toString());
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          success: false, 
-          error: 'Failed to append rows: ' + appendError.toString()
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    // Auto-resize columns
-    try {
-      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 45;
-      sheet.autoResizeColumns(1, numCols);
-    } catch (resizeError) {
-      Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
-    }
-    
-    // Return success response
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        success: true, 
-        message: 'Data saved successfully',
-        startRow: startRow,
-        numberOfRows: rowsToAppend.length
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch (error) {
-    // Return error response
-    return ContentService
-      .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
-// Function to test the script
-function testDoPost() {
-  const testData = {
-    data: [
-      new Date().toLocaleString('vi-VN'),
-      'Test Customer',
-      '0123456789',
-      'Test Address',
-      '0-1000',
-      '1000',
-      '100%',
-      '50',
-      '100', '200', '300', '400',
-      '1000',
-      '100%',
-      'Có', 'Không', 'Không', 'Không',
-      'Hàng điện tử',
-      'GHN; GHTK',
-      '',
-      '0-1000: 10000/15000/20000/25000',
-      '10000', '15000', '20000', '25000',
-      '5', '3',
-      'Test policies',
-      '0-1000: 9500/14000/19000/24000',
-      '9500', '14000', '19000', '24000',
-      'Test proposed policies',
-      '4',
-      'Test Reporter',
-      '0987654321',
-      'Test Post Office',
-      'Nhân viên',
-      'Hà Nội',
-      '100000'
-    ]
-  };
-  
-  const mockEvent = {
-    postData: {
-      contents: JSON.stringify(testData)
-    }
-  };
-  
-  doPost(mockEvent);
-}
+    // 3. Đảm bảo luôn là mảng 2 chiều [[...], [...]]
+    const rowsToAppend = Array.isArray(rowsData[0]) ? rowsData : [rowsData];
 
-// Function để đọc dữ liệu từ Sheets (Đồng bộ ngược: Sheets → Website)
-function doGet(e) {
-  try {
-    // Mở spreadsheet - với error handling tốt hơn
-    let ss;
-    try {
-      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    } catch (error) {
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          success: false, 
-          error: 'Cannot access spreadsheet. Please check: 1) Sheet ID is correct, 2) Script has permission to access the sheet, 3) Sheet exists and is not deleted. Error: ' + error.toString(),
-          data: []
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
+    // 4. Mở file & sheet
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let sheet = ss.getSheetByName(SHEET_NAME);
-    
-    // Nếu sheet không tồn tại, trả về empty
     if (!sheet) {
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          success: false, 
-          message: 'Sheet not found',
-          data: []
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
+      sheet = ss.insertSheet(SHEET_NAME);
+      const headers = [
+        'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
+        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng', 'Tỷ trọng % theo khu vực',
+        'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên',
+        'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền',
+        'Tổng sản lượng', 'Tỷ trọng %', 'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ',
+        'Ngành hàng', 'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ',
+        'Đơn giá bình quân Nội tỉnh (ĐT)', 'Đơn giá bình quân Nội miền (ĐT)',
+        'Đơn giá bình quân Cận miền (ĐT)', 'Đơn giá bình quân Liên miền (ĐT)',
+        'Tỷ lệ hoàn hiện tại', 'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ',
+        'Giá đề xuất', 'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
+        'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
+        'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất', 'So sánh đơn giá bình quân ',
+        'Họ và tên người báo cáo', 'Điện thoại người báo cáo', 'Tên Bưu cục',
+        'Chức danh', 'Chi nhánh', 'Mã Bưu cục'
+      ];
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.setFrozenRows(1);
     }
-    
-    // Lấy tất cả dữ liệu
-    const data = sheet.getDataRange().getValues();
-    
-    // Nếu không có dữ liệu (chỉ có header hoặc rỗng)
-    if (data.length <= 1) {
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          success: true,
-          data: [],
-          headers: data.length > 0 ? data[0] : []
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    // Chuyển đổi thành JSON
-    const headers = data[0];
-    const rows = data.slice(1).map(row => {
-      const obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index] || '';
+
+    // 5. Chuyển tất cả value thành string (tránh Google tự format)
+    const stringRowsData = rowsToAppend.map(row =>
+      row.map(cell => (cell === null || cell === undefined) ? '' : String(cell))
+    );
+
+    const startRow = sheet.getLastRow() + 1;
+    const numRows  = stringRowsData.length;
+    const numCols  = stringRowsData[0].length;
+
+    // 6. Ghi dữ liệu: mỗi row = 1 dòng, mỗi phần tử = 1 cột
+    sheet.getRange(startRow, 1, numRows, numCols).setValues(stringRowsData);
+
+    // 7. Gộp ô dọc cho các cột chung (trừ cột mốc trọng lượng & cột giá)
+    if (numRows > 1 && mergeCells) {
+      const mergeRanges = [
+        { startCol: 1, endCol: 4 },   // Thời gian → Địa chỉ
+        { startCol: 6, endCol: 22 },  // Tổng SL → Ngành hàng
+        { startCol: 24, endCol: 32 }, // Đối thủ → Chính sách đặc thù đối thủ
+        { startCol: 34, endCol: 46 }  // Đơn giá ĐX → Mã Bưu cục
+      ];
+
+      mergeRanges.forEach(range => {
+        for (let col = range.startCol; col <= range.endCol; col++) {
+          const r = sheet.getRange(startRow, col, numRows, 1);
+          r.mergeVertically(); // Gộp DỌC, vẫn giữ nhiều dòng
+        }
       });
-      return obj;
-    });
-    
-    // Trả về JSON
+    }
+
     return ContentService
       .createTextOutput(JSON.stringify({
         success: true,
-        data: rows,
-        headers: headers,
-        total: rows.length
+        message: 'Data saved successfully',
+        startRow,
+        numberOfRows: numRows
       }))
       .setMimeType(ContentService.MimeType.JSON);
-      
+
   } catch (error) {
     return ContentService
-      .createTextOutput(JSON.stringify({
-        success: false,
-        error: error.toString(),
-        data: []
-      }))
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }

@@ -964,23 +964,52 @@ function formatDataForSheets(formData) {
         const to = (weightLevel.to && weightLevel.to.trim() !== '') ? weightLevel.to : '0';
         const weightRange = `${from}-${to}`;
         
-        if (weightRange === '0-0' || weightRange === '-') return; // Bỏ qua các mốc không hợp lệ
+        // Bỏ qua các mốc không hợp lệ
+        if (weightRange === '0-0' || weightRange === '-') return;
         
         // Lấy giá đối thủ và giá đề xuất cho mốc này
         const competitorPrice = formData.competitorPrices[index] || {};
         const proposedPrice = formData.proposedPrices[index] || {};
         
-        const competitorPriceStr = competitorPrice.from && competitorPrice.to ? 
-            `${competitorPrice.from}-${competitorPrice.to}: ${competitorPrice.province || ''}/${competitorPrice.region || ''}/${competitorPrice.adjacent || ''}/${competitorPrice.inter || ''}` : '';
+        const competitorPriceStr = (competitorPrice.from && competitorPrice.to)
+            ? `${competitorPrice.from}-${competitorPrice.to}: ${competitorPrice.province || ''}/${competitorPrice.region || ''}/${competitorPrice.adjacent || ''}/${competitorPrice.inter || ''}`
+            : '';
         
-        const proposedPriceStr = proposedPrice.from && proposedPrice.to ? 
-            `${proposedPrice.from}-${proposedPrice.to}: ${proposedPrice.province || ''}/${proposedPrice.region || ''}/${proposedPrice.adjacent || ''}/${proposedPrice.inter || ''}` : '';
+        const proposedPriceStr = (proposedPrice.from && proposedPrice.to)
+            ? `${proposedPrice.from}-${proposedPrice.to}: ${proposedPrice.province || ''}/${proposedPrice.region || ''}/${proposedPrice.adjacent || ''}/${proposedPrice.inter || ''}`
+            : '';
         
         // Tạo row mới với thông tin chung + thông tin riêng của mốc này
         const row = [...commonData];
-        row[4] = weightRange;  // 5. Các mốc trọng lượng
-        row[23] = competitorPriceStr;  // 24. Giá đối thủ
-        row[31] = proposedPriceStr;   // 32. Giá đề xuất
+        
+        // 5. Các mốc trọng lượng
+        row[4] = weightRange;
+        // 24. Giá đối thủ
+        row[23] = competitorPriceStr;
+        // 32. Giá đề xuất
+        row[31] = proposedPriceStr;
+        
+        // Với các mốc thứ 2 trở đi, chỉ hiển thị cột theo mốc (mốc trọng lượng, giá...),
+        // còn các thông tin chung để trống để bảng dễ nhìn hơn (giống layout bạn mô tả).
+        if (index > 0) {
+            // Các cột thông tin chung cần làm trống trên các dòng tiếp theo
+            const commonCols = [
+                0, 1, 2, 3,             // Thời gian, Tên KH, Điện thoại, Địa chỉ
+                5, 6, 7, 8, 9,          // Tổng sản lượng các mốc, Tỷ trọng sản lượng, Tỷ trọng % theo khu vực, Tỷ trọng >1.2m, >100kg
+                10, 11, 12, 13, 14, 15, // Sản lượng khu vực + Tổng sản lượng
+                16, 17, 18, 19, 20, 21, 22, // Tỷ trọng %, Hàng thông thường → Ngành hàng (và Tên sản phẩm nếu có)
+                24, 25, 26, 27, 28, 29, 30, // Đơn giá bình quân ĐT, tỷ lệ hoàn, CS đặc thù đối thủ
+                32, 33, 34, 35, 36, 37, 38, 39, // Đơn giá bình quân ĐX, CS đề xuất, Tỷ lệ hoàn đề xuất, So sánh đơn giá
+                40, 41, 42, 43, 44, 45   // Thông tin người báo cáo, bưu cục, chi nhánh, mã bưu cục
+            ];
+            
+            commonCols.forEach(colIndex => {
+                // Không động vào cột mốc trọng lượng (4), giá đối thủ (23), giá đề xuất (31)
+                if (colIndex >= 0 && colIndex < row.length) {
+                    row[colIndex] = '';
+                }
+            });
+        }
         
         rows.push(row);
     });
@@ -1273,4 +1302,3 @@ function hideMessages() {
 // PHẦN ĐỌC VÀ HIỂN THỊ DỮ LIỆU ĐÃ BỊ XÓA
 // Dữ liệu chỉ được gửi lên Google Sheets, không hiển thị trên website
 // ============================================
-
