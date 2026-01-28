@@ -213,6 +213,96 @@ function addWeightLevel() {
     updatePriceTables();
 }
 
+// Validate weight levels: Từ n < Đến n < Từ n+1 < Đến n+1
+function validateWeightLevels() {
+    const rows = document.querySelectorAll('#weightLevelsTable tr');
+    let isValid = true;
+    let errorMessage = '';
+    let errorRowIndex = -1;
+    
+    // Reset border color cho tất cả các input
+    rows.forEach(row => {
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        if (fromInput) fromInput.style.borderColor = '';
+        if (toInput) toInput.style.borderColor = '';
+    });
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        
+        if (!fromInput || !toInput) continue;
+        
+        const from = parseFloat(fromInput.value) || 0;
+        const to = parseFloat(toInput.value) || 0;
+        
+        // Validate: Từ < Đến trong cùng 1 dòng (chỉ validate nếu cả 2 đều có giá trị > 0)
+        if (from > 0 && to > 0 && from >= to) {
+            isValid = false;
+            errorMessage = `Dòng ${i + 1}: Giá trị "Từ" (${from}) phải nhỏ hơn "Đến" (${to})`;
+            errorRowIndex = i;
+            fromInput.style.borderColor = 'red';
+            toInput.style.borderColor = 'red';
+            break;
+        } else if (from > 0 || to > 0) {
+            // Nếu chỉ có 1 trong 2 giá trị, reset border
+            fromInput.style.borderColor = '';
+            toInput.style.borderColor = '';
+        }
+        
+        // Validate: Đến n < Từ n+1 (chỉ validate nếu cả 2 dòng đều có giá trị)
+        if (i < rows.length - 1) {
+            const nextRow = rows[i + 1];
+            const nextFromInput = nextRow.querySelector('.weight-from');
+            if (nextFromInput) {
+                const nextFrom = parseFloat(nextFromInput.value) || 0;
+                
+                // Chỉ validate nếu cả 2 dòng đều có giá trị hợp lệ
+                if (to > 0 && nextFrom > 0 && to >= nextFrom) {
+                    isValid = false;
+                    errorMessage = `Dòng ${i + 1} và ${i + 2}: "Đến" của dòng ${i + 1} (${to}) phải nhỏ hơn "Từ" của dòng ${i + 2} (${nextFrom}). Các mốc trọng lượng không được chồng chéo.`;
+                    errorRowIndex = i;
+                    toInput.style.borderColor = 'red';
+                    nextFromInput.style.borderColor = 'red';
+                    break;
+                } else {
+                    // Reset border nếu không có lỗi
+                    toInput.style.borderColor = '';
+                    nextFromInput.style.borderColor = '';
+                }
+            }
+        }
+    }
+    
+    // Hiển thị thông báo lỗi nếu có
+    let errorDiv = document.getElementById('weightValidationError');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'weightValidationError';
+        errorDiv.className = 'text-red-600 text-sm mt-2 p-2 bg-red-50 border border-red-300 rounded';
+        const tbody = document.getElementById('weightLevelsTable');
+        const parent = tbody.parentElement;
+        if (parent) {
+            parent.insertBefore(errorDiv, tbody.nextSibling);
+        }
+    }
+    
+    if (!isValid) {
+        errorDiv.textContent = '⚠️ ' + errorMessage;
+        errorDiv.style.display = 'block';
+        // Scroll đến dòng có lỗi
+        if (errorRowIndex >= 0 && rows[errorRowIndex]) {
+            rows[errorRowIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else {
+        errorDiv.style.display = 'none';
+    }
+    
+    return isValid;
+}
+
 // Remove weight level row
 function removeWeightLevel(button) {
     const tbody = document.getElementById('weightLevelsTable');
