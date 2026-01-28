@@ -810,12 +810,41 @@ function formatDataForSheets(formData) {
         proposedAvg.inter || '',                               // 36. Đơn giá bình quân Liên miền (ĐX)
         formData.proposedOtherPolicies || '',                  // 37. Chính sách đặc thù đề xuất
         formData.proposedReturnRate || '',                     // 38. Tỷ lệ hoàn đề xuất
-        formData.reporterName || '',                           // 39. Họ và tên người báo cáo
-        formData.reporterPhone || '',                          // 40. Điện thoại người báo cáo
-        formData.postOfficeName || '',                         // 41. Tên Bưu cục
-        formData.title || '',                                  // 42. Chức danh
-        formData.branch || '',                                 // 43. Chi nhánh
-        (formData.postOfficeCode || '').toString()            // 44. Mã Bưu cục (đảm bảo là string để giữ nguyên text)
+        (() => {
+            // So sánh đơn giá bình quân: Mình / Đối thủ / % chênh lệch
+            const ownProvince = proposedAvg.province || '0';
+            const ownRegion = proposedAvg.region || '0';
+            const ownAdjacent = proposedAvg.adjacent || '0';
+            const ownInter = proposedAvg.inter || '0';
+            
+            const compProvince = competitorAvg.province || '0';
+            const compRegion = competitorAvg.region || '0';
+            const compAdjacent = competitorAvg.adjacent || '0';
+            const compInter = competitorAvg.inter || '0';
+            
+            // Tính % chênh lệch: ((Mình - Đối thủ) / Đối thủ) * 100
+            const calcPercentDiff = (own, comp) => {
+                const ownNum = parseFloat(own) || 0;
+                const compNum = parseFloat(comp) || 0;
+                if (compNum === 0) return ownNum > 0 ? '100%' : '0%';
+                const diff = ((ownNum - compNum) / compNum) * 100;
+                return diff.toFixed(1) + '%';
+            };
+            
+            const percentProvince = calcPercentDiff(ownProvince, compProvince);
+            const percentRegion = calcPercentDiff(ownRegion, compRegion);
+            const percentAdjacent = calcPercentDiff(ownAdjacent, compAdjacent);
+            const percentInter = calcPercentDiff(ownInter, compInter);
+            
+            // Format: Mình/Đối thủ/% chênh lệch cho mỗi khu vực
+            return `${ownProvince}/${compProvince}/${percentProvince} | ${ownRegion}/${compRegion}/${percentRegion} | ${ownAdjacent}/${compAdjacent}/${percentAdjacent} | ${ownInter}/${compInter}/${percentInter}`;
+        })(),                                                 // 39. So sánh đơn giá bình quân
+        formData.reporterName || '',                           // 40. Họ và tên người báo cáo
+        formData.reporterPhone || '',                          // 41. Điện thoại người báo cáo
+        formData.postOfficeName || '',                         // 42. Tên Bưu cục
+        formData.title || '',                                  // 43. Chức danh
+        formData.branch || '',                                 // 44. Chi nhánh
+        (formData.postOfficeCode || '').toString()            // 45. Mã Bưu cục (đảm bảo là string để giữ nguyên text)
     ];
     
     return row;

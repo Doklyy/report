@@ -90,6 +90,7 @@ function doPost(e) {
         'Đơn giá bình quân Liên miền (ĐX)',
         'Chính sách đặc thù đề xuất',
         'Tỷ lệ hoàn đề xuất',
+        'So sánh đơn giá bình quân',
         'Họ và tên người báo cáo',
         'Điện thoại người báo cáo',
         'Tên Bưu cục',
