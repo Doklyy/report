@@ -842,6 +842,39 @@ async function handleFormSubmit(e) {
         }
     }
     
+    // Validate ngành hàng (bắt buộc chọn)
+    const industryChecked = document.querySelector('input[name="industry"]:checked');
+    if (!industryChecked) {
+        alert('Vui lòng chọn ngành hàng.');
+        const firstIndustry = document.querySelector('input[name="industry"]');
+        if (firstIndustry) {
+            firstIndustry.closest('label')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    
+    // Validate đối thủ (bắt buộc chọn)
+    const competitorChecked = document.querySelector('input[name="competitor"]:checked');
+    if (!competitorChecked) {
+        alert('Vui lòng chọn đối thủ đang phục vụ.');
+        const firstCompetitor = document.querySelector('input[name="competitor"]');
+        if (firstCompetitor) {
+            firstCompetitor.closest('label')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    
+    // Validate sản phẩm cụ thể (bắt buộc điền)
+    const specificProductInput = document.getElementById('specificProduct');
+    if (!specificProductInput || !specificProductInput.value.trim()) {
+        alert('Vui lòng nhập tên sản phẩm cụ thể.');
+        if (specificProductInput) {
+            specificProductInput.focus();
+            specificProductInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    
     const submitBtn = document.querySelector('.btn-submit');
     const originalText = submitBtn.textContent;
     
