@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7fo6TcQIyb3D4AJzWvUzUR9Jxl0S8UiSxUmIAZ0RtMdymfUpEaCygbCkD2N_QEbw/exec'; // Google Apps Script URL
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynQqLG9UnYS_V9x5olm21xDPEItt2vQs4Y-88h48HWww6IPsUffHqK0eApQWMee3f4/exec'; // Google Apps Script URL (mới)
 
 // Weight levels data
 let weightLevels = [];
@@ -997,15 +997,9 @@ function formatDataForSheets(formData) {
         // 33. Giá đề xuất (0-based index 32)
         row[32] = proposedPriceStr;
         
-        // Với các mốc thứ 2 trở đi, chỉ hiển thị cột theo mốc (mốc trọng lượng, giá...),
-        // còn các thông tin chung để trống để bảng dễ nhìn hơn (giống layout bạn mô tả).
-        if (index > 0) {
-            for (let colIndex = 0; colIndex < row.length; colIndex++) {
-                // Giữ lại chỉ 3 cột thay đổi theo từng mốc: 5 (mốc trọng lượng), 25 (Giá đối thủ), 33 (Giá đề xuất)
-                if (colIndex === 4 || colIndex === 24 || colIndex === 32) continue;
-                row[colIndex] = '';
-            }
-        }
+        // KHÔNG XÓA DỮ LIỆU - Mỗi dòng giữ nguyên toàn bộ thông tin
+        // Việc merge sẽ được xử lý ở Apps Script để hiển thị đẹp
+        // Dữ liệu đầy đủ giúp có thể lọc/tìm kiếm từng dòng độc lập
         
         rows.push(row);
     });
