@@ -6,8 +6,12 @@ const SHEET_NAME = 'Data';
  */
 function doPost(e) {
   try {
-    // 1. Kiểm tra đối tượng event e và postData
-    if (!e || !e.postData) {
+    // 1. Kiểm tra đối tượng event e - dùng optional chaining để tránh lỗi khi e undefined
+    var postContents = (e && e.postData && e.postData.contents) ? e.postData.contents : null;
+    if (!postContents && e && e.parameter && e.parameter.data) {
+      postContents = e.parameter.data; // Hỗ trợ form-encoded
+    }
+    if (!postContents) {
       return createJsonResponse({
         success: false,
         error: 'Lỗi: Không có dữ liệu sự kiện. Vui lòng không chạy doPost trực tiếp từ Editor. Hãy dùng hàm testDoPost() hoặc gọi từ Web App.'
@@ -17,7 +21,7 @@ function doPost(e) {
     // 2. Phân tích dữ liệu JSON từ body
     let jsonData;
     try {
-      jsonData = JSON.parse(e.postData.contents);
+      jsonData = JSON.parse(postContents);
     } catch (parseError) {
       return createJsonResponse({
         success: false,
