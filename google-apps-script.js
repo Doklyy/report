@@ -4,8 +4,40 @@ const SPREADSHEET_ID = '1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s';
 const SHEET_NAME = 'Data';
 function doPost(e) {
   try {
-    // Parse JSON data
-    const jsonData = JSON.parse(e.postData.contents);
+    // Kiểm tra e và postData - tránh lỗi khi chạy trực tiếp từ editor hoặc request không hợp lệ
+    if (!e) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false,
+          error: 'Invalid request: No event data. Deploy as Web App and call from your form. Không chạy doPost trực tiếp - hãy chạy testDoPost() để test.'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Lấy dữ liệu từ postData (JSON body) hoặc parameter (form-encoded)
+    let jsonData;
+    try {
+      if (e.postData && e.postData.contents) {
+        jsonData = JSON.parse(e.postData.contents);
+      } else if (e.parameter && e.parameter.data) {
+        jsonData = JSON.parse(e.parameter.data);
+      } else {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: false,
+            error: 'Invalid request: No POST data. Expected JSON with "data" and "mergeCells" fields.'
+          }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    } catch (parseError) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false,
+          error: 'Invalid JSON: ' + parseError.toString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     const rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
     const mergeCells = jsonData.mergeCells !== false; // Mặc định là true
     
