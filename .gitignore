@@ -17,6 +17,7 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+.tmp_script_*.js
 
 # Environment variables (nếu có)
 .env

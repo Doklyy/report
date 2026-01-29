@@ -1412,41 +1412,32 @@ function updateComparisonTable() {
 
 // Send data to Google Sheets
 async function sendToGoogleSheets(rowData) {
+    // Gửi theo kiểu "simple request" + no-cors để tránh lỗi CORS / preflight của Apps Script
+    // Apps Script sẽ nhận ở e.parameter.data (xem file google-apps-script.js)
+    const payload = { data: rowData };
+
     try {
-        console.log('Sending data to Google Sheets:', {
+        console.log('Sending data to Google Sheets (no-cors, form-encoded):', {
             url: GOOGLE_SCRIPT_URL,
             dataLength: rowData.length,
             firstFewFields: rowData.slice(0, 5)
         });
-        
+
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            mode: 'cors',
+            mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/json',
+                // content-type này thuộc nhóm "simple", sẽ không kích hoạt preflight
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: JSON.stringify({ data: rowData })
+            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
         });
-        
-        // Đọc response để kiểm tra kết quả
-        const responseText = await response.text();
-        console.log('Response status:', response.status);
-        console.log('Response text:', responseText);
-        
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (e) {
-            // Nếu không parse được JSON, có thể là HTML error page
-            throw new Error('Không nhận được phản hồi hợp lệ từ server. Vui lòng kiểm tra lại Google Apps Script URL.');
-        }
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Lỗi khi gửi dữ liệu lên Google Sheets');
-        }
-        
-        console.log('Data saved successfully! Row number:', result.rowNumber);
-        return result;
+
+        // Ở chế độ no-cors, browser không cho đọc body/status, nhưng request vẫn được gửi.
+        console.log('Request sent. Response type:', response.type);
+
+        // Trả về flag noCors để phía trên hiển thị thông điệp phù hợp
+        return { success: true, noCors: true };
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
         console.error('Error details:', {
