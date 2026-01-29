@@ -196,40 +196,6 @@
             margin-bottom: 1rem;
             text-align: center;
         }
-        .result-note-bar {
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-        .result-note-bar input {
-            border-color: #cbd5e1 !important;
-            background-color: #ffffff !important;
-        }
-        .result-note-bar input:focus {
-            border-color: #f59e0b !important;
-        }
-        /* Thanh Kết quả - bấm để mở rộng */
-        .result-toggle-bar {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            user-select: none;
-        }
-        .result-toggle-bar:hover {
-            background: linear-gradient(180deg, #e2e8f0 0%, #f1f5f9 100%) !important;
-        }
-        .result-toggle-bar .chevron {
-            transition: transform 0.3s ease;
-        }
-        .result-toggle-bar.expanded .chevron {
-            transform: rotate(180deg);
-        }
-        .result-panel {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .result-panel.show {
-            max-height: 300px;
-        }
     </style>
 </head>
 <body class="p-2 md:p-8">
@@ -255,30 +221,6 @@
         </div>
 
         <form id="reportForm" onsubmit="return false;">
-            <!-- Kết quả & Ghi chú - Thanh bấm để mở (AU, AV) -->
-            <div class="mb-6">
-                <div class="result-note-bar rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                    <div id="resultToggleBar" class="result-toggle-bar flex items-center justify-between gap-3 px-4 py-3 bg-gray-100" onclick="toggleResultPanel()">
-                        <span class="text-sm font-semibold text-gray-700">Kết quả & Ghi chú</span>
-                        <svg class="chevron w-5 h-5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                    <div id="resultPanel" class="result-panel bg-white border-t border-gray-200">
-                        <div class="p-4 flex flex-wrap items-center gap-4">
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Kết quả:</span>
-                                <input type="text" name="result" id="result" class="bg-yellow-50 border-2 border-amber-200 rounded px-3 py-1.5 text-sm min-w-[180px]" placeholder="Nhập kết quả">
-                            </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Ghi chú:</span>
-                                <input type="text" name="note" id="note" class="bg-yellow-50 border-2 border-amber-200 rounded px-3 py-1.5 text-sm min-w-[180px]" placeholder="Nhập ghi chú">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- I. THÔNG TIN KHÁCH HÀNG -->
             <div class="mb-8">
                 <div class="section-title text-blue-900 uppercase">I. Thông tin khách hàng</div>
