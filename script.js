@@ -909,21 +909,22 @@ function formatDataForSheets(formData) {
         formData.phone,                                        // 3. Điện thoại
         formData.address,                                      // 4. Địa chỉ
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng cho mỗi row)
-        grandTotal,                                            // 6. Tổng sản lượng các mốc
-        totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
-        percentByArea,                                         // 8. Tỷ trọng % theo khu vực
-        formData.over12mRatio || '',                          // 9. Tỷ trọng hàng trên 1.2m
-        formData.over100kgRatio || '',                        // 10. Tỷ trọng hàng nguyên khối từ 100kg trở lên
-        totalProvince,                                         // 11. Sản lượng Nội tỉnh
-        totalRegion,                                           // 12. Sản lượng Nội miền
-        totalAdjacent,                                         // 13. Sản lượng Cận miền
-        totalInter,                                            // 14. Sản lượng Liên miền
-        grandTotal,                                            // 15. Tổng sản lượng
-        percentRatio,                                          // 16. Tỷ trọng %
-        formData.productNormal ? 'Có' : 'Không',              // 17. Hàng thông thường
-        formData.productLiquid ? 'Có' : 'Không',               // 18. Chất lỏng
-        formData.productFlammable ? 'Có' : 'Không',            // 19. Dễ cháy
-        formData.productFragile ? 'Có' : 'Không',              // 20. Dễ vỡ
+        '',                                                    // 6. Sản lượng hàng gửi (Nội tỉnh/Nội miền/Cận miền/Liên miền - sẽ điền riêng cho mỗi row)
+        grandTotal,                                            // 7. Tổng sản lượng các mốc
+        totalWeightLevels.toString(),                          // 8. Tỷ trọng sản lượng
+        percentByArea,                                         // 9. Tỷ trọng % theo khu vực
+        formData.over12mRatio || '',                          // 10. Tỷ trọng hàng trên 1.2m
+        formData.over100kgRatio || '',                        // 11. Tỷ trọng hàng nguyên khối từ 100kg trở lên
+        totalProvince,                                         // 12. Sản lượng Nội tỉnh
+        totalRegion,                                           // 13. Sản lượng Nội miền
+        totalAdjacent,                                         // 14. Sản lượng Cận miền
+        totalInter,                                            // 15. Sản lượng Liên miền
+        grandTotal,                                            // 16. Tổng sản lượng
+        percentRatio,                                          // 17. Tỷ trọng %
+        formData.productNormal ? 'Có' : 'Không',              // 18. Hàng thông thường
+        formData.productLiquid ? 'Có' : 'Không',               // 19. Chất lỏng
+        formData.productFlammable ? 'Có' : 'Không',            // 20. Dễ cháy
+        formData.productFragile ? 'Có' : 'Không',              // 21. Dễ vỡ
         (() => {
             // Kết hợp industries và industryOther - NGÀNH HÀNG
             const industryList = formData.industries.filter(i => i && i.trim() !== '');
@@ -931,34 +932,34 @@ function formatDataForSheets(formData) {
                 industryList.push(formData.industryOther.trim());
             }
             return industryList.join('; ');
-        })(),                                                    // 21. Ngành hàng
-        formData.specificProduct || '',                          // 22. Tên sản phẩm
-        formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ (chỉ 1)
-        '',                                                    // 24. Đối thủ khác (không dùng nữa, để trống)
-        '',                                                    // 25. Giá đối thủ (sẽ điền riêng cho mỗi row)
-        competitorAvg.province || '',                          // 26. Đơn giá bình quân Nội tỉnh (ĐT)
-        competitorAvg.region || '',                            // 26. Đơn giá bình quân Nội miền (ĐT)
-        competitorAvg.adjacent || '',                          // 27. Đơn giá bình quân Cận miền (ĐT)
-        competitorAvg.inter || '',                             // 28. Đơn giá bình quân Liên miền (ĐT)
-        competitorCurrentReturnRate || '',                     // 29. Tỷ lệ hoàn hiện tại
-        competitorReturnRate || '',                            // 30. Tỷ lệ hoàn đối thủ miễn phí
-        formData.competitorOtherPolicies || '',                // 31. Chính sách đặc thù đối thủ
-        '',                                                    // 32. Giá đề xuất (sẽ điền riêng cho mỗi row)
-        proposedAvg.province || '',                            // 33. Đơn giá bình quân Nội tỉnh (ĐX)
-        proposedAvg.region || '',                              // 34. Đơn giá bình quân Nội miền (ĐX)
-        proposedAvg.adjacent || '',                            // 35. Đơn giá bình quân Cận miền (ĐX)
-        proposedAvg.inter || '',                               // 36. Đơn giá bình quân Liên miền (ĐX)
-        formData.proposedOtherPolicies || '',                  // 37. Chính sách đặc thù đề xuất
-        proposedReturnRate || '',                             // 38. Tỷ lệ hoàn đề xuất
-        comparisonAvg,                                         // 39. So sánh đơn giá bình quân
-        formData.reporterName || '',                           // 40. Họ và tên người báo cáo
-        formData.reporterPhone || '',                          // 41. Điện thoại người báo cáo
-        formData.postOfficeName || '',                         // 42. Tên Bưu cục
-        formData.title || '',                                  // 43. Chức danh
-        formData.branch || '',                                 // 44. Chi nhánh
-        (formData.postOfficeCode || '').toString(),           // 45. Mã Bưu cục
-        '',                                                    // 46. Kết quả (AU) - điền trong Sheet
-        ''                                                     // 47. Ghi chú (AV) - điền trong Sheet
+        })(),                                                    // 22. Ngành hàng
+        formData.specificProduct || '',                          // 23. Tên sản phẩm
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 24. Đối thủ (chỉ 1)
+        '',                                                    // 25. Đối thủ khác (không dùng nữa, để trống)
+        '',                                                    // 26. Giá đối thủ (sẽ điền riêng cho mỗi row)
+        competitorAvg.province || '',                          // 27. Đơn giá bình quân Nội tỉnh (ĐT)
+        competitorAvg.region || '',                            // 28. Đơn giá bình quân Nội miền (ĐT)
+        competitorAvg.adjacent || '',                          // 29. Đơn giá bình quân Cận miền (ĐT)
+        competitorAvg.inter || '',                             // 30. Đơn giá bình quân Liên miền (ĐT)
+        competitorCurrentReturnRate || '',                     // 31. Tỷ lệ hoàn hiện tại
+        competitorReturnRate || '',                            // 32. Tỷ lệ hoàn đối thủ miễn phí
+        formData.competitorOtherPolicies || '',                // 33. Chính sách đặc thù đối thủ
+        '',                                                    // 34. Giá đề xuất (sẽ điền riêng cho mỗi row)
+        proposedAvg.province || '',                            // 35. Đơn giá bình quân Nội tỉnh (ĐX)
+        proposedAvg.region || '',                              // 36. Đơn giá bình quân Nội miền (ĐX)
+        proposedAvg.adjacent || '',                            // 37. Đơn giá bình quân Cận miền (ĐX)
+        proposedAvg.inter || '',                               // 38. Đơn giá bình quân Liên miền (ĐX)
+        formData.proposedOtherPolicies || '',                  // 39. Chính sách đặc thù đề xuất
+        proposedReturnRate || '',                             // 40. Tỷ lệ hoàn đề xuất
+        comparisonAvg,                                         // 41. So sánh đơn giá bình quân
+        formData.reporterName || '',                           // 42. Họ và tên người báo cáo
+        formData.reporterPhone || '',                          // 43. Điện thoại người báo cáo
+        formData.postOfficeName || '',                         // 44. Tên Bưu cục
+        formData.title || '',                                  // 45. Chức danh
+        formData.branch || '',                                 // 46. Chi nhánh
+        (formData.postOfficeCode || '').toString(),           // 47. Mã Bưu cục
+        '',                                                    // 48. Kết quả (AU) - điền trong Sheet
+        ''                                                     // 49. Ghi chú (AV) - điền trong Sheet
     ];
     
     // Tạo 1 row cho mỗi mốc trọng lượng
@@ -979,11 +980,16 @@ function formatDataForSheets(formData) {
         const proposedPriceStr = proposedPrice.from && proposedPrice.to ? 
             `${proposedPrice.from}-${proposedPrice.to}: ${proposedPrice.province || ''}/${proposedPrice.region || ''}/${proposedPrice.adjacent || ''}/${proposedPrice.inter || ''}` : '';
         
+        // Sản lượng hàng gửi: Nội tỉnh/Nội miền/Cận miền/Liên miền cho mốc này
+        const volume = formData.volumes[index] || {};
+        const volumeStr = `${volume.province || '0'}/${volume.region || '0'}/${volume.adjacent || '0'}/${volume.inter || '0'}`;
+        
         // Tạo row mới với thông tin chung + thông tin riêng của mốc này
         const row = [...commonData];
         row[4] = weightRange;  // 5. Các mốc trọng lượng
-        row[24] = competitorPriceStr;  // 25. Giá đối thủ
-        row[32] = proposedPriceStr;   // 33. Giá đề xuất
+        row[5] = volumeStr;    // 6. Sản lượng hàng gửi (Nội tỉnh/Nội miền/Cận miền/Liên miền)
+        row[25] = competitorPriceStr;  // 26. Giá đối thủ
+        row[33] = proposedPriceStr;   // 34. Giá đề xuất
         
         rows.push(row);
     });
