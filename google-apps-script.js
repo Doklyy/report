@@ -110,7 +110,7 @@ function doPost(e) {
             { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
             { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
             { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
-            { startCol: 34, endCol: 48 }     // Cột 34-48: Đơn giá bình quân ĐX đến Ghi chú (AU, AV)
+            { startCol: 34, endCol: 48 }     // Cột 34-48: Đơn giá bình quân ĐX đến Ghi chú
           ];
           
           mergeRanges.forEach(range => {
