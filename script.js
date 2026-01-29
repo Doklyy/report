@@ -1,5 +1,4 @@
 // Google Sheets Configuration
-// Web App URL (đã deploy) của Google Apps Script
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec'; // Google Apps Script URL
 
 // Weight levels data
@@ -62,19 +61,13 @@ function setupEventListeners() {
 
     // Weight level inputs: khi thay đổi mốc trọng lượng thì bảng giá (III, IV)
     // phải cập nhật lại TRỌNG LƯỢNG tương ứng, nhưng giữ nguyên giá đã nhập
+    // Và validate: Từ n < Đến n < Từ n+1 < Đến n+1
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
-            validateWeightRanges();
+            validateWeightLevels();
             updatePriceTables();
         }
     });
-    
-    // Validation khi blur khỏi input trọng lượng
-    document.addEventListener('blur', function(e) {
-        if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
-            validateWeightRanges();
-        }
-    }, true);
 
 
     // Attach listeners to existing rows
@@ -87,25 +80,7 @@ function setupEventListeners() {
                 calculateTotals();
             });
         });
-        
-        // Attach validation for weight inputs
-        const fromInput = row.querySelector('.weight-from');
-        const toInput = row.querySelector('.weight-to');
-        if (fromInput) {
-            fromInput.addEventListener('blur', validateWeightRanges);
-            fromInput.addEventListener('input', validateWeightRanges);
-        }
-        if (toInput) {
-            toInput.addEventListener('blur', validateWeightRanges);
-            toInput.addEventListener('input', validateWeightRanges);
-        }
     });
-    
-    // Auto-format "%" for percentage inputs
-    setupPercentageInputValidation();
-    
-    // Auto-format "%" for return rate inputs (sẽ được thêm động trong updatePriceTables)
-    setupPercentageInputs();
 
     // Giới hạn chọn duy nhất cho đặc tính hàng hóa
     const productCheckboxes = document.querySelectorAll('input[name="productNormal"], input[name="productLiquid"], input[name="productFlammable"], input[name="productFragile"]');
@@ -133,14 +108,7 @@ function setupEventListeners() {
     
     // Form submission
     const form = document.getElementById('reportForm');
-    if (form) {
-        form.addEventListener('submit', handleFormSubmit);
-        // Đảm bảo form không submit theo cách mặc định
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            return false;
-        }, false);
-    }
+    form.addEventListener('submit', handleFormSubmit);
 }
 
 // Lưu thông tin người báo cáo vào localStorage
@@ -185,8 +153,8 @@ function addWeightLevel() {
     
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
-        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" min="0" placeholder="0"></td>
+        <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" min="0" placeholder="0"></td>
         <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
         <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
         <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
@@ -222,20 +190,136 @@ function addWeightLevel() {
         });
     });
     
-    // Attach event listeners to weight inputs for validation
-    const fromInput = row.querySelector('.weight-from');
-    const toInput = row.querySelector('.weight-to');
-    if (fromInput) {
-        fromInput.addEventListener('blur', validateWeightRanges);
-        fromInput.addEventListener('input', validateWeightRanges);
+    // Attach event listeners to weight inputs
+    const weightFromInput = row.querySelector('.weight-from');
+    const weightToInput = row.querySelector('.weight-to');
+    if (weightFromInput) {
+        weightFromInput.addEventListener('input', function() {
+            validateWeightLevels();
+            updatePriceTables();
+        });
     }
-    if (toInput) {
-        toInput.addEventListener('blur', validateWeightRanges);
-        toInput.addEventListener('input', validateWeightRanges);
+    if (weightToInput) {
+        weightToInput.addEventListener('input', function() {
+            validateWeightLevels();
+            updatePriceTables();
+        });
     }
+    
+    // Validate weight levels
+    validateWeightLevels();
     
     // Khi thêm hàng mới, cập nhật lại bảng giá để đồng bộ trọng lượng
     updatePriceTables();
+}
+
+// Validate weight levels: Từ n < Đến n < Từ n+1 < Đến n+1
+function validateWeightLevels() {
+    const rows = document.querySelectorAll('#weightLevelsTable tr');
+    let isValid = true;
+    let errorMessage = '';
+    let errorRowIndex = -1;
+    const errorInputs = []; // Lưu các input bị lỗi để không reset border
+    
+    // Reset border color cho tất cả các input trước
+    rows.forEach(row => {
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        if (fromInput) {
+            fromInput.style.borderColor = '';
+            fromInput.style.borderWidth = '';
+        }
+        if (toInput) {
+            toInput.style.borderColor = '';
+            toInput.style.borderWidth = '';
+        }
+    });
+    
+    // Kiểm tra từng dòng
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        
+        if (!fromInput || !toInput) continue;
+        
+        const fromValue = fromInput.value.trim();
+        const toValue = toInput.value.trim();
+        const from = parseFloat(fromValue) || 0;
+        const to = parseFloat(toValue) || 0;
+        
+        // Bỏ qua validation nếu cả 2 ô đều trống
+        if (!fromValue && !toValue) {
+            continue;
+        }
+        
+        // Validate: Từ < Đến trong cùng 1 dòng
+        // Chỉ validate nếu cả 2 đều có giá trị
+        if (fromValue && toValue) {
+            if (from >= to) {
+                isValid = false;
+                errorMessage = `Dòng ${i + 1}: Giá trị "Từ" (${from}) phải nhỏ hơn "Đến" (${to})`;
+                errorRowIndex = i;
+                fromInput.style.borderColor = 'red';
+                fromInput.style.borderWidth = '2px';
+                toInput.style.borderColor = 'red';
+                toInput.style.borderWidth = '2px';
+                errorInputs.push(fromInput, toInput);
+                break; // Dừng lại khi tìm thấy lỗi đầu tiên
+            }
+        }
+        
+        // Validate: Đến n < Từ n+1 (chỉ validate nếu có dòng tiếp theo)
+        if (i < rows.length - 1 && toValue) {
+            const nextRow = rows[i + 1];
+            const nextFromInput = nextRow.querySelector('.weight-from');
+            if (nextFromInput) {
+                const nextFromValue = nextFromInput.value.trim();
+                const nextFrom = parseFloat(nextFromValue) || 0;
+                
+                // Chỉ validate nếu dòng tiếp theo có giá trị "Từ"
+                if (nextFromValue && to >= nextFrom) {
+                    isValid = false;
+                    errorMessage = `Dòng ${i + 1} và ${i + 2}: "Đến" của dòng ${i + 1} (${to}) phải nhỏ hơn "Từ" của dòng ${i + 2} (${nextFrom}). Các mốc trọng lượng không được chồng chéo.`;
+                    errorRowIndex = i;
+                    toInput.style.borderColor = 'red';
+                    toInput.style.borderWidth = '2px';
+                    nextFromInput.style.borderColor = 'red';
+                    nextFromInput.style.borderWidth = '2px';
+                    errorInputs.push(toInput, nextFromInput);
+                    break; // Dừng lại khi tìm thấy lỗi đầu tiên
+                }
+            }
+        }
+    }
+    
+    // Hiển thị thông báo lỗi nếu có
+    let errorDiv = document.getElementById('weightValidationError');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'weightValidationError';
+        errorDiv.className = 'text-red-600 text-sm mt-2 p-2 bg-red-50 border border-red-300 rounded';
+        const tbody = document.getElementById('weightLevelsTable');
+        const parent = tbody.parentElement;
+        if (parent) {
+            parent.insertBefore(errorDiv, tbody.nextSibling);
+        }
+    }
+    
+    if (!isValid) {
+        errorDiv.textContent = '⚠️ ' + errorMessage;
+        errorDiv.style.display = 'block';
+        // Scroll đến dòng có lỗi
+        if (errorRowIndex >= 0 && rows[errorRowIndex]) {
+            setTimeout(() => {
+                rows[errorRowIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    } else {
+        errorDiv.style.display = 'none';
+    }
+    
+    return isValid;
 }
 
 // Remove weight level row
@@ -265,6 +349,9 @@ function removeWeightLevel(button) {
             }
         }
     });
+    
+    // Validate weight levels sau khi xóa
+    validateWeightLevels();
     
     // Recalculate totals after removal
     calculateTotals();
@@ -298,147 +385,6 @@ function calculateRowTotal(row) {
             percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
         }
     }
-}
-
-// Validate weight ranges: Đảm bảo "Từ n < đến n < từ n+1 < đến n+1"
-function validateWeightRanges() {
-    const rows = document.querySelectorAll('#weightLevelsTable tr');
-    const errors = [];
-    
-    // Sắp xếp các mốc theo "Từ" để kiểm tra
-    const ranges = [];
-    rows.forEach((row, index) => {
-        const fromInput = row.querySelector('.weight-from');
-        const toInput = row.querySelector('.weight-to');
-        const from = parseFloat(fromInput?.value) || 0;
-        const to = parseFloat(toInput?.value) || 0;
-        
-        if (fromInput && toInput && (from > 0 || to > 0)) {
-            ranges.push({ index, from, to, fromInput, toInput });
-        }
-    });
-    
-    // Sắp xếp theo "Từ" tăng dần
-    ranges.sort((a, b) => a.from - b.from);
-    
-    // Kiểm tra từng cặp liên tiếp
-    for (let i = 0; i < ranges.length; i++) {
-        const current = ranges[i];
-        
-        // Kiểm tra "Từ" < "Đến" trong cùng một mốc
-        if (current.from >= current.to && current.to > 0) {
-            errors.push(`Mốc ${i + 1}: "Từ" (${current.from}) phải nhỏ hơn "Đến" (${current.to})`);
-            if (current.fromInput) current.fromInput.style.borderColor = 'red';
-            if (current.toInput) current.toInput.style.borderColor = 'red';
-        } else {
-            if (current.fromInput) current.fromInput.style.borderColor = '';
-            if (current.toInput) current.toInput.style.borderColor = '';
-        }
-        
-        // Kiểm tra với mốc tiếp theo
-        if (i < ranges.length - 1) {
-            const next = ranges[i + 1];
-            
-            // Kiểm tra "Đến" của mốc hiện tại < "Từ" của mốc tiếp theo
-            if (current.to >= next.from && current.to > 0 && next.from > 0) {
-                errors.push(`Mốc ${i + 1} và ${i + 2}: "Đến" của mốc ${i + 1} (${current.to}) phải nhỏ hơn "Từ" của mốc ${i + 2} (${next.from})`);
-                if (current.toInput) current.toInput.style.borderColor = 'red';
-                if (next.fromInput) next.fromInput.style.borderColor = 'red';
-            }
-        }
-    }
-    
-    // Hiển thị lỗi nếu có
-    let errorMsg = document.getElementById('weightValidationError');
-    if (errors.length > 0) {
-        if (!errorMsg) {
-            errorMsg = document.createElement('div');
-            errorMsg.id = 'weightValidationError';
-            errorMsg.className = 'text-red-600 text-sm mt-2 p-2 bg-red-50 rounded';
-            const tableContainer = document.querySelector('.table-container');
-            if (tableContainer) {
-                tableContainer.parentNode.insertBefore(errorMsg, tableContainer.nextSibling);
-            }
-        }
-        errorMsg.innerHTML = '<strong>Lỗi validation:</strong><br>' + errors.join('<br>');
-    } else {
-        if (errorMsg) {
-            errorMsg.remove();
-        }
-    }
-    
-    return errors.length === 0;
-}
-
-// Format percentage input: Tự động thêm "%" khi người dùng nhập số
-function formatPercentageInput(input) {
-    if (!input) return;
-    
-    // Lấy giá trị số (bỏ % và các ký tự không phải số)
-    let value = input.value.replace(/[^0-9.,]/g, '').replace(',', '.').trim();
-    
-    // Nếu là số hợp lệ, thêm %
-    if (value !== '' && !isNaN(value) && value !== '') {
-        // Làm tròn đến 2 chữ số thập phân nếu có
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-            // Format: nếu là số nguyên thì không hiển thị .00, nếu có thập phân thì hiển thị tối đa 2 chữ số
-            const formatted = numValue % 1 === 0 ? numValue.toString() : numValue.toFixed(2).replace(/\.?0+$/, '');
-            input.value = formatted + '%';
-        }
-    } else if (value === '') {
-        input.value = '';
-    }
-}
-
-// Validate và chỉ cho phép nhập số cho percentage inputs
-function setupPercentageInputValidation() {
-    const percentageInputs = document.querySelectorAll('#over12mRatio, #over100kgRatio');
-    percentageInputs.forEach(input => {
-        // Chỉ cho phép nhập số và dấu chấm/phẩy
-        input.addEventListener('input', function(e) {
-            // Cho phép nhập số, dấu chấm, dấu phẩy
-            let value = this.value.replace(/[^0-9.,]/g, '');
-            // Chỉ cho phép 1 dấu chấm hoặc phẩy
-            const parts = value.split(/[.,]/);
-            if (parts.length > 2) {
-                value = parts[0] + '.' + parts.slice(1).join('');
-            }
-            this.value = value;
-        });
-        
-        // Format khi blur
-        input.addEventListener('blur', function() {
-            formatPercentageInput(this);
-        });
-    });
-}
-
-// Setup percentage inputs for existing elements (được gọi sau khi bảng giá được tạo)
-function setupPercentageInputs() {
-    // Setup for competitor return rate inputs
-    const competitorInputs = document.querySelectorAll('input[name^="competitorCurrentReturnRate_"], input[name^="competitorReturnRate_"]');
-    competitorInputs.forEach(input => {
-        // Chỉ thêm listener nếu chưa có
-        if (!input.hasAttribute('data-percentage-setup')) {
-            input.setAttribute('data-percentage-setup', 'true');
-            input.addEventListener('blur', function() {
-                formatPercentageInput(this);
-            });
-        }
-    });
-    
-    // Setup for proposed return rate inputs
-    const proposedInputs = document.querySelectorAll('input[name^="proposedReturnRate_"]');
-    proposedInputs.forEach(input => {
-        // Chỉ thêm listener nếu chưa có
-        if (!input.hasAttribute('data-percentage-setup')) {
-            input.setAttribute('data-percentage-setup', 'true');
-            input.addEventListener('blur', function() {
-                formatPercentageInput(this);
-            });
-        }
-    });
 }
 
 // Calculate over 1.2m percentage: Tỷ trọng = (Số lượng hàng trên 1.2m / Tổng sản lượng) * 100
@@ -583,14 +529,8 @@ function updateCompetitorPriceTable() {
             region: row.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || '',
-            currentReturnRate: (() => {
-                const val = row.querySelector(`input[name="competitorCurrentReturnRate_${idx}"]`)?.value || '';
-                return val.replace(/%/g, '').trim();
-            })(),
-            competitorReturnRate: (() => {
-                const val = row.querySelector(`input[name="competitorReturnRate_${idx}"]`)?.value || '';
-                return val.replace(/%/g, '').trim();
-            })()
+            currentReturnRate: row.querySelector(`input[name="competitorCurrentReturnRate_${idx}"]`)?.value || '',
+            competitorReturnRate: row.querySelector(`input[name="competitorReturnRate_${idx}"]`)?.value || ''
         };
     });
     
@@ -614,9 +554,8 @@ function updateCompetitorPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        // Bỏ "%" nếu có trong giá trị đã lưu để hiển thị
-        const savedCurrentReturnRate = (saved.currentReturnRate || '').replace(/%/g, '').trim();
-        const savedCompetitorReturnRate = (saved.competitorReturnRate || '').replace(/%/g, '').trim();
+        const savedCurrentReturnRate = saved.currentReturnRate || '';
+        const savedCompetitorReturnRate = saved.competitorReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -631,52 +570,11 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1 relative">
-                <input type="text" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50 w-full pr-6" value="${savedCurrentReturnRate}" placeholder="Nhập số">
-                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
-            </td>
-            <td class="border border-gray-300 p-1 relative">
-                <input type="text" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50 w-full pr-6" value="${savedCompetitorReturnRate}" placeholder="Nhập số">
-                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
-            </td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCompetitorReturnRate}" placeholder="Tỷ lệ hoàn đối thủ"></td>
         `;
         
         tbody.appendChild(tr);
-        
-        // Attach percentage format for return rate inputs
-        const currentReturnInput = tr.querySelector(`input[name="competitorCurrentReturnRate_${index}"]`);
-        const competitorReturnInput = tr.querySelector(`input[name="competitorReturnRate_${index}"]`);
-        
-        if (currentReturnInput) {
-            // Validate khi đang nhập - chỉ cho phép số và dấu chấm/phẩy
-            currentReturnInput.addEventListener('input', function(e) {
-                let value = this.value.replace(/[^0-9.,]/g, '');
-                const parts = value.split(/[.,]/);
-                if (parts.length > 2) {
-                    value = parts[0] + '.' + parts.slice(1).join('');
-                }
-                this.value = value;
-            });
-            // Format thêm "%" khi blur
-            currentReturnInput.addEventListener('blur', function() {
-                formatPercentageInput(this);
-            });
-        }
-        if (competitorReturnInput) {
-            // Validate khi đang nhập - chỉ cho phép số và dấu chấm/phẩy
-            competitorReturnInput.addEventListener('input', function(e) {
-                let value = this.value.replace(/[^0-9.,]/g, '');
-                const parts = value.split(/[.,]/);
-                if (parts.length > 2) {
-                    value = parts[0] + '.' + parts.slice(1).join('');
-                }
-                this.value = value;
-            });
-            // Format thêm "%" khi blur
-            competitorReturnInput.addEventListener('blur', function() {
-                formatPercentageInput(this);
-            });
-        }
     });
 }
 
@@ -698,10 +596,7 @@ function updateProposedPriceTable() {
             region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || '',
-            proposedReturnRate: (() => {
-                const val = row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || '';
-                return val.replace(/%/g, '').trim();
-            })()
+            proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || ''
         };
     });
     
@@ -726,8 +621,7 @@ function updateProposedPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        // Bỏ "%" nếu có trong giá trị đã lưu để hiển thị
-        const savedProposedReturnRate = (saved.proposedReturnRate || '').replace(/%/g, '').trim();
+        const savedProposedReturnRate = saved.proposedReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -742,30 +636,10 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1 relative">
-                <input type="text" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50 w-full pr-6" value="${savedProposedReturnRate}" placeholder="Nhập số">
-                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
-            </td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>
         `;
         
         tbody.appendChild(tr);
-        
-        // Attach percentage format for proposed return rate input
-        const proposedReturnInput = tr.querySelector(`input[name="proposedReturnRate_${index}"]`);
-        if (proposedReturnInput) {
-            proposedReturnInput.addEventListener('input', function(e) {
-                // Chỉ cho phép nhập số và dấu chấm/phẩy
-                let value = this.value.replace(/[^0-9.,]/g, '');
-                const parts = value.split(/[.,]/);
-                if (parts.length > 2) {
-                    value = parts[0] + '.' + parts.slice(1).join('');
-                }
-                this.value = value;
-            });
-            proposedReturnInput.addEventListener('blur', function() {
-                formatPercentageInput(this);
-            });
-        }
     });
 }
 
@@ -826,15 +700,9 @@ function collectFormData() {
         
         competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]') ? document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim() : '',
         
-        over12mRatio: (() => {
-            const val = document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '';
-            return val.replace(/%/g, '').trim();
-        })(),
+        over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
         over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
-        over100kgRatio: (() => {
-            const val = document.getElementById('over100kgRatio') ? document.getElementById('over100kgRatio').value : '';
-            return val.replace(/%/g, '').trim();
-        })(),
+        over100kgRatio: document.getElementById('over100kgRatio') ? document.getElementById('over100kgRatio').value : '',
         specificProduct: document.getElementById('specificProduct') ? document.getElementById('specificProduct').value.trim() : '',
         
         // Proposed prices
@@ -912,10 +780,7 @@ function collectFormData() {
                 region: regionInput ? regionInput.value : '',
                 adjacent: adjacentInput ? adjacentInput.value : '',
                 inter: interInput ? interInput.value : '',
-                proposedReturnRate: (() => {
-                    const val = row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || '';
-                    return val.replace(/%/g, '').trim();
-                })()
+                proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || ''
             });
         }
     });
@@ -928,7 +793,7 @@ function collectFormData() {
     return formData;
 }
 
-// Format data for Google Sheets - Đảm bảo thứ tự khớp với headers trong Google Sheets
+// Format data for Google Sheets - Mỗi mốc trọng lượng = 1 dòng riêng, các thông tin chung được merge
 function formatDataForSheets(formData) {
     // Lấy tổng sản lượng từ DOM
     const grandTotalEl = document.getElementById('grandTotal');
@@ -955,7 +820,7 @@ function formatDataForSheets(formData) {
     const percentInter = grandTotalNum > 0 ? ((parseFloat(totalInter) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
     const percentByArea = `${percentProvince}/${percentRegion}/${percentAdjacent}/${percentInter}`;
     
-    // Lấy tỷ lệ hoàn từ các ô trong bảng (lấy từ dòng đầu tiên)
+    // Lấy tỷ lệ hoàn từ các ô trong bảng
     const competitorCurrentReturnRate = document.querySelector('input[name="competitorCurrentReturnRate_0"]') ? document.querySelector('input[name="competitorCurrentReturnRate_0"]').value : '';
     const competitorReturnRate = document.querySelector('input[name="competitorReturnRate_0"]') ? document.querySelector('input[name="competitorReturnRate_0"]').value : '';
     
@@ -1005,17 +870,45 @@ function formatDataForSheets(formData) {
     const competitorAvg = calculateWeightedAverage(formData.competitorPrices, volumes);
     const proposedAvg = calculateWeightedAverage(formData.proposedPrices, volumes);
     
-    // Thứ tự phải khớp với headers trong Google Sheets
-    const row = [
+    // Tính so sánh đơn giá bình quân
+    const calcPercentDiff = (own, comp) => {
+        const ownNum = parseFloat(own) || 0;
+        const compNum = parseFloat(comp) || 0;
+        if (compNum === 0) {
+            if (ownNum > 0) return '+100.0%';
+            return '0.0%';
+        }
+        const diff = ((ownNum - compNum) / compNum) * 100;
+        const sign = diff >= 0 ? '+' : '';
+        return sign + diff.toFixed(1) + '%';
+    };
+    
+    const formatValue = (val) => {
+        const num = parseFloat(val);
+        return isNaN(num) ? '' : num.toFixed(2);
+    };
+    
+    const formatCell = (own, comp) => {
+        const ownFormatted = formatValue(own);
+        const compFormatted = formatValue(comp);
+        const percentDiff = calcPercentDiff(own, comp);
+        
+        if (!ownFormatted && !compFormatted) return '';
+        return `${ownFormatted || '0'}/${compFormatted || '0'}/${percentDiff}`;
+    };
+    
+    const comparisonAvg = `${formatCell(proposedAvg.province || '', competitorAvg.province || '')}/${formatCell(proposedAvg.region || '', competitorAvg.region || '')}/${formatCell(proposedAvg.adjacent || '', competitorAvg.adjacent || '')}/${formatCell(proposedAvg.inter || '0', competitorAvg.inter || '')}`;
+    
+    // Tạo mảng các rows - mỗi mốc trọng lượng = 1 row
+    const rows = [];
+    
+    // Các thông tin chung (sẽ được merge)
+    const commonData = [
         formData.timestamp,                                    // 1. Thời gian
         formData.customerName,                                // 2. Tên KH/Tên shop
         formData.phone,                                        // 3. Điện thoại
         formData.address,                                      // 4. Địa chỉ
-        formData.weightLevels.map(w => {
-            const from = (w.from && w.from.trim() !== '') ? w.from : '0';
-            const to = (w.to && w.to.trim() !== '') ? w.to : '0';
-            return `${from}-${to}`;
-        }).filter(w => w !== '0-0' && w !== '-').join('; '), // 5. Các mốc trọng lượng
+        '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng cho mỗi row)
         grandTotal,                                            // 6. Tổng sản lượng các mốc
         totalWeightLevels.toString(),                          // 7. Tỷ trọng sản lượng
         percentByArea,                                         // 8. Tỷ trọng % theo khu vực
@@ -1039,21 +932,9 @@ function formatDataForSheets(formData) {
             }
             return industryList.join('; ');
         })(),                                                    // 21. Ngành hàng
-        formData.specificProduct || '',                          // 22. Tên sản phẩm
-        formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ (chỉ 1)
-        '',                                                    // 24. Đối thủ khác (không dùng nữa, để trống)
-        formData.competitorPrices.map(p => {
-            const from = (p.from && p.from.trim() !== '') ? p.from : '0';
-            const to = (p.to && p.to.trim() !== '') ? p.to : '0';
-            const province = p.province || '';
-            const region = p.region || '';
-            const adjacent = p.adjacent || '';
-            const inter = p.inter || '';
-            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
-        }).filter(p => {
-            // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
-            return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
-        }).join(' | '), // 24. Giá đối thủ
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 22. Đối thủ (chỉ 1)
+        '',                                                    // 23. Đối thủ khác (không dùng nữa, để trống)
+        '',                                                    // 24. Giá đối thủ (sẽ điền riêng cho mỗi row)
         competitorAvg.province || '',                          // 25. Đơn giá bình quân Nội tỉnh (ĐT)
         competitorAvg.region || '',                            // 26. Đơn giá bình quân Nội miền (ĐT)
         competitorAvg.adjacent || '',                          // 27. Đơn giá bình quân Cận miền (ĐT)
@@ -1061,95 +942,55 @@ function formatDataForSheets(formData) {
         competitorCurrentReturnRate || '',                     // 29. Tỷ lệ hoàn hiện tại
         competitorReturnRate || '',                            // 30. Tỷ lệ hoàn đối thủ miễn phí
         formData.competitorOtherPolicies || '',                // 31. Chính sách đặc thù đối thủ
-        formData.proposedPrices.map(p => {
-            const from = (p.from && p.from.trim() !== '') ? p.from : '0';
-            const to = (p.to && p.to.trim() !== '') ? p.to : '0';
-            const province = p.province || '';
-            const region = p.region || '';
-            const adjacent = p.adjacent || '';
-            const inter = p.inter || '';
-            return `${from}-${to}: ${province}/${region}/${adjacent}/${inter}`;
-        }).filter(p => {
-            // Chỉ giữ lại các giá có ít nhất 1 giá trị không rỗng
-            return p !== '0-0: ///' && (p.includes(':') && p.split(':')[1].trim() !== '///');
-        }).join(' | '), // 32. Giá đề xuất
+        '',                                                    // 32. Giá đề xuất (sẽ điền riêng cho mỗi row)
         proposedAvg.province || '',                            // 33. Đơn giá bình quân Nội tỉnh (ĐX)
         proposedAvg.region || '',                              // 34. Đơn giá bình quân Nội miền (ĐX)
         proposedAvg.adjacent || '',                            // 35. Đơn giá bình quân Cận miền (ĐX)
         proposedAvg.inter || '',                               // 36. Đơn giá bình quân Liên miền (ĐX)
         formData.proposedOtherPolicies || '',                  // 37. Chính sách đặc thù đề xuất
-        formData.proposedReturnRate || '',                     // 38. Tỷ lệ hoàn đề xuất
-        (() => {
-            // So sánh đơn giá bình quân: Format giống "Tỷ trọng % theo khu vực"
-            // Mỗi khu vực: Mình/Đối thủ/% chênh lệch, ngăn cách bằng "/"
-            const ownProvince = proposedAvg.province || '';
-            const ownRegion = proposedAvg.region || '';
-            const ownAdjacent = proposedAvg.adjacent || '';
-            const ownInter = proposedAvg.inter || '0';
-            
-            const compProvince = competitorAvg.province || '';
-            const compRegion = competitorAvg.region || '';
-            const compAdjacent = competitorAvg.adjacent || '';
-            const compInter = competitorAvg.inter || '';
-            
-            // Tính % chênh lệch: ((Mình - Đối thủ) / Đối thủ) * 100
-            const calcPercentDiff = (own, comp) => {
-                const ownNum = parseFloat(own) || 0;
-                const compNum = parseFloat(comp) || 0;
-                if (compNum === 0) {
-                    if (ownNum > 0) return '+100.0%';
-                    return '0.0%';
-                }
-                const diff = ((ownNum - compNum) / compNum) * 100;
-                const sign = diff >= 0 ? '+' : '';
-                return sign + diff.toFixed(1) + '%';
-            };
-            
-            const formatValue = (val) => {
-                const num = parseFloat(val);
-                return isNaN(num) ? '' : num.toFixed(2);
-            };
-            
-            const formatCell = (own, comp) => {
-                const ownFormatted = formatValue(own);
-                const compFormatted = formatValue(comp);
-                const percentDiff = calcPercentDiff(own, comp);
-                
-                if (!ownFormatted && !compFormatted) return '';
-                return `${ownFormatted || '0'}/${compFormatted || '0'}/${percentDiff}`;
-            };
-            
-            const cellProvince = formatCell(ownProvince, compProvince);
-            const cellRegion = formatCell(ownRegion, compRegion);
-            const cellAdjacent = formatCell(ownAdjacent, compAdjacent);
-            const cellInter = formatCell(ownInter, compInter);
-            
-            // Format giống "Tỷ trọng % theo khu vực": Nội tỉnh/Nội miền/Cận miền/Liên miền
-            return `${cellProvince}/${cellRegion}/${cellAdjacent}/${cellInter}`;
-        })(),                                                 // 39. So sánh đơn giá bình quân
+        proposedReturnRate || '',                             // 38. Tỷ lệ hoàn đề xuất
+        comparisonAvg,                                         // 39. So sánh đơn giá bình quân
         formData.reporterName || '',                           // 40. Họ và tên người báo cáo
         formData.reporterPhone || '',                          // 41. Điện thoại người báo cáo
         formData.postOfficeName || '',                         // 42. Tên Bưu cục
         formData.title || '',                                  // 43. Chức danh
         formData.branch || '',                                 // 44. Chi nhánh
-        (formData.postOfficeCode || '').toString()            // 45. Mã Bưu cục (đảm bảo là string để giữ nguyên text)
+        (formData.postOfficeCode || '').toString()            // 45. Mã Bưu cục
     ];
     
-    return row;
+    // Tạo 1 row cho mỗi mốc trọng lượng
+    formData.weightLevels.forEach((weightLevel, index) => {
+        const from = (weightLevel.from && weightLevel.from.trim() !== '') ? weightLevel.from : '0';
+        const to = (weightLevel.to && weightLevel.to.trim() !== '') ? weightLevel.to : '0';
+        const weightRange = `${from}-${to}`;
+        
+        if (weightRange === '0-0' || weightRange === '-') return; // Bỏ qua các mốc không hợp lệ
+        
+        // Lấy giá đối thủ và giá đề xuất cho mốc này
+        const competitorPrice = formData.competitorPrices[index] || {};
+        const proposedPrice = formData.proposedPrices[index] || {};
+        
+        const competitorPriceStr = competitorPrice.from && competitorPrice.to ? 
+            `${competitorPrice.from}-${competitorPrice.to}: ${competitorPrice.province || ''}/${competitorPrice.region || ''}/${competitorPrice.adjacent || ''}/${competitorPrice.inter || ''}` : '';
+        
+        const proposedPriceStr = proposedPrice.from && proposedPrice.to ? 
+            `${proposedPrice.from}-${proposedPrice.to}: ${proposedPrice.province || ''}/${proposedPrice.region || ''}/${proposedPrice.adjacent || ''}/${proposedPrice.inter || ''}` : '';
+        
+        // Tạo row mới với thông tin chung + thông tin riêng của mốc này
+        const row = [...commonData];
+        row[4] = weightRange;  // 5. Các mốc trọng lượng
+        row[23] = competitorPriceStr;  // 24. Giá đối thủ
+        row[31] = proposedPriceStr;   // 32. Giá đề xuất
+        
+        rows.push(row);
+    });
+    
+    return rows; // Trả về mảng các rows
 }
 
 // Handle form submission
 async function handleFormSubmit(e) {
     e.preventDefault();
-    e.stopPropagation();
-    
-    // Ngăn form submit theo cách mặc định
-    if (e && e.preventDefault) {
-        e.preventDefault();
-    }
-    if (e && e.stopPropagation) {
-        e.stopPropagation();
-    }
     
     // Validate số điện thoại: chỉ số, bắt đầu bằng 0
     const customerPhoneInput = document.querySelector('input[name="phone"]');
@@ -1211,6 +1052,12 @@ async function handleFormSubmit(e) {
         return;
     }
     
+    // Validate weight levels: Từ n < Đến n < Từ n+1 < Đến n+1
+    if (!validateWeightLevels()) {
+        alert('Vui lòng kiểm tra lại các mốc trọng lượng. Giá trị "Từ" phải nhỏ hơn "Đến" và các mốc không được chồng chéo.');
+        return;
+    }
+    
     const submitBtn = document.querySelector('.btn-submit');
     const originalText = submitBtn.textContent;
     
@@ -1236,78 +1083,40 @@ async function handleFormSubmit(e) {
         // Send to Google Sheets
         if (GOOGLE_SCRIPT_URL) {
             console.log('Sending to Google Sheets URL:', GOOGLE_SCRIPT_URL);
-            const result = await sendToGoogleSheets(rowData);
-            console.log('Google Sheets result:', result);
-            
-            // Kiểm tra thất bại từ server
-            if (result.success === false) {
-                throw new Error(result.error || 'Server trả về lỗi');
-            }
-            
-            // Hiển thị thông báo thành công (kèm số dòng nếu fetch trả về)
-            const successText = result.rowNumber
-                ? `✓ GỬI THÀNH CÔNG! (Dòng ${result.rowNumber})`
-                : '✓ GỬI THÀNH CÔNG!';
-            submitBtn.textContent = successText;
-            submitBtn.style.backgroundColor = '#10b981';
-            submitBtn.style.color = '#ffffff';
-            submitBtn.style.fontWeight = 'bold';
-            submitBtn.style.fontSize = '18px';
-            submitBtn.disabled = false; // Cho phép gửi lại nếu cần
-            
-            // Sau 5 giây, đổi nút thành "Gửi báo cáo mới"
-            setTimeout(() => {
-                if (submitBtn.textContent.includes('THÀNH CÔNG')) {
-                    submitBtn.textContent = 'Gửi báo cáo mới';
-                    submitBtn.style.backgroundColor = '#3b82f6';
-                    submitBtn.onclick = function() {
-                        const form = document.getElementById('reportForm');
-                        if (form) {
-                            form.reset();
-                        }
-                        submitBtn.textContent = originalText;
-                        submitBtn.style.backgroundColor = '';
-                        submitBtn.style.color = '';
-                        submitBtn.style.fontWeight = '';
-                        submitBtn.onclick = null;
-                        initializeForm();
-                        hideMessages();
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    };
-                }
-            }, 5000);
+            await sendToGoogleSheets(rowData);
+            console.log('Data sent successfully!');
+            showMessage('success');
         } else {
             console.warn('GOOGLE_SCRIPT_URL is not set');
-            throw new Error('Google Script URL chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
+            showMessage('error');
         }
+        
+        submitBtn.textContent = '✓ Gửi thành công!';
+        submitBtn.style.backgroundColor = '#10b981';
+        
+        // Reset form after 3 seconds
+        setTimeout(() => {
+            document.getElementById('reportForm').reset();
+            submitBtn.textContent = originalText;
+            submitBtn.style.backgroundColor = '';
+            submitBtn.disabled = false;
+            initializeForm();
+            hideMessages();
+        }, 3000);
         
     } catch (error) {
         console.error('Error submitting form:', error);
         console.error('Error stack:', error.stack);
-        const errorMsg = error.message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.';
-        
-        // Hiển thị thông báo lỗi ngay tại nút (không hiển thị ở trên cùng)
-        // Không gọi showMessage để không hiển thị ở trên cùng
-        submitBtn.textContent = '✗ GỬI THẤT BẠI - THỬ LẠI';
+        showMessage('error');
+        submitBtn.textContent = '✗ Gửi thất bại - Thử lại';
         submitBtn.style.backgroundColor = '#ef4444';
-        submitBtn.style.color = '#ffffff';
-        submitBtn.style.fontWeight = 'bold';
-        submitBtn.style.fontSize = '18px';
         submitBtn.disabled = false;
         
-        // Hiển thị alert để người dùng biết lỗi
-        alert(`✗ GỬI THẤT BẠI!\n\n${errorMsg}\n\nVui lòng kiểm tra và thử lại.`);
-        
-        // Sau 10 giây, cho phép thử lại
         setTimeout(() => {
-            if (submitBtn.textContent.includes('THẤT BẠI')) {
-                submitBtn.textContent = originalText;
-                submitBtn.style.backgroundColor = '';
-                submitBtn.style.color = '';
-                submitBtn.style.fontWeight = '';
-                submitBtn.style.fontSize = '';
-            }
-        }, 10000);
+            submitBtn.textContent = originalText;
+            submitBtn.style.backgroundColor = '';
+            hideMessages();
+        }, 5000);
     }
 }
 
@@ -1407,111 +1216,51 @@ function updateComparisonTable() {
     }
 }
 
-// Send data to Google Sheets
-// CHỈ dùng FORM POST vào iframe - bypass CORS hoàn toàn (form submit không bị CORS chặn).
-// Không dùng fetch vì Apps Script không trả Access-Control-Allow-Origin.
-// Thêm ?debug=1 để mở response trong tab mới (xem JSON success/error từ server).
-const IFRAME_NAME = 'gsheet_hidden_iframe';
-
-async function sendToGoogleSheets(rowData) {
-    const payload = { data: rowData };
-    const jsonString = JSON.stringify(payload);
-    const isDebug = window.location.search.includes('debug=1');
-
-    console.log('Sending data to Google Sheets (form POST):', {
-        url: GOOGLE_SCRIPT_URL,
-        dataLength: rowData.length,
-        debug: isDebug
-    });
-
-    return new Promise((resolve, reject) => {
-        try {
-            // 1. Tạo iframe ẩn TRƯỚC (bắt buộc để form.target hoạt động)
-            let iframe = document.getElementById(IFRAME_NAME);
-            if (!iframe) {
-                iframe = document.createElement('iframe');
-                iframe.id = IFRAME_NAME;
-                iframe.name = IFRAME_NAME;
-                iframe.style.cssText = 'display:none;width:0;height:0;border:none;position:absolute';
-                document.body.appendChild(iframe);
-            }
-
-            // 2. Dùng string name trực tiếp (ổn định hơn iframe.name)
-            const targetFrame = isDebug ? '_blank' : IFRAME_NAME;
-
-            // 3. Tạo form và append vào DOM trước khi submit
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = GOOGLE_SCRIPT_URL;
-            form.target = targetFrame;
-            form.style.display = 'none';
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'data';
-            input.value = jsonString;
-            form.appendChild(input);
-
-            document.body.appendChild(form);
-            form.submit();
-
-            console.log('Form submitted to:', GOOGLE_SCRIPT_URL, '| target:', targetFrame);
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4cf9a031-24e2-4e46-85e5-d75b11ddfb25',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:sendToGoogleSheets',message:'Form POST submitted',data:{url:GOOGLE_SCRIPT_URL,target:targetFrame,dataLength:rowData.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
-            // #endregion
-
-            setTimeout(() => {
-                if (form.parentNode) form.parentNode.removeChild(form);
-            }, 2000);
-
-            resolve({
-                success: true,
-                noCors: true,
-                message: 'Đã gửi. Vui lòng kiểm tra Google Sheet để xác nhận.'
-            });
-        } catch (e) {
-            console.error('Form submit error:', e);
-            reject(e);
-        }
-    });
+// Send data to Google Sheets - Gửi mảng các rows (mỗi mốc trọng lượng = 1 row)
+async function sendToGoogleSheets(rowsData) {
+    try {
+        console.log('Sending data to Google Sheets:', {
+            url: GOOGLE_SCRIPT_URL,
+            numberOfRows: rowsData.length,
+            firstRowFirstFewFields: rowsData[0] ? rowsData[0].slice(0, 5) : []
+        });
+        
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ data: rowsData, mergeCells: true }) // Thêm flag để merge cells
+        });
+        
+        // Với no-cors mode, không thể đọc response nhưng request đã được gửi
+        // Log để debug
+        console.log('Request sent successfully. Response status:', response.status);
+        console.log('Full data being sent:', rowsData);
+        
+        // Đợi một chút để đảm bảo request được xử lý
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        return response;
+    } catch (error) {
+        console.error('Error sending to Google Sheets:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            data: rowsData
+        });
+        throw error;
+    }
 }
 
 // Show success/error message
-function showMessage(type, message) {
+function showMessage(type) {
     hideMessages();
-    const successEl = document.getElementById('successMessage');
-    const errorEl = document.getElementById('errorMessage');
-    
     if (type === 'success') {
-        if (successEl) {
-            if (message) {
-                // Format message với line breaks
-                successEl.innerHTML = message.replace(/\n/g, '<br>');
-            }
-            successEl.style.display = 'block';
-            successEl.style.padding = '20px';
-            successEl.style.fontSize = '16px';
-            successEl.style.fontWeight = 'bold';
-            // Scroll to top để người dùng thấy thông báo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            alert(message || 'Dữ liệu đã được gửi thành công!');
-        }
+        document.getElementById('successMessage').style.display = 'block';
     } else {
-        if (errorEl) {
-            if (message) {
-                // Format message với line breaks
-                errorEl.innerHTML = message.replace(/\n/g, '<br>');
-            }
-            errorEl.style.display = 'block';
-            errorEl.style.padding = '20px';
-            errorEl.style.fontSize = '16px';
-            errorEl.style.fontWeight = 'bold';
-            // Scroll to top để người dùng thấy thông báo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            alert(message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.');
-        }
+        document.getElementById('errorMessage').style.display = 'block';
     }
 }
 
