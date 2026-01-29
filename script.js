@@ -104,7 +104,7 @@ function setupEventListeners() {
     setupPercentageInputValidation();
     
     // Auto-format "%" for return rate inputs (sẽ được thêm động trong updatePriceTables)
-    // Hàm này sẽ được gọi sau khi các bảng giá được tạo
+    setupPercentageInputs();
 
     // Giới hạn chọn duy nhất cho đặc tính hàng hóa
     const productCheckboxes = document.querySelectorAll('input[name="productNormal"], input[name="productLiquid"], input[name="productFlammable"], input[name="productFragile"]');
