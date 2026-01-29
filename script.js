@@ -1406,73 +1406,47 @@ function updateComparisonTable() {
 }
 
 // Send data to Google Sheets
-// Dùng fetch với application/x-www-form-urlencoded (simple CORS request, không preflight)
-// để NHẬN ĐƯỢC response thực tế từ server và hiển thị đúng success/error.
-// Nếu fetch thất bại (CORS/network), fallback sang form POST iframe (không xác minh được kết quả).
+// Dùng FORM POST vào iframe ẩn - KHÔNG gây lỗi CORS (form submit không bị CORS chặn).
+// Google Apps Script không trả CORS headers khi gọi từ GitHub Pages, nên fetch sẽ luôn bị chặn.
 async function sendToGoogleSheets(rowData) {
     const payload = { data: rowData };
     const jsonString = JSON.stringify(payload);
-    const body = 'data=' + encodeURIComponent(jsonString);
 
-    console.log('Sending data to Google Sheets:', {
+    console.log('Sending data to Google Sheets (form POST iframe):', {
         url: GOOGLE_SCRIPT_URL,
         dataLength: rowData.length,
         firstFewFields: rowData.slice(0, 5)
     });
 
-    // Thử fetch trước - cho phép đọc response thực tế
-    try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body,
-            mode: 'cors'
-        });
-        const text = await res.text();
-        let json;
+    return new Promise((resolve, reject) => {
         try {
-            json = JSON.parse(text);
-        } catch (_) {
-            throw new Error('Server trả về không phải JSON: ' + text.substring(0, 200));
-        }
-        console.log('Google Sheets response:', json);
-        if (json.success) {
-            return { success: true };
-        }
-        return { success: false, error: json.error || 'Lỗi không xác định từ server' };
-    } catch (fetchError) {
-        console.warn('Fetch thất bại (CORS/network), thử form POST iframe:', fetchError.message);
-        // Fallback: form POST vào iframe (không đọc được response)
-        return new Promise((resolve, reject) => {
-            try {
-                let iframe = document.getElementById('gsheet_hidden_iframe');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.id = 'gsheet_hidden_iframe';
-                    iframe.name = 'gsheet_hidden_iframe';
-                    iframe.style.cssText = 'display:none;width:0;height:0;border:none';
-                    document.body.appendChild(iframe);
-                }
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = GOOGLE_SCRIPT_URL;
-                form.target = iframe.name;
-                form.style.display = 'none';
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'data';
-                input.value = jsonString;
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-                setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 2000);
-                // Không xác minh được - báo cho user biết
-                resolve({ success: true, noCors: true, warning: 'Đã gửi nhưng không xác minh được. Vui lòng kiểm tra Sheet.' });
-            } catch (e) {
-                reject(e);
+            let iframe = document.getElementById('gsheet_hidden_iframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'gsheet_hidden_iframe';
+                iframe.name = 'gsheet_hidden_iframe';
+                iframe.style.cssText = 'display:none;width:0;height:0;border:none';
+                document.body.appendChild(iframe);
             }
-        });
-    }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = GOOGLE_SCRIPT_URL;
+            form.target = iframe.name;
+            form.style.display = 'none';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'data';
+            input.value = jsonString;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 2000);
+            console.log('Form POST submitted. Vui lòng kiểm tra Google Sheet.');
+            resolve({ success: true, noCors: true });
+        } catch (e) {
+            reject(e);
+        }
+    });
 }
 
 // Show success/error message
