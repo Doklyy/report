@@ -1212,7 +1212,10 @@ async function handleFormSubmit(e) {
             console.log('Data sent successfully!', result);
             
             // Hiển thị thông báo thành công
-            showMessage('success', `Dữ liệu đã được gửi thành công! Dòng ${result.rowNumber || 'mới'} đã được thêm vào Google Sheets.`);
+            const successMsg = result.rowNumber 
+                ? `Dữ liệu đã được gửi thành công! Dòng ${result.rowNumber} đã được thêm vào Google Sheets.`
+                : 'Dữ liệu đã được gửi thành công!';
+            showMessage('success', successMsg);
             submitBtn.textContent = '✓ Gửi thành công!';
             submitBtn.style.backgroundColor = '#10b981';
             
@@ -1221,7 +1224,10 @@ async function handleFormSubmit(e) {
             setTimeout(() => {
                 const confirmReset = confirm('Dữ liệu đã được gửi thành công!\n\nBạn có muốn reset form để nhập báo cáo mới không?');
                 if (confirmReset) {
-                    document.getElementById('reportForm').reset();
+                    const form = document.getElementById('reportForm');
+                    if (form) {
+                        form.reset();
+                    }
                     submitBtn.textContent = originalText;
                     submitBtn.style.backgroundColor = '';
                     submitBtn.disabled = false;
