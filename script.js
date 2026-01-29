@@ -1192,40 +1192,54 @@ async function handleFormSubmit(e) {
         // Send to Google Sheets
         if (GOOGLE_SCRIPT_URL) {
             console.log('Sending to Google Sheets URL:', GOOGLE_SCRIPT_URL);
-            await sendToGoogleSheets(rowData);
-            console.log('Data sent successfully!');
-            showMessage('success');
+            const result = await sendToGoogleSheets(rowData);
+            console.log('Data sent successfully!', result);
+            
+            // Hiển thị thông báo thành công
+            showMessage('success', `Dữ liệu đã được gửi thành công! Dòng ${result.rowNumber || 'mới'} đã được thêm vào Google Sheets.`);
+            submitBtn.textContent = '✓ Gửi thành công!';
+            submitBtn.style.backgroundColor = '#10b981';
+            
+            // Không reset form ngay, để người dùng có thể xem kết quả
+            // Chỉ reset sau khi người dùng xác nhận hoặc sau 10 giây
+            setTimeout(() => {
+                const confirmReset = confirm('Dữ liệu đã được gửi thành công!\n\nBạn có muốn reset form để nhập báo cáo mới không?');
+                if (confirmReset) {
+                    document.getElementById('reportForm').reset();
+                    submitBtn.textContent = originalText;
+                    submitBtn.style.backgroundColor = '';
+                    submitBtn.disabled = false;
+                    initializeForm();
+                    hideMessages();
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    submitBtn.textContent = originalText;
+                    submitBtn.style.backgroundColor = '';
+                    submitBtn.disabled = false;
+                    hideMessages();
+                }
+            }, 10000);
         } else {
             console.warn('GOOGLE_SCRIPT_URL is not set');
-            showMessage('error');
+            throw new Error('Google Script URL chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
         }
-        
-        submitBtn.textContent = '✓ Gửi thành công!';
-        submitBtn.style.backgroundColor = '#10b981';
-        
-        // Reset form after 3 seconds
-        setTimeout(() => {
-            document.getElementById('reportForm').reset();
-            submitBtn.textContent = originalText;
-            submitBtn.style.backgroundColor = '';
-            submitBtn.disabled = false;
-            initializeForm();
-            hideMessages();
-        }, 3000);
         
     } catch (error) {
         console.error('Error submitting form:', error);
         console.error('Error stack:', error.stack);
-        showMessage('error');
+        const errorMsg = error.message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.';
+        showMessage('error', errorMsg);
         submitBtn.textContent = '✗ Gửi thất bại - Thử lại';
         submitBtn.style.backgroundColor = '#ef4444';
         submitBtn.disabled = false;
         
+        // Không tự động ẩn thông báo lỗi, để người dùng có thể đọc
+        // Chỉ reset button text sau 10 giây
         setTimeout(() => {
             submitBtn.textContent = originalText;
             submitBtn.style.backgroundColor = '';
-            hideMessages();
-        }, 5000);
+        }, 10000);
     }
 }
 
@@ -1336,22 +1350,32 @@ async function sendToGoogleSheets(rowData) {
         
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ data: rowData })
         });
         
-        // Với no-cors mode, không thể đọc response nhưng request đã được gửi
-        // Log để debug
-        console.log('Request sent successfully. Response status:', response.status);
-        console.log('Full data being sent:', rowData);
+        // Đọc response để kiểm tra kết quả
+        const responseText = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response text:', responseText);
         
-        // Đợi một chút để đảm bảo request được xử lý
-        await new Promise(resolve => setTimeout(resolve, 500));
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            // Nếu không parse được JSON, có thể là HTML error page
+            throw new Error('Không nhận được phản hồi hợp lệ từ server. Vui lòng kiểm tra lại Google Apps Script URL.');
+        }
         
-        return response;
+        if (!result.success) {
+            throw new Error(result.error || 'Lỗi khi gửi dữ liệu lên Google Sheets');
+        }
+        
+        console.log('Data saved successfully! Row number:', result.rowNumber);
+        return result;
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
         console.error('Error details:', {
@@ -1364,12 +1388,33 @@ async function sendToGoogleSheets(rowData) {
 }
 
 // Show success/error message
-function showMessage(type) {
+function showMessage(type, message) {
     hideMessages();
+    const successEl = document.getElementById('successMessage');
+    const errorEl = document.getElementById('errorMessage');
+    
     if (type === 'success') {
-        document.getElementById('successMessage').style.display = 'block';
+        if (successEl) {
+            if (message) {
+                successEl.textContent = message;
+            }
+            successEl.style.display = 'block';
+            // Scroll to top để người dùng thấy thông báo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            alert(message || 'Dữ liệu đã được gửi thành công!');
+        }
     } else {
-        document.getElementById('errorMessage').style.display = 'block';
+        if (errorEl) {
+            if (message) {
+                errorEl.textContent = message;
+            }
+            errorEl.style.display = 'block';
+            // Scroll to top để người dùng thấy thông báo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            alert(message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.');
+        }
     }
 }
 
