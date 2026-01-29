@@ -1408,52 +1408,23 @@ function updateComparisonTable() {
 }
 
 // Send data to Google Sheets
-// Ưu tiên: fetch() với application/x-www-form-urlencoded (simple CORS, không preflight)
-// → Đọc được response thực từ server (success/error, rowNumber).
-// Fallback: form POST iframe nếu fetch bị CORS/network chặn.
-// Thêm ?debug=1 để mở response trong tab mới khi dùng fallback.
+// CHỈ dùng FORM POST vào iframe - KHÔNG dùng fetch (tránh CORS khi gọi từ GitHub Pages).
+// Form submit không bị CORS chặn vì không phải XHR/fetch.
+// Thêm ?debug=1 để mở response trong tab mới (xem success/error từ server).
 async function sendToGoogleSheets(rowData) {
     const payload = { data: rowData };
-    const body = 'data=' + encodeURIComponent(JSON.stringify(payload));
+    const jsonString = JSON.stringify(payload);
     const isDebug = window.location.search.includes('debug=1');
 
-    console.log('Sending data to Google Sheets:', {
+    console.log('Sending data to Google Sheets (form POST):', {
         url: GOOGLE_SCRIPT_URL,
         dataLength: rowData.length
     });
 
-    // 1. Thử fetch trước - cho phép đọc response thực
-    try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body,
-            mode: 'cors'
-        });
-        const text = await response.text();
-        let json;
-        try {
-            json = JSON.parse(text);
-        } catch (_) {
-            throw new Error('Server trả về không phải JSON: ' + text.substring(0, 150));
-        }
-        console.log('Google Sheets response:', json);
-        if (json.success) {
-            return {
-                success: true,
-                rowNumber: json.rowNumber,
-                message: json.message || 'Đã lưu thành công'
-            };
-        }
-        return { success: false, error: json.error || 'Lỗi không xác định từ server' };
-    } catch (fetchError) {
-        console.warn('Fetch thất bại (CORS/network), fallback sang form POST:', fetchError.message);
-    }
-
-    // 2. Fallback: form POST vào iframe (hoặc tab mới nếu debug)
+    // Form POST vào iframe (hoặc tab mới nếu debug)
     return new Promise((resolve, reject) => {
         try {
-            let targetFrame = '_blank';
+            let targetFrame = isDebug ? '_blank' : 'gsheet_hidden_iframe';
             if (!isDebug) {
                 let iframe = document.getElementById('gsheet_hidden_iframe');
                 if (!iframe) {
@@ -1473,11 +1444,12 @@ async function sendToGoogleSheets(rowData) {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'data';
-            input.value = JSON.stringify(payload);
+            input.value = jsonString;
             form.appendChild(input);
             document.body.appendChild(form);
             form.submit();
             setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 2000);
+            console.log('Form POST đã gửi. Không có lỗi CORS.');
             resolve({
                 success: true,
                 noCors: true,
