@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kết quả - Báo Cáo Tổng Hợp</title>
+    <title>Hệ Thống Quản Lý Kết Quả - Báo Cáo</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
         .nav-item {
             white-space: nowrap;
             transition: all 0.2s;
@@ -28,76 +31,20 @@
             height: 2px;
             background-color: #9f224e;
         }
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .status-badge {
+            transition: all 0.3s ease;
         }
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.875rem 1rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-        td {
-            padding: 0.875rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 0.9rem;
-        }
-        tbody tr:nth-child(even) {
-            background: #f9fafb;
-        }
-        tbody tr:hover {
-            background: #eff6ff !important;
-        }
-        .loading {
-            text-align: center;
-            padding: 2.5rem;
-            color: #6b7280;
-            font-size: 1rem;
-        }
-        .stat-number {
-            font-size: 2.75rem;
-        }
-        .card {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
+
     <!-- Thanh menu điều hướng -->
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div class="max-w-6xl mx-auto flex items-center px-4 h-12">
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm -mt-4 -mx-4 md:-mx-8 px-4 md:px-8 mb-6">
+        <div class="max-w-6xl mx-auto flex items-center h-12">
             <div class="flex items-center space-x-10 text-[16px] font-medium text-[#757575]">
                 <a href="index.html" class="nav-item">Đề xuất</a>
                 <a href="ketqua.html" class="nav-item active">Kết quả</a>
@@ -105,345 +52,252 @@
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto mt-6">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2">📊 Kết quả Báo Cáo Tổng Hợp</h1>
-            <p class="text-white opacity-90">Tổng hợp tất cả dữ liệu từ form báo cáo</p>
-        </div>
-
-        <!-- Thống kê tổng quan -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="stat-card">
-                <div class="stat-label">Tổng số báo cáo</div>
-                <div class="stat-number" id="totalReports">0</div>
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Bảng Kết Quả Phê Duyệt</h1>
+                <p class="text-slate-500">Quản lý và theo dõi trạng thái hồ sơ từ Cột AU (Kết quả) & AV (Ghi chú) - Google Sheet</p>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="stat-label">Tổng sản lượng</div>
-                <div class="stat-number" id="totalVolume">0</div>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="stat-label">Số khách hàng</div>
-                <div class="stat-number" id="totalCustomers">0</div>
-            </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                <div class="stat-label">Tỷ lệ hoàn TB</div>
-                <div class="stat-number" id="avgReturnRate">0%</div>
-            </div>
-        </div>
-
-        <!-- Biểu đồ -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">📈 Sản lượng theo khu vực</h2>
-                <canvas id="volumeChart"></canvas>
-            </div>
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">🏢 Top 5 Ngành hàng</h2>
-                <canvas id="industryChart"></canvas>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">⚔️ Đối thủ được sử dụng</h2>
-                <canvas id="competitorChart"></canvas>
-            </div>
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">📅 Báo cáo theo thời gian</h2>
-                <canvas id="timeChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Bảng dữ liệu chi tiết - Dễ nhìn, truyền từ Google Sheet -->
-        <div class="card">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">📋 Dữ liệu chi tiết từ Google Sheet</h2>
-                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg transition-colors font-medium shadow-sm">
-                    🔄 Làm mới
+            
+            <div class="flex flex-wrap gap-3">
+                <button onclick="filterResults('all')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-medium text-slate-700 transition">Tất cả</button>
+                <button onclick="filterResults('Phê duyệt')" class="px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg font-medium transition">Phê duyệt</button>
+                <button onclick="filterResults('Từ chối')" class="px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg font-medium transition">Từ chối</button>
+                <button onclick="filterResults('Bổ sung')" class="px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg font-medium transition">Bổ sung</button>
+                <button onclick="loadData()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-medium transition">
+                    <i class="fas fa-sync-alt mr-1"></i> Làm mới
                 </button>
             </div>
-            <div class="overflow-x-auto rounded-lg border border-gray-200">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Thời gian</th>
-                            <th>Tên KH</th>
-                            <th>Điện thoại</th>
-                            <th>Địa chỉ</th>
-                            <th>Tổng SL</th>
-                            <th>Ngành hàng</th>
-                            <th>Đối thủ</th>
-                            <th>Tỷ lệ hoàn</th>
-                            <th>Kết quả</th>
-                            <th>Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataTableBody">
-                        <tr>
-                            <td colspan="10" class="loading">Đang tải dữ liệu từ Google Sheet...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">Đã Phê Duyệt</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="stat-approved">0</h3>
+                </div>
             </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">Đã Từ Chối</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="stat-rejected">0</h3>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                    <i class="fas fa-exclamation-triangle text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-500 font-medium">Cần Bổ Sung</p>
+                    <h3 class="text-2xl font-bold text-slate-800" id="stat-pending">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-20">
+            <i class="fas fa-spinner fa-spin text-slate-400 text-5xl mb-4"></i>
+            <p class="text-slate-500">Đang tải dữ liệu từ Google Sheet...</p>
+        </div>
+
+        <!-- Main Content List -->
+        <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- Dữ liệu từ Google Sheet sẽ được render ở đây -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-20">
+            <i class="fas fa-search text-slate-300 text-6xl mb-4"></i>
+            <p class="text-slate-500 text-lg">Không tìm thấy kết quả nào phù hợp.</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden text-center py-20">
+            <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
+            <p class="text-slate-600 text-lg mb-2" id="error-message">Có lỗi xảy ra khi tải dữ liệu.</p>
+            <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">
+                Thử lại
+            </button>
         </div>
     </div>
 
     <script>
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1SL2FNOlL0bWt7ED5E5A8PYcOJL-QBOZKpmoxh34ywbxmW-yY0cuGj26cU4BaZUzczA/exec';
         
-        let volumeChart, industryChart, competitorChart, timeChart;
+        let allData = []; // Lưu toàn bộ dữ liệu từ Google Sheet
 
-        // Load dữ liệu khi trang load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-        });
+        function normalizeStatus(status) {
+            if (!status || typeof status !== 'string') return 'Khác';
+            const s = status.trim().toLowerCase();
+            if (s.includes('phê duyệt') || s === 'phê duyệt') return 'Phê duyệt';
+            if (s.includes('từ chối') || s === 'từ chối') return 'Từ chối';
+            if (s.includes('bổ sung') || s === 'bổ sung') return 'Bổ sung';
+            return status.trim() || 'Khác';
+        }
+
+        function getStatusClasses(status) {
+            const norm = normalizeStatus(status);
+            switch(norm) {
+                case 'Phê duyệt': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                case 'Từ chối': return 'bg-rose-100 text-rose-700 border-rose-200';
+                case 'Bổ sung': return 'bg-amber-100 text-amber-700 border-amber-200';
+                default: return 'bg-slate-100 text-slate-700 border-slate-200';
+            }
+        }
+
+        function getStatusIcon(status) {
+            const norm = normalizeStatus(status);
+            switch(norm) {
+                case 'Phê duyệt': return 'fa-check-circle';
+                case 'Từ chối': return 'fa-times-circle';
+                case 'Bổ sung': return 'fa-info-circle';
+                default: return 'fa-question-circle';
+            }
+        }
+
+        function transformSheetData(rows) {
+            // Chuyển dữ liệu từ Google Sheet thành format card
+            // Xử lý merged cells: Kết quả/Ghi chú có thể rỗng ở các dòng sau
+            let lastStatus = '', lastNote = '';
+            const items = [];
+            const seen = new Set(); // Gộp theo Tên KH + Thời gian (1 hồ sơ = 1 card)
+            
+            rows.forEach((row, idx) => {
+                const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
+                let status = (row['Kết quả'] || '').toString().trim();
+                let note = (row['Ghi chú'] || '').toString().trim();
+                const time = (row['Thời gian'] || '').toString().trim();
+                const phone = (row['Điện thoại'] || '').toString().trim();
+                
+                if (status) lastStatus = status;
+                else status = lastStatus;
+                if (note) lastNote = note;
+                else note = lastNote;
+                
+                const key = `${time}_${name}`;
+                if (seen.has(key)) return; // Chỉ lấy 1 card/hồ sơ (tránh trùng nhiều mốc trọng lượng)
+                seen.add(key);
+                
+                if (!name) return;
+                
+                items.push({
+                    id: `HS-${String(items.length + 1).padStart(3, '0')}`,
+                    name: name || 'Không có tên',
+                    status: status,
+                    note: note,
+                    time: time,
+                    phone: phone,
+                    address: row['Địa chỉ'] || '',
+                    volume: row['Tổng sản lượng'] || '',
+                    industry: row['Ngành hàng'] || '',
+                    competitor: row['Đối thủ'] || ''
+                });
+            });
+            return items;
+        }
+
+        function renderData(data) {
+            const container = document.getElementById('results-container');
+            const emptyState = document.getElementById('empty-state');
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            
+            loadingState.classList.add('hidden');
+            errorState.classList.add('hidden');
+            
+            if (data.length === 0) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                updateStats(allData);
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            container.innerHTML = data.map(item => `
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm card-hover transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${item.id}</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold border ${getStatusClasses(item.status)}">
+                            <i class="fas ${getStatusIcon(item.status)} mr-1"></i> ${item.status || 'Chờ xử lý'}
+                        </span>
+                    </div>
+                    <h4 class="text-lg font-semibold text-slate-800 mb-1">${item.name}</h4>
+                    ${item.time ? `<p class="text-xs text-slate-400 mb-3">${item.time}</p>` : ''}
+                    <div class="bg-slate-50 p-3 rounded-xl">
+                        <p class="text-sm text-slate-600 italic">
+                            <span class="font-medium text-slate-400 not-italic uppercase text-[10px] block mb-1">Ghi chú (AV):</span>
+                            "${item.note || 'Chưa có ghi chú'}"
+                        </p>
+                    </div>
+                    ${item.phone ? `<p class="text-xs text-slate-500 mt-2"><i class="fas fa-phone mr-1"></i>${item.phone}</p>` : ''}
+                </div>
+            `).join('');
+
+            updateStats(allData);
+        }
+
+        function updateStats(data) {
+            const approved = data.filter(i => normalizeStatus(i.status) === 'Phê duyệt').length;
+            const rejected = data.filter(i => normalizeStatus(i.status) === 'Từ chối').length;
+            const pending = data.filter(i => normalizeStatus(i.status) === 'Bổ sung').length;
+            
+            document.getElementById('stat-approved').innerText = approved;
+            document.getElementById('stat-rejected').innerText = rejected;
+            document.getElementById('stat-pending').innerText = pending;
+        }
+
+        function filterResults(status) {
+            if (status === 'all') {
+                renderData(allData);
+            } else {
+                const filtered = allData.filter(item => normalizeStatus(item.status) === status);
+                renderData(filtered);
+            }
+        }
 
         async function loadData() {
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            const container = document.getElementById('results-container');
+            
+            loadingState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+            container.classList.add('hidden');
+            
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const result = await response.json();
                 
-                if (result.success && result.data) {
-                    processData(result.data);
+                if (result.success && result.data && result.data.length > 0) {
+                    allData = transformSheetData(result.data);
+                    renderData(allData);
+                } else if (result.success && (!result.data || result.data.length === 0)) {
+                    allData = [];
+                    renderData([]);
                 } else {
-                    showError('Không thể tải dữ liệu');
+                    throw new Error(result.error || 'Không thể tải dữ liệu');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showError('Có lỗi xảy ra khi tải dữ liệu');
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('error-message').textContent = 
+                    error.message || 'Có lỗi xảy ra khi tải dữ liệu từ Google Sheet.';
             }
         }
 
-        function processData(data) {
-            if (!data || data.length === 0) {
-                showError('Chưa có dữ liệu');
-                return;
-            }
-
-            // Cập nhật thống kê
-            updateStats(data);
-            
-            // Vẽ biểu đồ
-            drawCharts(data);
-            
-            // Hiển thị bảng
-            displayTable(data);
-        }
-
-        function updateStats(data) {
-            const totalReports = data.length;
-            document.getElementById('totalReports').textContent = totalReports;
-
-            // Tính tổng sản lượng
-            let totalVolume = 0;
-            data.forEach(row => {
-                const volume = parseFloat(row['Tổng sản lượng']) || 0;
-                totalVolume += volume;
-            });
-            document.getElementById('totalVolume').textContent = formatNumber(totalVolume);
-
-            // Đếm số khách hàng unique
-            const uniqueCustomers = new Set(data.map(row => row['Tên KH/Tên shop']));
-            document.getElementById('totalCustomers').textContent = uniqueCustomers.size;
-
-            // Tính tỷ lệ hoàn trung bình
-            let totalReturnRate = 0;
-            let count = 0;
-            data.forEach(row => {
-                const rate = parseFloat(row['Tỷ lệ hoàn đề xuất']) || parseFloat(row['Tỷ lệ hoàn hiện tại']) || 0;
-                if (rate > 0) {
-                    totalReturnRate += rate;
-                    count++;
-                }
-            });
-            const avgReturn = count > 0 ? (totalReturnRate / count).toFixed(1) : 0;
-            document.getElementById('avgReturnRate').textContent = avgReturn + '%';
-        }
-
-        function drawCharts(data) {
-            // Biểu đồ sản lượng theo khu vực
-            const volumeData = {
-                'Nội tỉnh': 0,
-                'Nội miền': 0,
-                'Cận miền': 0,
-                'Liên miền': 0
-            };
-            
-            data.forEach(row => {
-                volumeData['Nội tỉnh'] += parseFloat(row['Sản lượng Nội tỉnh']) || 0;
-                volumeData['Nội miền'] += parseFloat(row['Sản lượng Nội miền']) || 0;
-                volumeData['Cận miền'] += parseFloat(row['Sản lượng Cận miền']) || 0;
-                volumeData['Liên miền'] += parseFloat(row['Sản lượng Liên miền']) || 0;
-            });
-
-            if (volumeChart) volumeChart.destroy();
-            const volumeCtx = document.getElementById('volumeChart').getContext('2d');
-            volumeChart = new Chart(volumeCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(volumeData),
-                    datasets: [{
-                        label: 'Sản lượng',
-                        data: Object.values(volumeData),
-                        backgroundColor: [
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)',
-                            'rgba(240, 147, 251, 0.8)',
-                            'rgba(245, 87, 108, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-
-            // Biểu đồ ngành hàng
-            const industryCount = {};
-            data.forEach(row => {
-                const industries = (row['Ngành hàng'] || '').split(';').map(i => i.trim()).filter(i => i);
-                industries.forEach(ind => {
-                    industryCount[ind] = (industryCount[ind] || 0) + 1;
-                });
-            });
-            const topIndustries = Object.entries(industryCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-
-            if (industryChart) industryChart.destroy();
-            const industryCtx = document.getElementById('industryChart').getContext('2d');
-            industryChart = new Chart(industryCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: topIndustries.map(i => i[0]),
-                    datasets: [{
-                        data: topIndustries.map(i => i[1]),
-                        backgroundColor: [
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)',
-                            'rgba(240, 147, 251, 0.8)',
-                            'rgba(245, 87, 108, 0.8)',
-                            'rgba(67, 233, 123, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            });
-
-            // Biểu đồ đối thủ
-            const competitorCount = {};
-            data.forEach(row => {
-                const competitors = (row['Đối thủ'] || '').split(';').map(c => c.trim()).filter(c => c);
-                competitors.forEach(comp => {
-                    competitorCount[comp] = (competitorCount[comp] || 0) + 1;
-                });
-            });
-
-            if (competitorChart) competitorChart.destroy();
-            const competitorCtx = document.getElementById('competitorChart').getContext('2d');
-            competitorChart = new Chart(competitorCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(competitorCount),
-                    datasets: [{
-                        data: Object.values(competitorCount),
-                        backgroundColor: [
-                            'rgba(102, 126, 234, 0.8)',
-                            'rgba(118, 75, 162, 0.8)',
-                            'rgba(240, 147, 251, 0.8)',
-                            'rgba(245, 87, 108, 0.8)',
-                            'rgba(67, 233, 123, 0.8)',
-                            'rgba(79, 172, 254, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            });
-
-            // Biểu đồ theo thời gian
-            const timeData = {};
-            data.forEach(row => {
-                const date = (row['Thời gian'] || '').split(' ')[0]; // Lấy phần ngày
-                if (date) {
-                    timeData[date] = (timeData[date] || 0) + 1;
-                }
-            });
-            const sortedDates = Object.keys(timeData).sort();
-
-            if (timeChart) timeChart.destroy();
-            const timeCtx = document.getElementById('timeChart').getContext('2d');
-            timeChart = new Chart(timeCtx, {
-                type: 'line',
-                data: {
-                    labels: sortedDates,
-                    datasets: [{
-                        label: 'Số báo cáo',
-                        data: sortedDates.map(d => timeData[d]),
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        }
-
-        function displayTable(data) {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-
-            // Sắp xếp theo thời gian mới nhất
-            const sortedData = [...data].sort((a, b) => {
-                return new Date(b['Thời gian']) - new Date(a['Thời gian']);
-            });
-
-            sortedData.forEach(row => {
-                const tr = document.createElement('tr');
-                const addr = (row['Địa chỉ'] || '');
-                const industry = (row['Ngành hàng'] || '');
-                const competitor = (row['Đối thủ'] || '');
-                tr.innerHTML = `
-                    <td class="whitespace-nowrap">${row['Thời gian'] || ''}</td>
-                    <td>${row['Tên KH/Tên shop'] || ''}</td>
-                    <td class="whitespace-nowrap">${row['Điện thoại'] || ''}</td>
-                    <td>${addr.length > 35 ? addr.substring(0, 35) + '...' : addr}</td>
-                    <td class="text-right font-medium">${formatNumber(parseFloat(row['Tổng sản lượng']) || 0)}</td>
-                    <td>${industry.length > 25 ? industry.substring(0, 25) + '...' : industry}</td>
-                    <td>${competitor.length > 15 ? competitor.substring(0, 15) + '...' : competitor}</td>
-                    <td class="whitespace-nowrap">${row['Tỷ lệ hoàn đề xuất'] || row['Tỷ lệ hoàn hiện tại'] || '0'}%</td>
-                    <td class="text-amber-700 font-medium">${row['Kết quả'] || '-'}</td>
-                    <td class="text-gray-600">${row['Ghi chú'] || '-'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        function showError(message) {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = `<tr><td colspan="10" class="loading">${message}</td></tr>`;
-        }
-
-        async function refreshData() {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="10" class="loading">Đang tải dữ liệu từ Google Sheet...</td></tr>';
-            await loadData();
-        }
+        window.onload = () => loadData();
     </script>
 </body>
 </html>
