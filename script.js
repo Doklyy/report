@@ -1006,7 +1006,7 @@ function formatDataForSheets(formData) {
         })(),                                                    // 21. Ngành hàng
         formData.specificProduct || '',                          // 22. Tên sản phẩm
         formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ (chỉ 1)
-        '',                                                    // 23. Đối thủ khác (không dùng nữa, để trống)
+        '',                                                    // 24. Đối thủ khác (không dùng nữa, để trống)
         formData.competitorPrices.map(p => {
             const from = (p.from && p.from.trim() !== '') ? p.from : '0';
             const to = (p.to && p.to.trim() !== '') ? p.to : '0';
