@@ -35,7 +35,7 @@ function doPost(e) {
       // Add headers
       const headers = [
          'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng', 
-    'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực',
+    'Sản lượng hàng gửi', 'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực',
     'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 
     'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền', 
     'Tổng sản lượng', 'Tỷ trọng %', 'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 
@@ -108,9 +108,9 @@ function doPost(e) {
           
           const mergeRanges = [
             { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
-            { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
-            { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
-            { startCol: 34, endCol: 48 }     // Cột 34-48: Đơn giá bình quân ĐX đến Ghi chú
+            { startCol: 7, endCol: 23 },     // Cột 7-23: Tổng SL đến Ngành hàng (không merge cột 5,6 - mốc trọng lượng, sản lượng hàng gửi)
+            { startCol: 25, endCol: 33 },    // Cột 25-33: Đối thủ đến Chính sách đặc thù đối thủ
+            { startCol: 35, endCol: 49 }     // Cột 35-49: Đơn giá bình quân ĐX đến Ghi chú
           ];
           
           mergeRanges.forEach(range => {
@@ -144,7 +144,7 @@ function doPost(e) {
     
     // Auto-resize columns
     try {
-      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 48;
+      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 49;
       sheet.autoResizeColumns(1, numCols);
     } catch (resizeError) {
       Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
@@ -177,6 +177,7 @@ function testDoPost() {
       '0123456789',
       'Test Address',
       '0-1000',
+      '100/200/300/400',
       '1000',
       '100%',
       '50',
