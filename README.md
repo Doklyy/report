@@ -80,6 +80,16 @@ Giao diện web form để thu thập thông tin khách hàng và gửi dữ li�
 3. Click nút **GỬI** để gửi dữ liệu
 4. Dữ liệu sẽ được ghi vào Google Sheets tự động
 
+## Test chức năng
+
+Để test xem việc gửi dữ liệu lên Google Sheets có hoạt động không:
+
+1. Mở file `test-google-sheets.html` trong trình duyệt
+2. Click nút **"Test Gửi Dữ Liệu"**
+3. Kiểm tra Google Sheets để xem dữ liệu test đã được ghi vào chưa
+
+**Lưu ý:** File test sẽ gửi dữ liệu mẫu, bạn có thể xóa dòng test trong Google Sheets sau khi kiểm tra.
+
 ## Cấu trúc dữ liệu trong Google Sheets
 
 Dữ liệu sẽ được ghi vào Google Sheets với các cột sau:
