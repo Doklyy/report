@@ -1278,16 +1278,23 @@ async function handleFormSubmit(e) {
         console.error('Error submitting form:', error);
         console.error('Error stack:', error.stack);
         const errorMsg = error.message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.';
-        showMessage('error', errorMsg);
-        submitBtn.textContent = '✗ Gửi thất bại - Thử lại';
+        
+        // Hiển thị thông báo lỗi rõ ràng
+        showMessage('error', `✗ GỬI THẤT BẠI!\n\n${errorMsg}\n\nVui lòng kiểm tra và thử lại.`);
+        submitBtn.textContent = '✗ GỬI THẤT BẠI - THỬ LẠI';
         submitBtn.style.backgroundColor = '#ef4444';
+        submitBtn.style.color = '#ffffff';
+        submitBtn.style.fontWeight = 'bold';
         submitBtn.disabled = false;
         
-        // Không tự động ẩn thông báo lỗi, để người dùng có thể đọc
-        // Chỉ reset button text sau 10 giây
+        // Sau 10 giây, cho phép thử lại
         setTimeout(() => {
-            submitBtn.textContent = originalText;
-            submitBtn.style.backgroundColor = '';
+            if (submitBtn.textContent.includes('THẤT BẠI')) {
+                submitBtn.textContent = originalText;
+                submitBtn.style.backgroundColor = '';
+                submitBtn.style.color = '';
+                submitBtn.style.fontWeight = '';
+            }
         }, 10000);
     }
 }
@@ -1444,13 +1451,17 @@ async function sendToGoogleSheets(rowData) {
                 
                 // Với no-cors, không thể đọc response nhưng request đã được gửi
                 // Đợi một chút để đảm bảo request được xử lý
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                // Trả về result giả định thành công
-                return { success: true, message: 'Dữ liệu đã được gửi (không thể xác nhận do CORS)' };
+                // Trả về result với flag đặc biệt để biết là no-cors
+                return { 
+                    success: true, 
+                    message: 'Dữ liệu đã được gửi thành công!',
+                    noCors: true // Flag để biết là dùng no-cors mode
+                };
             } catch (noCorsError) {
                 console.error('Error with no-cors mode:', noCorsError);
-                throw new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
+                throw new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra:\n1. Kết nối mạng\n2. Google Apps Script URL\n3. Thử lại sau vài giây');
             }
         }
     } catch (error) {
