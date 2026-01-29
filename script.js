@@ -1495,11 +1495,21 @@ async function sendToGoogleSheets(rowData) {
                     
                     xhr.onerror = function() {
                         console.error('XHR error occurred');
-                        // Thử lại với form submission
+                        // Thử lại với form submission trong iframe để tránh redirect
                         try {
+                            // Tạo iframe ẩn để nhận response mà không redirect trang
+                            const iframe = document.createElement('iframe');
+                            iframe.name = 'hidden_iframe_' + Date.now();
+                            iframe.style.display = 'none';
+                            iframe.style.width = '0';
+                            iframe.style.height = '0';
+                            iframe.style.border = 'none';
+                            document.body.appendChild(iframe);
+                            
                             const form = document.createElement('form');
                             form.method = 'POST';
                             form.action = GOOGLE_SCRIPT_URL;
+                            form.target = iframe.name; // Submit vào iframe để tránh redirect
                             form.style.display = 'none';
                             
                             const dataInput = document.createElement('input');
@@ -1513,6 +1523,9 @@ async function sendToGoogleSheets(rowData) {
                             
                             setTimeout(() => {
                                 document.body.removeChild(form);
+                                setTimeout(() => {
+                                    document.body.removeChild(iframe);
+                                }, 1000);
                                 resolve({ 
                                     success: true, 
                                     message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
@@ -1528,11 +1541,21 @@ async function sendToGoogleSheets(rowData) {
                     xhr.send(JSON.stringify({ data: rowData }));
                 } catch (xhrError) {
                     console.error('Error with XMLHttpRequest:', xhrError);
-                    // Thử lại với form submission như phương án cuối cùng
+                    // Thử lại với form submission trong iframe như phương án cuối cùng
                     try {
+                        // Tạo iframe ẩn để nhận response mà không redirect trang
+                        const iframe = document.createElement('iframe');
+                        iframe.name = 'hidden_iframe_' + Date.now();
+                        iframe.style.display = 'none';
+                        iframe.style.width = '0';
+                        iframe.style.height = '0';
+                        iframe.style.border = 'none';
+                        document.body.appendChild(iframe);
+                        
                         const form = document.createElement('form');
                         form.method = 'POST';
                         form.action = GOOGLE_SCRIPT_URL;
+                        form.target = iframe.name; // Submit vào iframe để tránh redirect
                         form.style.display = 'none';
                         
                         const dataInput = document.createElement('input');
@@ -1546,6 +1569,9 @@ async function sendToGoogleSheets(rowData) {
                         
                         setTimeout(() => {
                             document.body.removeChild(form);
+                            setTimeout(() => {
+                                document.body.removeChild(iframe);
+                            }, 1000);
                             resolve({ 
                                 success: true, 
                                 message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
