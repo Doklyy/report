@@ -660,6 +660,16 @@ function handleOtherInput(input) {
     checkbox.checked = input.value.trim().length > 0;
 }
 
+// Toggle panel Kết quả & Ghi chú - bấm thanh để mở/đóng
+function toggleResultPanel() {
+    const panel = document.getElementById('resultPanel');
+    const bar = document.getElementById('resultToggleBar');
+    if (panel && bar) {
+        panel.classList.toggle('show');
+        bar.classList.toggle('expanded');
+    }
+}
+
 // Collect form data
 function collectFormData() {
     const formData = {
