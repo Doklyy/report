@@ -1004,7 +1004,8 @@ function formatDataForSheets(formData) {
             }
             return industryList.join('; ');
         })(),                                                    // 21. Ngành hàng
-        formData.competitors.length > 0 ? formData.competitors[0] : '', // 22. Đối thủ (chỉ 1)
+        formData.specificProduct || '',                          // 22. Tên sản phẩm
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ (chỉ 1)
         '',                                                    // 23. Đối thủ khác (không dùng nữa, để trống)
         formData.competitorPrices.map(p => {
             const from = (p.from && p.from.trim() !== '') ? p.from : '0';

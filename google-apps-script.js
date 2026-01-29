@@ -57,7 +57,7 @@ function doPost(e) {
         'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
         'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
         'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
-        'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
+        'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
         'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
         'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
         'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
