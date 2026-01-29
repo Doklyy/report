@@ -610,11 +610,31 @@ function updateCompetitorPriceTable() {
         const competitorReturnInput = tr.querySelector(`input[name="competitorReturnRate_${index}"]`);
         
         if (currentReturnInput) {
+            // Validate khi đang nhập - chỉ cho phép số và dấu chấm/phẩy
+            currentReturnInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/[^0-9.,]/g, '');
+                const parts = value.split(/[.,]/);
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                this.value = value;
+            });
+            // Format thêm "%" khi blur
             currentReturnInput.addEventListener('blur', function() {
                 formatPercentageInput(this);
             });
         }
         if (competitorReturnInput) {
+            // Validate khi đang nhập - chỉ cho phép số và dấu chấm/phẩy
+            competitorReturnInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/[^0-9.,]/g, '');
+                const parts = value.split(/[.,]/);
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                this.value = value;
+            });
+            // Format thêm "%" khi blur
             competitorReturnInput.addEventListener('blur', function() {
                 formatPercentageInput(this);
             });
