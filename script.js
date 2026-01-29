@@ -63,9 +63,17 @@ function setupEventListeners() {
     // phải cập nhật lại TRỌNG LƯỢNG tương ứng, nhưng giữ nguyên giá đã nhập
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
+            validateWeightRanges();
             updatePriceTables();
         }
     });
+    
+    // Validation khi blur khỏi input trọng lượng
+    document.addEventListener('blur', function(e) {
+        if (e.target.classList.contains('weight-from') || e.target.classList.contains('weight-to')) {
+            validateWeightRanges();
+        }
+    }, true);
 
 
     // Attach listeners to existing rows
@@ -78,7 +86,38 @@ function setupEventListeners() {
                 calculateTotals();
             });
         });
+        
+        // Attach validation for weight inputs
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        if (fromInput) {
+            fromInput.addEventListener('blur', validateWeightRanges);
+            fromInput.addEventListener('input', validateWeightRanges);
+        }
+        if (toInput) {
+            toInput.addEventListener('blur', validateWeightRanges);
+            toInput.addEventListener('input', validateWeightRanges);
+        }
     });
+    
+    // Auto-format "%" for percentage inputs
+    // Tỷ trọng hàng có kích thước trên 1,2m - nhập số, tự động thêm %
+    if (over12mInputEl) {
+        over12mInputEl.addEventListener('blur', function() {
+            formatPercentageInput(this);
+        });
+    }
+    
+    // Tỷ trọng hàng nguyên khối từ 100kg trở lên - nhập số, tự động thêm %
+    const over100kgInput = document.getElementById('over100kgRatio');
+    if (over100kgInput) {
+        over100kgInput.addEventListener('blur', function() {
+            formatPercentageInput(this);
+        });
+    }
+    
+    // Auto-format "%" for return rate inputs (sẽ được thêm động trong updatePriceTables)
+    setupPercentageInputs();
 
     // Giới hạn chọn duy nhất cho đặc tính hàng hóa
     const productCheckboxes = document.querySelectorAll('input[name="productNormal"], input[name="productLiquid"], input[name="productFlammable"], input[name="productFragile"]');
@@ -188,6 +227,18 @@ function addWeightLevel() {
         });
     });
     
+    // Attach event listeners to weight inputs for validation
+    const fromInput = row.querySelector('.weight-from');
+    const toInput = row.querySelector('.weight-to');
+    if (fromInput) {
+        fromInput.addEventListener('blur', validateWeightRanges);
+        fromInput.addEventListener('input', validateWeightRanges);
+    }
+    if (toInput) {
+        toInput.addEventListener('blur', validateWeightRanges);
+        toInput.addEventListener('input', validateWeightRanges);
+    }
+    
     // Khi thêm hàng mới, cập nhật lại bảng giá để đồng bộ trọng lượng
     updatePriceTables();
 }
@@ -251,6 +302,91 @@ function calculateRowTotal(row) {
             percentCell.textContent = percent.toFixed(1) + '%';
             percentCell.setAttribute('data-percent', percent.toFixed(1) + '%');
         }
+    }
+}
+
+// Validate weight ranges: Đảm bảo "Từ n < đến n < từ n+1 < đến n+1"
+function validateWeightRanges() {
+    const rows = document.querySelectorAll('#weightLevelsTable tr');
+    const errors = [];
+    
+    // Sắp xếp các mốc theo "Từ" để kiểm tra
+    const ranges = [];
+    rows.forEach((row, index) => {
+        const fromInput = row.querySelector('.weight-from');
+        const toInput = row.querySelector('.weight-to');
+        const from = parseFloat(fromInput?.value) || 0;
+        const to = parseFloat(toInput?.value) || 0;
+        
+        if (fromInput && toInput && (from > 0 || to > 0)) {
+            ranges.push({ index, from, to, fromInput, toInput });
+        }
+    });
+    
+    // Sắp xếp theo "Từ" tăng dần
+    ranges.sort((a, b) => a.from - b.from);
+    
+    // Kiểm tra từng cặp liên tiếp
+    for (let i = 0; i < ranges.length; i++) {
+        const current = ranges[i];
+        
+        // Kiểm tra "Từ" < "Đến" trong cùng một mốc
+        if (current.from >= current.to && current.to > 0) {
+            errors.push(`Mốc ${i + 1}: "Từ" (${current.from}) phải nhỏ hơn "Đến" (${current.to})`);
+            if (current.fromInput) current.fromInput.style.borderColor = 'red';
+            if (current.toInput) current.toInput.style.borderColor = 'red';
+        } else {
+            if (current.fromInput) current.fromInput.style.borderColor = '';
+            if (current.toInput) current.toInput.style.borderColor = '';
+        }
+        
+        // Kiểm tra với mốc tiếp theo
+        if (i < ranges.length - 1) {
+            const next = ranges[i + 1];
+            
+            // Kiểm tra "Đến" của mốc hiện tại < "Từ" của mốc tiếp theo
+            if (current.to >= next.from && current.to > 0 && next.from > 0) {
+                errors.push(`Mốc ${i + 1} và ${i + 2}: "Đến" của mốc ${i + 1} (${current.to}) phải nhỏ hơn "Từ" của mốc ${i + 2} (${next.from})`);
+                if (current.toInput) current.toInput.style.borderColor = 'red';
+                if (next.fromInput) next.fromInput.style.borderColor = 'red';
+            }
+        }
+    }
+    
+    // Hiển thị lỗi nếu có
+    let errorMsg = document.getElementById('weightValidationError');
+    if (errors.length > 0) {
+        if (!errorMsg) {
+            errorMsg = document.createElement('div');
+            errorMsg.id = 'weightValidationError';
+            errorMsg.className = 'text-red-600 text-sm mt-2 p-2 bg-red-50 rounded';
+            const tableContainer = document.querySelector('.table-container');
+            if (tableContainer) {
+                tableContainer.parentNode.insertBefore(errorMsg, tableContainer.nextSibling);
+            }
+        }
+        errorMsg.innerHTML = '<strong>Lỗi validation:</strong><br>' + errors.join('<br>');
+    } else {
+        if (errorMsg) {
+            errorMsg.remove();
+        }
+    }
+    
+    return errors.length === 0;
+}
+
+// Format percentage input: Tự động thêm "%" khi người dùng nhập số
+function formatPercentageInput(input) {
+    if (!input) return;
+    
+    // Lấy giá trị số (bỏ % nếu có)
+    let value = input.value.replace(/%/g, '').trim();
+    
+    // Nếu là số hợp lệ, thêm %
+    if (value !== '' && !isNaN(value) && value !== '') {
+        input.value = value + '%';
+    } else if (value === '') {
+        input.value = '';
     }
 }
 
@@ -396,8 +532,14 @@ function updateCompetitorPriceTable() {
             region: row.querySelector(`input[name="competitorPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || '',
-            currentReturnRate: row.querySelector(`input[name="competitorCurrentReturnRate_${idx}"]`)?.value || '',
-            competitorReturnRate: row.querySelector(`input[name="competitorReturnRate_${idx}"]`)?.value || ''
+            currentReturnRate: (() => {
+                const val = row.querySelector(`input[name="competitorCurrentReturnRate_${idx}"]`)?.value || '';
+                return val.replace(/%/g, '').trim();
+            })(),
+            competitorReturnRate: (() => {
+                const val = row.querySelector(`input[name="competitorReturnRate_${idx}"]`)?.value || '';
+                return val.replace(/%/g, '').trim();
+            })()
         };
     });
     
@@ -442,6 +584,21 @@ function updateCompetitorPriceTable() {
         `;
         
         tbody.appendChild(tr);
+        
+        // Attach percentage format for return rate inputs
+        const currentReturnInput = tr.querySelector(`input[name="competitorCurrentReturnRate_${index}"]`);
+        const competitorReturnInput = tr.querySelector(`input[name="competitorReturnRate_${index}"]`);
+        
+        if (currentReturnInput) {
+            currentReturnInput.addEventListener('blur', function() {
+                formatPercentageInput(this);
+            });
+        }
+        if (competitorReturnInput) {
+            competitorReturnInput.addEventListener('blur', function() {
+                formatPercentageInput(this);
+            });
+        }
     });
 }
 
@@ -463,7 +620,10 @@ function updateProposedPriceTable() {
             region: row.querySelector(`input[name="proposedPrice_${idx}_region"]`)?.value || '',
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || '',
-            proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || ''
+            proposedReturnRate: (() => {
+                const val = row.querySelector(`input[name="proposedReturnRate_${idx}"]`)?.value || '';
+                return val.replace(/%/g, '').trim();
+            })()
         };
     });
     
@@ -567,9 +727,15 @@ function collectFormData() {
         
         competitorOtherPolicies: document.querySelector('textarea[name="competitorOtherPolicies"]') ? document.querySelector('textarea[name="competitorOtherPolicies"]').value.trim() : '',
         
-        over12mRatio: document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '',
+        over12mRatio: (() => {
+            const val = document.getElementById('over12mRatio') ? document.getElementById('over12mRatio').value : '';
+            return val.replace(/%/g, '').trim();
+        })(),
         over12mPercent: document.getElementById('over12mPercent') ? document.getElementById('over12mPercent').value : '',
-        over100kgRatio: document.getElementById('over100kgRatio') ? document.getElementById('over100kgRatio').value : '',
+        over100kgRatio: (() => {
+            const val = document.getElementById('over100kgRatio') ? document.getElementById('over100kgRatio').value : '';
+            return val.replace(/%/g, '').trim();
+        })(),
         specificProduct: document.getElementById('specificProduct') ? document.getElementById('specificProduct').value.trim() : '',
         
         // Proposed prices
@@ -647,7 +813,10 @@ function collectFormData() {
                 region: regionInput ? regionInput.value : '',
                 adjacent: adjacentInput ? adjacentInput.value : '',
                 inter: interInput ? interInput.value : '',
-                proposedReturnRate: row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || ''
+                proposedReturnRate: (() => {
+                    const val = row.querySelector(`input[name="proposedReturnRate_${index}"]`)?.value || '';
+                    return val.replace(/%/g, '').trim();
+                })()
             });
         }
     });
