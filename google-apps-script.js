@@ -20,9 +20,33 @@ const SHEET_NAME = 'Data';
 
 function doPost(e) {
   try {
-    // Parse JSON data
-    const jsonData = JSON.parse(e.postData.contents);
-    const rowData = jsonData.data;
+    let rowData;
+    
+    // Kiểm tra xem dữ liệu đến từ form submission hay JSON
+    if (e.postData && e.postData.contents) {
+      // Dữ liệu từ JSON (fetch API)
+      try {
+        const jsonData = JSON.parse(e.postData.contents);
+        rowData = jsonData.data;
+      } catch (parseError) {
+        // Nếu không parse được JSON, có thể là form-data
+        // Thử lấy từ parameter 'data'
+        const dataParam = e.parameter.data;
+        if (dataParam) {
+          const jsonData = JSON.parse(dataParam);
+          rowData = jsonData.data;
+        } else {
+          throw new Error('Cannot parse data: ' + parseError.toString());
+        }
+      }
+    } else if (e.parameter && e.parameter.data) {
+      // Dữ liệu từ form submission (form-data)
+      const dataParam = e.parameter.data;
+      const jsonData = JSON.parse(dataParam);
+      rowData = jsonData.data;
+    } else {
+      throw new Error('No data received. Expected JSON in postData.contents or form parameter "data"');
+    }
     
     // Open spreadsheet - với error handling tốt hơn
     let ss;
