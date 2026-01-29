@@ -61,23 +61,36 @@
             border-collapse: collapse;
         }
         th {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 0.75rem;
+            padding: 0.875rem 1rem;
             text-align: left;
             font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
         }
         td {
-            padding: 0.75rem;
+            padding: 0.875rem 1rem;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9rem;
         }
-        tr:hover {
-            background: #f3f4f6;
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        tbody tr:hover {
+            background: #eff6ff !important;
         }
         .loading {
             text-align: center;
-            padding: 2rem;
+            padding: 2.5rem;
             color: #6b7280;
+            font-size: 1rem;
+        }
+        .stat-number {
+            font-size: 2.75rem;
+        }
+        .card {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
     </style>
 </head>
@@ -141,15 +154,15 @@
             </div>
         </div>
 
-        <!-- Bảng dữ liệu chi tiết -->
+        <!-- Bảng dữ liệu chi tiết - Dễ nhìn, truyền từ Google Sheet -->
         <div class="card">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">📋 Dữ liệu chi tiết</h2>
-                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">
+                <h2 class="text-xl font-bold text-gray-800">📋 Dữ liệu chi tiết từ Google Sheet</h2>
+                <button onclick="refreshData()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg transition-colors font-medium shadow-sm">
                     🔄 Làm mới
                 </button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
                 <table id="dataTable">
                     <thead>
                         <tr>
@@ -157,15 +170,17 @@
                             <th>Tên KH</th>
                             <th>Điện thoại</th>
                             <th>Địa chỉ</th>
-                            <th>Tổng sản lượng</th>
+                            <th>Tổng SL</th>
                             <th>Ngành hàng</th>
                             <th>Đối thủ</th>
                             <th>Tỷ lệ hoàn</th>
+                            <th>Kết quả</th>
+                            <th>Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
                         <tr>
-                            <td colspan="8" class="loading">Đang tải dữ liệu...</td>
+                            <td colspan="10" class="loading">Đang tải dữ liệu từ Google Sheet...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -396,15 +411,20 @@
 
             sortedData.forEach(row => {
                 const tr = document.createElement('tr');
+                const addr = (row['Địa chỉ'] || '');
+                const industry = (row['Ngành hàng'] || '');
+                const competitor = (row['Đối thủ'] || '');
                 tr.innerHTML = `
-                    <td>${row['Thời gian'] || ''}</td>
+                    <td class="whitespace-nowrap">${row['Thời gian'] || ''}</td>
                     <td>${row['Tên KH/Tên shop'] || ''}</td>
-                    <td>${row['Điện thoại'] || ''}</td>
-                    <td>${(row['Địa chỉ'] || '').substring(0, 30)}${(row['Địa chỉ'] || '').length > 30 ? '...' : ''}</td>
-                    <td>${formatNumber(parseFloat(row['Tổng sản lượng']) || 0)}</td>
-                    <td>${(row['Ngành hàng'] || '').substring(0, 30)}${(row['Ngành hàng'] || '').length > 30 ? '...' : ''}</td>
-                    <td>${(row['Đối thủ'] || '').substring(0, 30)}${(row['Đối thủ'] || '').length > 30 ? '...' : ''}</td>
-                    <td>${row['Tỷ lệ hoàn đề xuất'] || row['Tỷ lệ hoàn hiện tại'] || '0'}%</td>
+                    <td class="whitespace-nowrap">${row['Điện thoại'] || ''}</td>
+                    <td>${addr.length > 35 ? addr.substring(0, 35) + '...' : addr}</td>
+                    <td class="text-right font-medium">${formatNumber(parseFloat(row['Tổng sản lượng']) || 0)}</td>
+                    <td>${industry.length > 25 ? industry.substring(0, 25) + '...' : industry}</td>
+                    <td>${competitor.length > 15 ? competitor.substring(0, 15) + '...' : competitor}</td>
+                    <td class="whitespace-nowrap">${row['Tỷ lệ hoàn đề xuất'] || row['Tỷ lệ hoàn hiện tại'] || '0'}%</td>
+                    <td class="text-amber-700 font-medium">${row['Kết quả'] || '-'}</td>
+                    <td class="text-gray-600">${row['Ghi chú'] || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -416,12 +436,12 @@
 
         function showError(message) {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = `<tr><td colspan="8" class="loading">${message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="loading">${message}</td></tr>`;
         }
 
         async function refreshData() {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" class="loading">Đang tải dữ liệu...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="loading">Đang tải dữ liệu từ Google Sheet...</td></tr>';
             await loadData();
         }
     </script>
