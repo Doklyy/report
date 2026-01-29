@@ -1243,6 +1243,8 @@ async function handleFormSubmit(e) {
             let successMsg;
             if (result.rowNumber) {
                 successMsg = `✓ GỬI THÀNH CÔNG!\n\nDòng ${result.rowNumber} đã được thêm vào Google Sheets.`;
+            } else if (result.method === 'form-submit') {
+                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi bằng form submission.\n\nVui lòng kiểm tra Google Sheets để xác nhận.\n\nNếu không thấy dữ liệu:\n1. Kiểm tra Apps Script Execution Log\n2. Đảm bảo đã deploy lại Apps Script sau khi cập nhật code`;
             } else if (result.noCors) {
                 successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi. Vui lòng kiểm tra Google Sheets để xác nhận.`;
             } else {
@@ -1412,32 +1414,47 @@ function updateComparisonTable() {
 
 // Send data to Google Sheets
 async function sendToGoogleSheets(rowData) {
-    // Gửi theo kiểu "simple request" + no-cors để tránh lỗi CORS / preflight của Apps Script
-    // Apps Script sẽ nhận ở e.parameter.data (xem file google-apps-script.js)
     const payload = { data: rowData };
+    const payloadString = JSON.stringify(payload);
+    const encodedData = encodeURIComponent(payloadString);
 
     try {
-        console.log('Sending data to Google Sheets (no-cors, form-encoded):', {
+        console.log('Sending data to Google Sheets:', {
             url: GOOGLE_SCRIPT_URL,
             dataLength: rowData.length,
-            firstFewFields: rowData.slice(0, 5)
+            firstFewFields: rowData.slice(0, 5),
+            payloadSize: payloadString.length
         });
 
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                // content-type này thuộc nhóm "simple", sẽ không kích hoạt preflight
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            },
-            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
-        });
+        // Thử cách 1: Dùng form submission (cách đáng tin cậy nhất với Apps Script)
+        // Tạo form ẩn và submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GOOGLE_SCRIPT_URL;
+        form.target = '_blank'; // Mở trong tab mới để không block UI
+        form.style.display = 'none';
 
-        // Ở chế độ no-cors, browser không cho đọc body/status, nhưng request vẫn được gửi.
-        console.log('Request sent. Response type:', response.type);
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'data';
+        input.value = encodedData;
+        form.appendChild(input);
 
-        // Trả về flag noCors để phía trên hiển thị thông điệp phù hợp
-        return { success: true, noCors: true };
+        document.body.appendChild(form);
+        
+        // Submit form
+        form.submit();
+        
+        // Xóa form sau 1 giây
+        setTimeout(() => {
+            document.body.removeChild(form);
+        }, 1000);
+
+        console.log('Form submitted successfully');
+        
+        // Trả về success (không thể đọc response từ form submission)
+        return { success: true, method: 'form-submit' };
+        
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
         console.error('Error details:', {
