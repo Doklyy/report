@@ -932,10 +932,11 @@ function formatDataForSheets(formData) {
             }
             return industryList.join('; ');
         })(),                                                    // 21. Ngành hàng
-        formData.competitors.length > 0 ? formData.competitors[0] : '', // 22. Đối thủ (chỉ 1)
-        '',                                                    // 23. Đối thủ khác (không dùng nữa, để trống)
-        '',                                                    // 24. Giá đối thủ (sẽ điền riêng cho mỗi row)
-        competitorAvg.province || '',                          // 25. Đơn giá bình quân Nội tỉnh (ĐT)
+        formData.specificProduct || '',                          // 22. Tên sản phẩm
+        formData.competitors.length > 0 ? formData.competitors[0] : '', // 23. Đối thủ (chỉ 1)
+        '',                                                    // 24. Đối thủ khác (không dùng nữa, để trống)
+        '',                                                    // 25. Giá đối thủ (sẽ điền riêng cho mỗi row)
+        competitorAvg.province || '',                          // 26. Đơn giá bình quân Nội tỉnh (ĐT)
         competitorAvg.region || '',                            // 26. Đơn giá bình quân Nội miền (ĐT)
         competitorAvg.adjacent || '',                          // 27. Đơn giá bình quân Cận miền (ĐT)
         competitorAvg.inter || '',                             // 28. Đơn giá bình quân Liên miền (ĐT)
@@ -979,8 +980,8 @@ function formatDataForSheets(formData) {
         // Tạo row mới với thông tin chung + thông tin riêng của mốc này
         const row = [...commonData];
         row[4] = weightRange;  // 5. Các mốc trọng lượng
-        row[23] = competitorPriceStr;  // 24. Giá đối thủ
-        row[31] = proposedPriceStr;   // 32. Giá đề xuất
+        row[24] = competitorPriceStr;  // 25. Giá đối thủ
+        row[32] = proposedPriceStr;   // 33. Giá đề xuất
         
         rows.push(row);
     });
