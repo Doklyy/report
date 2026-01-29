@@ -717,7 +717,11 @@ function collectFormData() {
         reporterPhone: document.querySelector('input[name="reporterPhone"]') ? document.querySelector('input[name="reporterPhone"]').value.trim() : '',
         branch: document.querySelector('select[name="branch"]') ? document.querySelector('select[name="branch"]').value : '',
         postOfficeName: document.querySelector('input[name="postOfficeName"]') ? document.querySelector('input[name="postOfficeName"]').value.trim() : '',
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value.trim() : ''
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value.trim() : '',
+        
+        // Kết quả & Ghi chú (AU, AV)
+        result: document.getElementById('result') ? document.getElementById('result').value.trim() : '',
+        note: document.getElementById('note') ? document.getElementById('note').value.trim() : ''
     };
     
     // Collect weight levels and volumes
@@ -956,7 +960,9 @@ function formatDataForSheets(formData) {
         formData.postOfficeName || '',                         // 42. Tên Bưu cục
         formData.title || '',                                  // 43. Chức danh
         formData.branch || '',                                 // 44. Chi nhánh
-        (formData.postOfficeCode || '').toString()            // 45. Mã Bưu cục
+        (formData.postOfficeCode || '').toString(),           // 45. Mã Bưu cục
+        formData.result || '',                                // 46. Kết quả (AU)
+        formData.note || ''                                   // 47. Ghi chú (AV)
     ];
     
     // Tạo 1 row cho mỗi mốc trọng lượng

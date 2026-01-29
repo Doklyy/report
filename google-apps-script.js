@@ -47,7 +47,8 @@ function doPost(e) {
     'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
     'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất','So sánh đơn giá bình quân ',
     'Họ và tên người báo cáo','Điện thoại người báo cáo', 'Tên Bưu cục', 
-    'Chức danh', 'Chi nhánh','Mã Bưu cục'
+    'Chức danh', 'Chi nhánh','Mã Bưu cục',
+    'Kết quả', 'Ghi chú'
       ];
       sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
       sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
@@ -109,7 +110,7 @@ function doPost(e) {
             { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
             { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
             { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
-            { startCol: 34, endCol: 46 }     // Cột 34-46: Đơn giá bình quân ĐX đến Mã Bưu cục
+            { startCol: 34, endCol: 48 }     // Cột 34-48: Đơn giá bình quân ĐX đến Ghi chú (AU, AV)
           ];
           
           mergeRanges.forEach(range => {
@@ -143,7 +144,7 @@ function doPost(e) {
     
     // Auto-resize columns
     try {
-      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 45;
+      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 48;
       sheet.autoResizeColumns(1, numCols);
     } catch (resizeError) {
       Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
@@ -199,7 +200,9 @@ function testDoPost() {
       'Test Post Office',
       'Nhân viên',
       'Hà Nội',
-      '100000'
+      '100000',
+      'Kết quả test',
+      'Ghi chú test'
     ]
   };
   
