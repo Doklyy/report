@@ -194,6 +194,20 @@
         </div>
 
         <form id="reportForm" onsubmit="return false;">
+            <!-- Kết quả & Ghi chú - Thanh ngang (AU, AV) - Hiển thị ngay đầu form -->
+            <div class="mb-6">
+                <div class="result-note-bar flex flex-wrap items-center gap-3 p-3 bg-gray-100 rounded-lg border border-gray-200 overflow-x-auto">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Kết quả:</span>
+                        <input type="text" name="result" id="result" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập kết quả">
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Ghi chú:</span>
+                        <input type="text" name="note" id="note" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập ghi chú">
+                    </div>
+                </div>
+            </div>
+
             <!-- I. THÔNG TIN KHÁCH HÀNG -->
             <div class="mb-8">
                 <div class="section-title text-blue-900 uppercase">I. Thông tin khách hàng</div>
@@ -427,20 +441,6 @@
                     <div class="md:col-span-2">
                         <label class="block font-medium mb-1">Các chính sách đặc thù khác cần đề xuất</label>
                         <textarea name="proposedOtherPolicies" class="bg-yellow-50 h-24"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kết quả & Ghi chú - Thanh ngang (AU, AV) -->
-            <div class="mb-6">
-                <div class="result-note-bar flex flex-wrap items-center gap-3 p-3 bg-gray-100 rounded-lg border border-gray-200 overflow-x-auto">
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Kết quả:</span>
-                        <input type="text" name="result" id="result" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập kết quả">
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Ghi chú:</span>
-                        <input type="text" name="note" id="note" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập ghi chú">
                     </div>
                 </div>
             </div>
