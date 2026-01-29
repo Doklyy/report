@@ -1,59 +1,13 @@
-/**
- * Google Apps Script để nhận dữ liệu từ form và ghi vào Google Sheets
- * 
- * HƯỚNG DẪN SỬ DỤNG:
- * 1. Mở Google Sheets mới
- * 2. Vào Extensions > Apps Script
- * 3. Xóa code mặc định và dán code này vào
- * 4. Thay đổi SPREADSHEET_ID thành ID của Google Sheet của bạn
- * 5. Lưu và chạy hàm doPost để tạo trigger
- * 6. Deploy > New deployment > chọn Web app
- * 7. Chọn "Execute as: Me" và "Who has access: Anyone"
- * 8. Copy URL và dán vào biến GOOGLE_SCRIPT_URL trong file script.js
- */
-
-// Thay đổi ID này thành ID của Google Sheet của bạn
-const SPREADSHEET_ID = '13uIBESYl6cklFlBWMj0HAjsJpcBCnCZk7t86gvG0y_I';
+const SPREADSHEET_ID = '1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s';
 
 // Tên sheet để ghi dữ liệu
 const SHEET_NAME = 'Data';
-
-// Xử lý CORS preflight request
-function doOptions(e) {
-  return ContentService
-    .createTextOutput('')
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
 function doPost(e) {
   try {
-    let rowData;
-    
-    // Kiểm tra xem dữ liệu đến từ form submission hay JSON
-    if (e.postData && e.postData.contents) {
-      // Dữ liệu từ JSON (fetch API)
-      try {
-        const jsonData = JSON.parse(e.postData.contents);
-        rowData = jsonData.data;
-      } catch (parseError) {
-        // Nếu không parse được JSON, có thể là form-data
-        // Thử lấy từ parameter 'data'
-        const dataParam = e.parameter.data;
-        if (dataParam) {
-          const jsonData = JSON.parse(dataParam);
-          rowData = jsonData.data;
-        } else {
-          throw new Error('Cannot parse data: ' + parseError.toString());
-        }
-      }
-    } else if (e.parameter && e.parameter.data) {
-      // Dữ liệu từ form submission (form-data)
-      const dataParam = e.parameter.data;
-      const jsonData = JSON.parse(dataParam);
-      rowData = jsonData.data;
-    } else {
-      throw new Error('No data received. Expected JSON in postData.contents or form parameter "data"');
-    }
+    // Parse JSON data
+    const jsonData = JSON.parse(e.postData.contents);
+    const rowsData = jsonData.data; // Mảng các rows (mỗi mốc trọng lượng = 1 row)
+    const mergeCells = jsonData.mergeCells !== false; // Mặc định là true
     
     // Open spreadsheet - với error handling tốt hơn
     let ss;
@@ -68,12 +22,9 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Try to get the sheet by name, if not found, use the first sheet or create new
     let sheet = ss.getSheetByName(SHEET_NAME);
     
-    // If sheet doesn't exist, try to use the first sheet (Sheet1) or create new
     if (!sheet) {
-      // Try to get the first sheet (usually named "Sheet1")
       const firstSheet = ss.getSheets()[0];
       if (firstSheet && firstSheet.getName() === 'Data') {
         sheet = firstSheet;
@@ -104,69 +55,111 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     }
     
-    // Validate rowData
-    if (!rowData || rowData.length === 0) {
+    // Validate rowsData
+    if (!rowsData || rowsData.length === 0) {
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
           error: 'No data provided',
-          receivedData: rowData
+          receivedData: rowsData
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
-    // Log để debug
-    Logger.log('Received data length: ' + rowData.length);
-    Logger.log('First 5 fields: ' + rowData.slice(0, 5).join(', '));
+    // Kiểm tra xem rowsData là mảng hay là 1 row đơn
+    const isArray = Array.isArray(rowsData[0]);
+    const rowsToAppend = isArray ? rowsData : [rowsData];
     
-    // Append new row - đảm bảo tất cả giá trị là string để giữ nguyên format
+    // Log để debug
+    Logger.log('Received number of rows: ' + rowsToAppend.length);
+    Logger.log('First row first 5 fields: ' + (rowsToAppend[0] ? rowsToAppend[0].slice(0, 5).join(', ') : ''));
+    
+    // Lấy số dòng hiện tại
+    const startRow = sheet.getLastRow() + 1;
+    
+    // Append tất cả các rows
     try {
       // Convert tất cả giá trị thành string để tránh Google Sheets tự động format
-      const stringRowData = rowData.map(cell => {
-        if (cell === null || cell === undefined) {
-          return '';
-        }
-        // Đảm bảo là string, không để Google Sheets tự động format số
-        return String(cell);
+      const stringRowsData = rowsToAppend.map(row => {
+        return row.map(cell => {
+          if (cell === null || cell === undefined) {
+            return '';
+          }
+          return String(cell);
+        });
       });
       
-      sheet.appendRow(stringRowData);
-      Logger.log('Row appended successfully. Row number: ' + sheet.getLastRow());
-      Logger.log('First 5 cells: ' + stringRowData.slice(0, 5).join(', '));
+      // Ghi tất cả các rows vào sheet
+      const numRows = stringRowsData.length;
+      const numCols = stringRowsData[0] ? stringRowsData[0].length : 0;
+      
+      if (numRows > 0 && numCols > 0) {
+        sheet.getRange(startRow, 1, numRows, numCols).setValues(stringRowsData);
+        Logger.log('Rows appended successfully. Start row: ' + startRow + ', Number of rows: ' + numRows);
+        
+        // Merge các ô chung nếu có nhiều hơn 1 row và mergeCells = true
+        if (numRows > 1 && mergeCells) {
+          // Các cột cần merge: 1-4 (Thời gian, Tên KH, Điện thoại, Địa chỉ)
+          // 6-23 (Tổng sản lượng đến Đối thủ khác)
+          // 25-31 (Đơn giá bình quân ĐT đến Chính sách đặc thù đối thủ)
+          // 33-45 (Đơn giá bình quân ĐX đến Mã Bưu cục)
+          
+          const mergeRanges = [
+            { startCol: 1, endCol: 4 },      // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
+            { startCol: 6, endCol: 22 },     // Cột 6-22: Tổng SL đến Ngành hàng (không merge cột 5 - mốc trọng lượng)
+            { startCol: 24, endCol: 32 },    // Cột 24-32: Đối thủ đến Chính sách đặc thù đối thủ
+            { startCol: 34, endCol: 46 }     // Cột 34-46: Đơn giá bình quân ĐX đến Mã Bưu cục
+          ];
+          
+          mergeRanges.forEach(range => {
+            try {
+              // Merge từng cột một
+              for (let col = range.startCol; col <= range.endCol; col++) {
+                const rangeToMerge = sheet.getRange(startRow, col, numRows, 1);
+                rangeToMerge.merge();
+                // Đặt giá trị vào ô đầu tiên (nếu chưa có)
+                if (rangeToMerge.getValue() === '') {
+                  rangeToMerge.setValue(stringRowsData[0][col - 1]);
+                }
+              }
+            } catch (mergeError) {
+              Logger.log('Warning: Could not merge columns ' + range.startCol + '-' + range.endCol + ': ' + mergeError.toString());
+            }
+          });
+          
+          Logger.log('Cells merged successfully');
+        }
+      }
     } catch (appendError) {
-      Logger.log('Error appending row: ' + appendError.toString());
+      Logger.log('Error appending rows: ' + appendError.toString());
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
-          error: 'Failed to append row: ' + appendError.toString()
+          error: 'Failed to append rows: ' + appendError.toString()
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     
     // Auto-resize columns
     try {
-      sheet.autoResizeColumns(1, rowData.length);
+      const numCols = rowsToAppend[0] ? rowsToAppend[0].length : 45;
+      sheet.autoResizeColumns(1, numCols);
     } catch (resizeError) {
       Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
     }
     
-    // Return success response với CORS headers
-    const output = ContentService
+    // Return success response
+    return ContentService
       .createTextOutput(JSON.stringify({
         success: true, 
         message: 'Data saved successfully',
-        rowNumber: sheet.getLastRow(),
-        dataLength: rowData.length
+        startRow: startRow,
+        numberOfRows: rowsToAppend.length
       }))
       .setMimeType(ContentService.MimeType.JSON);
-    
-    // Thêm CORS headers để cho phép cross-origin requests
-    // Note: ContentService không hỗ trợ setHeader trực tiếp, nhưng Google Apps Script tự động thêm CORS headers khi deploy đúng cách
-    return output;
       
   } catch (error) {
-    // Return error response với CORS headers
-    Logger.log('Error in doPost: ' + error.toString());
+    // Return error response
     return ContentService
       .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
