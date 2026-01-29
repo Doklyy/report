@@ -413,6 +413,33 @@ function setupPercentageInputValidation() {
     });
 }
 
+// Setup percentage inputs for existing elements (được gọi sau khi bảng giá được tạo)
+function setupPercentageInputs() {
+    // Setup for competitor return rate inputs
+    const competitorInputs = document.querySelectorAll('input[name^="competitorCurrentReturnRate_"], input[name^="competitorReturnRate_"]');
+    competitorInputs.forEach(input => {
+        // Chỉ thêm listener nếu chưa có
+        if (!input.hasAttribute('data-percentage-setup')) {
+            input.setAttribute('data-percentage-setup', 'true');
+            input.addEventListener('blur', function() {
+                formatPercentageInput(this);
+            });
+        }
+    });
+    
+    // Setup for proposed return rate inputs
+    const proposedInputs = document.querySelectorAll('input[name^="proposedReturnRate_"]');
+    proposedInputs.forEach(input => {
+        // Chỉ thêm listener nếu chưa có
+        if (!input.hasAttribute('data-percentage-setup')) {
+            input.setAttribute('data-percentage-setup', 'true');
+            input.addEventListener('blur', function() {
+                formatPercentageInput(this);
+            });
+        }
+    });
+}
+
 // Calculate over 1.2m percentage: Tỷ trọng = (Số lượng hàng trên 1.2m / Tổng sản lượng) * 100
 function calculateOver12mPercent() {
     const over12mInput = document.getElementById('over12mRatio');
