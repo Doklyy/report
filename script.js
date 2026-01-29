@@ -1244,9 +1244,11 @@ async function handleFormSubmit(e) {
                 throw new Error(result.error || 'Server trả về lỗi');
             }
             
-            // Hiển thị thông báo thành công
-            // Không gọi showMessage để không hiển thị ở trên cùng
-            submitBtn.textContent = '✓ GỬI THÀNH CÔNG!';
+            // Hiển thị thông báo thành công (kèm số dòng nếu fetch trả về)
+            const successText = result.rowNumber
+                ? `✓ GỬI THÀNH CÔNG! (Dòng ${result.rowNumber})`
+                : '✓ GỬI THÀNH CÔNG!';
+            submitBtn.textContent = successText;
             submitBtn.style.backgroundColor = '#10b981';
             submitBtn.style.color = '#ffffff';
             submitBtn.style.fontWeight = 'bold';
@@ -1406,43 +1408,81 @@ function updateComparisonTable() {
 }
 
 // Send data to Google Sheets
-// Dùng FORM POST vào iframe ẩn - KHÔNG gây lỗi CORS (form submit không bị CORS chặn).
-// Google Apps Script không trả CORS headers khi gọi từ GitHub Pages, nên fetch sẽ luôn bị chặn.
+// Ưu tiên: fetch() với application/x-www-form-urlencoded (simple CORS, không preflight)
+// → Đọc được response thực từ server (success/error, rowNumber).
+// Fallback: form POST iframe nếu fetch bị CORS/network chặn.
+// Thêm ?debug=1 để mở response trong tab mới khi dùng fallback.
 async function sendToGoogleSheets(rowData) {
     const payload = { data: rowData };
-    const jsonString = JSON.stringify(payload);
+    const body = 'data=' + encodeURIComponent(JSON.stringify(payload));
+    const isDebug = window.location.search.includes('debug=1');
 
-    console.log('Sending data to Google Sheets (form POST iframe):', {
+    console.log('Sending data to Google Sheets:', {
         url: GOOGLE_SCRIPT_URL,
-        dataLength: rowData.length,
-        firstFewFields: rowData.slice(0, 5)
+        dataLength: rowData.length
     });
 
+    // 1. Thử fetch trước - cho phép đọc response thực
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body,
+            mode: 'cors'
+        });
+        const text = await response.text();
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (_) {
+            throw new Error('Server trả về không phải JSON: ' + text.substring(0, 150));
+        }
+        console.log('Google Sheets response:', json);
+        if (json.success) {
+            return {
+                success: true,
+                rowNumber: json.rowNumber,
+                message: json.message || 'Đã lưu thành công'
+            };
+        }
+        return { success: false, error: json.error || 'Lỗi không xác định từ server' };
+    } catch (fetchError) {
+        console.warn('Fetch thất bại (CORS/network), fallback sang form POST:', fetchError.message);
+    }
+
+    // 2. Fallback: form POST vào iframe (hoặc tab mới nếu debug)
     return new Promise((resolve, reject) => {
         try {
-            let iframe = document.getElementById('gsheet_hidden_iframe');
-            if (!iframe) {
-                iframe = document.createElement('iframe');
-                iframe.id = 'gsheet_hidden_iframe';
-                iframe.name = 'gsheet_hidden_iframe';
-                iframe.style.cssText = 'display:none;width:0;height:0;border:none';
-                document.body.appendChild(iframe);
+            let targetFrame = '_blank';
+            if (!isDebug) {
+                let iframe = document.getElementById('gsheet_hidden_iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'gsheet_hidden_iframe';
+                    iframe.name = 'gsheet_hidden_iframe';
+                    iframe.style.cssText = 'display:none;width:0;height:0;border:none';
+                    document.body.appendChild(iframe);
+                }
+                targetFrame = iframe.name;
             }
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = GOOGLE_SCRIPT_URL;
-            form.target = iframe.name;
+            form.target = targetFrame;
             form.style.display = 'none';
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'data';
-            input.value = jsonString;
+            input.value = JSON.stringify(payload);
             form.appendChild(input);
             document.body.appendChild(form);
             form.submit();
             setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 2000);
-            console.log('Form POST submitted. Vui lòng kiểm tra Google Sheet.');
-            resolve({ success: true, noCors: true });
+            resolve({
+                success: true,
+                noCors: true,
+                message: 'Đã gửi. Vui lòng kiểm tra Google Sheet để xác nhận.'
+            });
         } catch (e) {
             reject(e);
         }
