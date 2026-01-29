@@ -1242,15 +1242,7 @@ async function handleFormSubmit(e) {
             // Hiển thị thông báo thành công
             let successMsg;
             if (result.rowNumber) {
-                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDòng ${result.rowNumber} đã được thêm vào Google Sheets.\n\nVui lòng kiểm tra Google Sheets để xác nhận.`;
-            } else if (result.method === 'form-submit-iframe') {
-                if (result.note && result.note.includes('CORS')) {
-                    successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi (không đọc được response do CORS).\n\nVui lòng kiểm tra Google Sheets để xác nhận.\n\nNếu không thấy dữ liệu:\n1. Mở Apps Script > Executions > Xem logs\n2. Đảm bảo đã deploy lại Apps Script sau khi cập nhật code`;
-                } else {
-                    successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi.\n\nVui lòng kiểm tra Google Sheets để xác nhận.\n\nNếu không thấy dữ liệu:\n1. Mở Apps Script > Executions > Xem logs\n2. Đảm bảo đã deploy lại Apps Script sau khi cập nhật code`;
-                }
-            } else if (result.method === 'form-submit') {
-                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi bằng form submission.\n\nVui lòng kiểm tra Google Sheets để xác nhận.\n\nNếu không thấy dữ liệu:\n1. Kiểm tra Apps Script Execution Log\n2. Đảm bảo đã deploy lại Apps Script sau khi cập nhật code`;
+                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDòng ${result.rowNumber} đã được thêm vào Google Sheets.`;
             } else if (result.noCors) {
                 successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi. Vui lòng kiểm tra Google Sheets để xác nhận.`;
             } else {
@@ -1420,108 +1412,41 @@ function updateComparisonTable() {
 
 // Send data to Google Sheets
 async function sendToGoogleSheets(rowData) {
-    const payload = { data: rowData };
-    const payloadString = JSON.stringify(payload);
-    const encodedData = encodeURIComponent(payloadString);
-
     try {
         console.log('Sending data to Google Sheets:', {
             url: GOOGLE_SCRIPT_URL,
             dataLength: rowData.length,
-            firstFewFields: rowData.slice(0, 5),
-            payloadSize: payloadString.length
-        });
-
-        // Dùng iframe ẩn để submit form và đọc response
-        return new Promise((resolve, reject) => {
-            // Tạo iframe ẩn để nhận response
-            const iframe = document.createElement('iframe');
-            iframe.name = 'hidden_iframe_' + Date.now();
-            iframe.style.display = 'none';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            document.body.appendChild(iframe);
-
-            // Tạo form ẩn
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = GOOGLE_SCRIPT_URL;
-            form.target = iframe.name;
-            form.style.display = 'none';
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'data';
-            input.value = encodedData;
-            form.appendChild(input);
-
-            document.body.appendChild(form);
-
-            // Đợi iframe load để đọc response
-            let responseReceived = false;
-            iframe.onload = function() {
-                if (responseReceived) return;
-                responseReceived = true;
-                
-                try {
-                    // Thử đọc response từ iframe
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    const responseText = iframeDoc.body ? iframeDoc.body.textContent || iframeDoc.body.innerText : '';
-                    
-                    console.log('Response from iframe:', responseText);
-                    
-                    if (responseText) {
-                        try {
-                            const response = JSON.parse(responseText);
-                            if (response.success) {
-                                console.log('✅ Data saved successfully! Row:', response.rowNumber);
-                                resolve({ success: true, rowNumber: response.rowNumber, method: 'form-submit-iframe' });
-                            } else {
-                                console.error('❌ Error from server:', response.error);
-                                reject(new Error(response.error || 'Server returned error'));
-                            }
-                        } catch (e) {
-                            // Nếu không parse được JSON, có thể là HTML error page
-                            console.warn('Response is not JSON, might be HTML:', responseText.substring(0, 200));
-                            // Vẫn coi là success vì request đã được gửi
-                            resolve({ success: true, method: 'form-submit-iframe', note: 'Response not JSON' });
-                        }
-                    } else {
-                        // Không đọc được response, nhưng request đã được gửi
-                        console.log('Response empty, but form submitted');
-                        resolve({ success: true, method: 'form-submit-iframe', note: 'No response read' });
-                    }
-                } catch (e) {
-                    // CORS - không thể đọc iframe content, nhưng request đã được gửi
-                    console.log('Cannot read iframe content (CORS), but form submitted:', e.message);
-                    resolve({ success: true, method: 'form-submit-iframe', note: 'CORS - cannot read response' });
-                }
-                
-                // Cleanup sau 2 giây
-                setTimeout(() => {
-                    if (document.body.contains(form)) document.body.removeChild(form);
-                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
-                }, 2000);
-            };
-
-            // Timeout sau 10 giây
-            setTimeout(() => {
-                if (!responseReceived) {
-                    responseReceived = true;
-                    console.warn('Timeout waiting for response, but form was submitted');
-                    resolve({ success: true, method: 'form-submit-iframe', note: 'Timeout - check Sheets manually' });
-                    
-                    // Cleanup
-                    if (document.body.contains(form)) document.body.removeChild(form);
-                    if (document.body.contains(iframe)) document.body.removeChild(iframe);
-                }
-            }, 10000);
-
-            // Submit form
-            form.submit();
-            console.log('Form submitted to iframe');
+            firstFewFields: rowData.slice(0, 5)
         });
         
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ data: rowData })
+        });
+        
+        // Đọc response để kiểm tra kết quả
+        const responseText = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response text:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            // Nếu không parse được JSON, có thể là HTML error page
+            throw new Error('Không nhận được phản hồi hợp lệ từ server. Vui lòng kiểm tra lại Google Apps Script URL.');
+        }
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Lỗi khi gửi dữ liệu lên Google Sheets');
+        }
+        
+        console.log('Data saved successfully! Row number:', result.rowNumber);
+        return result;
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
         console.error('Error details:', {

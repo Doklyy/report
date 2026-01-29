@@ -29,52 +29,29 @@ function doPost(e) {
   try {
     let rowData;
     
-    // Log để debug - xem dữ liệu nhận được
-    Logger.log('=== doPost called ===');
-    Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
-    Logger.log('e.postData: ' + (e.postData ? JSON.stringify(e.postData) : 'null'));
-    
     // Kiểm tra xem dữ liệu đến từ form submission hay JSON
     if (e.postData && e.postData.contents) {
-      // Dữ liệu từ JSON (fetch API với JSON body)
+      // Dữ liệu từ JSON (fetch API)
       try {
         const jsonData = JSON.parse(e.postData.contents);
         rowData = jsonData.data;
-        Logger.log('Parsed from postData.contents (JSON)');
       } catch (parseError) {
-        Logger.log('Cannot parse postData.contents as JSON: ' + parseError.toString());
+        // Nếu không parse được JSON, có thể là form-data
         // Thử lấy từ parameter 'data'
         const dataParam = e.parameter.data;
         if (dataParam) {
-          try {
-            // Decode URI component nếu cần
-            const decoded = decodeURIComponent(dataParam);
-            const jsonData = JSON.parse(decoded);
-            rowData = jsonData.data;
-            Logger.log('Parsed from e.parameter.data (form-encoded)');
-          } catch (e2) {
-            throw new Error('Cannot parse data from parameter: ' + e2.toString());
-          }
+          const jsonData = JSON.parse(dataParam);
+          rowData = jsonData.data;
         } else {
           throw new Error('Cannot parse data: ' + parseError.toString());
         }
       }
     } else if (e.parameter && e.parameter.data) {
-      // Dữ liệu từ form submission (form-encoded)
+      // Dữ liệu từ form submission (form-data)
       const dataParam = e.parameter.data;
-      try {
-        // Decode URI component vì frontend đã encode
-        const decoded = decodeURIComponent(dataParam);
-        const jsonData = JSON.parse(decoded);
-        rowData = jsonData.data;
-        Logger.log('Parsed from e.parameter.data (form-encoded, decoded)');
-      } catch (parseError) {
-        Logger.log('Error parsing parameter.data: ' + parseError.toString());
-        Logger.log('Raw dataParam: ' + dataParam);
-        throw new Error('Cannot parse form data: ' + parseError.toString());
-      }
+      const jsonData = JSON.parse(dataParam);
+      rowData = jsonData.data;
     } else {
-      Logger.log('No data found in e.parameter or e.postData');
       throw new Error('No data received. Expected JSON in postData.contents or form parameter "data"');
     }
     
@@ -94,75 +71,37 @@ function doPost(e) {
     // Try to get the sheet by name, if not found, use the first sheet or create new
     let sheet = ss.getSheetByName(SHEET_NAME);
     
-    // Log tất cả sheet names để debug
-    const allSheets = ss.getSheets();
-    Logger.log('Available sheets: ' + allSheets.map(s => s.getName()).join(', '));
-    
     // If sheet doesn't exist, try to use the first sheet (Sheet1) or create new
     if (!sheet) {
-      Logger.log('Sheet "' + SHEET_NAME + '" not found. Trying first sheet...');
-      // Try to get the first sheet (usually named "Sheet1" hoặc tên khác)
+      // Try to get the first sheet (usually named "Sheet1")
       const firstSheet = ss.getSheets()[0];
-      if (firstSheet) {
-        Logger.log('Using first sheet: ' + firstSheet.getName());
+      if (firstSheet && firstSheet.getName() === 'Data') {
         sheet = firstSheet;
-        
-        // Kiểm tra xem sheet có header chưa (dòng đầu tiên có dữ liệu không)
-        const hasData = sheet.getLastRow() > 0;
-        if (!hasData) {
-          Logger.log('First sheet is empty, adding headers...');
-          // Add headers nếu sheet rỗng
-          const headers = [
-            'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-            'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
-            'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
-            'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
-            'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
-            'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
-            'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
-            'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
-            'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
-            'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
-            'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
-            'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất','So sánh đơn giá bình quân ','Họ và tên người báo cáo',
-            'Điện thoại người báo cáo', 'Tên Bưu cục', 'Chức danh', 'Chi nhánh', 'Mã Bưu cục'
-          ];
-          sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-          sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
-          sheet.getRange(1, 1, 1, headers.length).setBackground('#4CAF50');
-          sheet.getRange(1, 1, 1, headers.length).setFontColor('white');
-          sheet.setFrozenRows(1);
-        } else {
-          Logger.log('First sheet already has data, skipping header creation');
-        }
       } else {
         // Create new sheet with name "Data"
-        Logger.log('Creating new sheet: ' + SHEET_NAME);
         sheet = ss.insertSheet(SHEET_NAME);
-        // Add headers
-        const headers = [
-          'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-          'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
-          'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
-          'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
-          'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
-          'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
-          'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
-          'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
-          'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
-          'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
-          'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
-          'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất','So sánh đơn giá bình quân ','Họ và tên người báo cáo',
-          'Điện thoại người báo cáo', 'Tên Bưu cục', 'Chức danh', 'Chi nhánh', 'Mã Bưu cục'
-        ];
-        sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-        sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
-        sheet.getRange(1, 1, 1, headers.length).setBackground('#4CAF50');
-        sheet.getRange(1, 1, 1, headers.length).setFontColor('white');
-        sheet.setFrozenRows(1);
       }
-    } else {
-      Logger.log('Found sheet: ' + sheet.getName());
+      // Add headers
+      const headers = [
+        'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
+        'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng','Tỷ trọng % theo khu vực','Tỷ trọng hàng trên 1.2m',
+        'Tỷ trọng hàng nguyên khối từ 100kg trở lên', 'Sản lượng Nội tỉnh', 'Sản lượng Nội miền',
+        'Sản lượng Cận miền', 'Sản lượng Liên miền', 'Tổng sản lượng', 'Tỷ trọng %',
+        'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ', 'Ngành hàng',
+        'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ', 'Đơn giá bình quân Nội tỉnh (ĐT)',
+        'Đơn giá bình quân Nội miền (ĐT)', 'Đơn giá bình quân Cận miền (ĐT)',
+        'Đơn giá bình quân Liên miền (ĐT)', 'Tỷ lệ hoàn hiện tại',
+        'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ', 'Giá đề xuất',
+        'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
+        'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
+        'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất','So sánh đơn giá bình quân ','Họ và tên người báo cáo',
+        'Điện thoại người báo cáo', 'Tên Bưu cục', 'Chức danh', 'Chi nhánh', 'Mã Bưu cục'
+      ];
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+      sheet.getRange(1, 1, 1, headers.length).setBackground('#4CAF50');
+      sheet.getRange(1, 1, 1, headers.length).setFontColor('white');
+      sheet.setFrozenRows(1);
     }
     
     // Validate rowData
@@ -177,11 +116,8 @@ function doPost(e) {
     }
     
     // Log để debug
-    Logger.log('=== Data received ===');
     Logger.log('Received data length: ' + rowData.length);
     Logger.log('First 5 fields: ' + rowData.slice(0, 5).join(', '));
-    Logger.log('Sheet name: ' + sheet.getName());
-    Logger.log('Current last row: ' + sheet.getLastRow());
     
     // Append new row - đảm bảo tất cả giá trị là string để giữ nguyên format
     try {
@@ -194,24 +130,15 @@ function doPost(e) {
         return String(cell);
       });
       
-      Logger.log('About to append row with ' + stringRowData.length + ' columns');
       sheet.appendRow(stringRowData);
-      const newRowNumber = sheet.getLastRow();
-      Logger.log('✅ Row appended successfully! Row number: ' + newRowNumber);
+      Logger.log('Row appended successfully. Row number: ' + sheet.getLastRow());
       Logger.log('First 5 cells: ' + stringRowData.slice(0, 5).join(', '));
-      
-      // Verify bằng cách đọc lại dòng vừa ghi
-      const verifyRow = sheet.getRange(newRowNumber, 1, 1, stringRowData.length).getValues()[0];
-      Logger.log('Verified: First cell of new row = ' + verifyRow[0]);
     } catch (appendError) {
-      Logger.log('❌ Error appending row: ' + appendError.toString());
-      Logger.log('Error stack: ' + appendError.stack);
+      Logger.log('Error appending row: ' + appendError.toString());
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false, 
-          error: 'Failed to append row: ' + appendError.toString(),
-          sheetName: sheet.getName(),
-          dataLength: rowData.length
+          error: 'Failed to append row: ' + appendError.toString()
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
