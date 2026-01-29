@@ -1248,12 +1248,13 @@ async function handleFormSubmit(e) {
                 successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi thành công!`;
             }
             
-            // Hiển thị thông báo thành công rõ ràng
-            showMessage('success', successMsg);
+            // Hiển thị thông báo thành công ngay tại nút (không hiển thị ở trên cùng)
+            // Không gọi showMessage để không hiển thị ở trên cùng
             submitBtn.textContent = '✓ GỬI THÀNH CÔNG!';
             submitBtn.style.backgroundColor = '#10b981';
             submitBtn.style.color = '#ffffff';
             submitBtn.style.fontWeight = 'bold';
+            submitBtn.style.fontSize = '18px';
             submitBtn.disabled = false; // Cho phép gửi lại nếu cần
             
             // Sau 5 giây, đổi nút thành "Gửi báo cáo mới"
@@ -1287,13 +1288,17 @@ async function handleFormSubmit(e) {
         console.error('Error stack:', error.stack);
         const errorMsg = error.message || 'Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.';
         
-        // Hiển thị thông báo lỗi rõ ràng
-        showMessage('error', `✗ GỬI THẤT BẠI!\n\n${errorMsg}\n\nVui lòng kiểm tra và thử lại.`);
+        // Hiển thị thông báo lỗi ngay tại nút (không hiển thị ở trên cùng)
+        // Không gọi showMessage để không hiển thị ở trên cùng
         submitBtn.textContent = '✗ GỬI THẤT BẠI - THỬ LẠI';
         submitBtn.style.backgroundColor = '#ef4444';
         submitBtn.style.color = '#ffffff';
         submitBtn.style.fontWeight = 'bold';
+        submitBtn.style.fontSize = '18px';
         submitBtn.disabled = false;
+        
+        // Hiển thị alert để người dùng biết lỗi
+        alert(`✗ GỬI THẤT BẠI!\n\n${errorMsg}\n\nVui lòng kiểm tra và thử lại.`);
         
         // Sau 10 giây, cho phép thử lại
         setTimeout(() => {
@@ -1302,6 +1307,7 @@ async function handleFormSubmit(e) {
                 submitBtn.style.backgroundColor = '';
                 submitBtn.style.color = '';
                 submitBtn.style.fontWeight = '';
+                submitBtn.style.fontSize = '';
             }
         }, 10000);
     }
