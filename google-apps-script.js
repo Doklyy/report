@@ -18,6 +18,13 @@ const SPREADSHEET_ID = '13uIBESYl6cklFlBWMj0HAjsJpcBCnCZk7t86gvG0y_I';
 // Tên sheet để ghi dữ liệu
 const SHEET_NAME = 'Data';
 
+// Xử lý CORS preflight request
+function doOptions(e) {
+  return ContentService
+    .createTextOutput('')
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   try {
     let rowData;
