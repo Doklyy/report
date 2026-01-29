@@ -374,7 +374,9 @@ function formatPercentageInput(input) {
         // Làm tròn đến 2 chữ số thập phân nếu có
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
-            input.value = numValue.toFixed(2).replace(/\.?0+$/, '') + '%';
+            // Format: nếu là số nguyên thì không hiển thị .00, nếu có thập phân thì hiển thị tối đa 2 chữ số
+            const formatted = numValue % 1 === 0 ? numValue.toString() : numValue.toFixed(2).replace(/\.?0+$/, '');
+            input.value = formatted + '%';
         }
     } else if (value === '') {
         input.value = '';
@@ -577,8 +579,9 @@ function updateCompetitorPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        const savedCurrentReturnRate = saved.currentReturnRate || '';
-        const savedCompetitorReturnRate = saved.competitorReturnRate || '';
+        // Bỏ "%" nếu có trong giá trị đã lưu để hiển thị
+        const savedCurrentReturnRate = (saved.currentReturnRate || '').replace(/%/g, '').trim();
+        const savedCompetitorReturnRate = (saved.competitorReturnRate || '').replace(/%/g, '').trim();
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -688,7 +691,8 @@ function updateProposedPriceTable() {
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        const savedProposedReturnRate = saved.proposedReturnRate || '';
+        // Bỏ "%" nếu có trong giá trị đã lưu để hiển thị
+        const savedProposedReturnRate = (saved.proposedReturnRate || '').replace(/%/g, '').trim();
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
