@@ -227,8 +227,8 @@
                             </thead>
                             <tbody id="weightLevelsTable">
                                 <tr>
-                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" min="0" placeholder="0"></td>
-                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" min="0" placeholder="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightFrom[]" class="w-full bg-yellow-50 weight-from p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
+                                    <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="weightTo[]" class="w-full bg-yellow-50 weight-to p-0.5 md:p-1 text-center font-bold responsive-input" step="1" placeholder="0"></td>
                                     <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeProvince[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
                                     <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeRegion[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
                                     <td class="border border-gray-300 p-1 md:p-2"><input type="number" name="volumeAdjacent[]" class="volume-input w-full p-0.5 md:p-1 text-center font-bold bg-white responsive-input" step="1" value="0"></td>
@@ -285,11 +285,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block font-medium mb-1 text-sm">Tỷ trọng % hàng có kích thước trên 1,2m</label>
-                        <input type="number" id="over12mRatio" class="bg-yellow-50" step="1" placeholder="Nhập số lượng">
+                        <div class="relative">
+                            <input type="text" id="over12mRatio" class="bg-yellow-50 w-full pr-8" placeholder="Nhập số (ví dụ: 3, 4, 5)">
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">%</span>
+                        </div>
                     </div>
                     <div>
                         <label class="block font-medium mb-1 text-sm">Tỷ trọng % hàng nguyên khối từ 100kg trở lên</label>
-                        <input type="number" id="over100kgRatio" class="bg-yellow-50" step="1" placeholder="Nhập số lượng">
+                        <div class="relative">
+                            <input type="text" id="over100kgRatio" class="bg-yellow-50 w-full pr-8" placeholder="Nhập số (ví dụ: 3, 4, 5)">
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">%</span>
+                        </div>
                     </div>
                 </div>
             </div>

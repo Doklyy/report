@@ -101,20 +101,7 @@ function setupEventListeners() {
     });
     
     // Auto-format "%" for percentage inputs
-    // Tỷ trọng hàng có kích thước trên 1,2m - nhập số, tự động thêm %
-    if (over12mInputEl) {
-        over12mInputEl.addEventListener('blur', function() {
-            formatPercentageInput(this);
-        });
-    }
-    
-    // Tỷ trọng hàng nguyên khối từ 100kg trở lên - nhập số, tự động thêm %
-    const over100kgInput = document.getElementById('over100kgRatio');
-    if (over100kgInput) {
-        over100kgInput.addEventListener('blur', function() {
-            formatPercentageInput(this);
-        });
-    }
+    setupPercentageInputValidation();
     
     // Auto-format "%" for return rate inputs (sẽ được thêm động trong updatePriceTables)
     setupPercentageInputs();
@@ -379,15 +366,42 @@ function validateWeightRanges() {
 function formatPercentageInput(input) {
     if (!input) return;
     
-    // Lấy giá trị số (bỏ % nếu có)
-    let value = input.value.replace(/%/g, '').trim();
+    // Lấy giá trị số (bỏ % và các ký tự không phải số)
+    let value = input.value.replace(/[^0-9.,]/g, '').replace(',', '.').trim();
     
     // Nếu là số hợp lệ, thêm %
     if (value !== '' && !isNaN(value) && value !== '') {
-        input.value = value + '%';
+        // Làm tròn đến 2 chữ số thập phân nếu có
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+            input.value = numValue.toFixed(2).replace(/\.?0+$/, '') + '%';
+        }
     } else if (value === '') {
         input.value = '';
     }
+}
+
+// Validate và chỉ cho phép nhập số cho percentage inputs
+function setupPercentageInputValidation() {
+    const percentageInputs = document.querySelectorAll('#over12mRatio, #over100kgRatio');
+    percentageInputs.forEach(input => {
+        // Chỉ cho phép nhập số và dấu chấm/phẩy
+        input.addEventListener('input', function(e) {
+            // Cho phép nhập số, dấu chấm, dấu phẩy
+            let value = this.value.replace(/[^0-9.,]/g, '');
+            // Chỉ cho phép 1 dấu chấm hoặc phẩy
+            const parts = value.split(/[.,]/);
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            this.value = value;
+        });
+        
+        // Format khi blur
+        input.addEventListener('blur', function() {
+            formatPercentageInput(this);
+        });
+    });
 }
 
 // Calculate over 1.2m percentage: Tỷ trọng = (Số lượng hàng trên 1.2m / Tổng sản lượng) * 100
@@ -579,8 +593,14 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCompetitorReturnRate}" placeholder="Tỷ lệ hoàn đối thủ"></td>
+            <td class="border border-gray-300 p-1 relative">
+                <input type="text" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50 w-full pr-6" value="${savedCurrentReturnRate}" placeholder="Nhập số">
+                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
+            </td>
+            <td class="border border-gray-300 p-1 relative">
+                <input type="text" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50 w-full pr-6" value="${savedCompetitorReturnRate}" placeholder="Nhập số">
+                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
+            </td>
         `;
         
         tbody.appendChild(tr);
@@ -663,7 +683,10 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>
+            <td class="border border-gray-300 p-1 relative">
+                <input type="text" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50 w-full pr-6" value="${savedProposedReturnRate}" placeholder="Nhập số">
+                <span class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
+            </td>
         `;
         
         tbody.appendChild(tr);
