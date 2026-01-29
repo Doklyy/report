@@ -690,6 +690,23 @@ function updateProposedPriceTable() {
         `;
         
         tbody.appendChild(tr);
+        
+        // Attach percentage format for proposed return rate input
+        const proposedReturnInput = tr.querySelector(`input[name="proposedReturnRate_${index}"]`);
+        if (proposedReturnInput) {
+            proposedReturnInput.addEventListener('input', function(e) {
+                // Chỉ cho phép nhập số và dấu chấm/phẩy
+                let value = this.value.replace(/[^0-9.,]/g, '');
+                const parts = value.split(/[.,]/);
+                if (parts.length > 2) {
+                    value = parts[0] + '.' + parts.slice(1).join('');
+                }
+                this.value = value;
+            });
+            proposedReturnInput.addEventListener('blur', function() {
+                formatPercentageInput(this);
+            });
+        }
     });
 }
 
