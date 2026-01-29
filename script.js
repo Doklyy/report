@@ -1,5 +1,6 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqkGCCc3xCdkXYhBS7wMeoxDjG5vKQtEp_u96NGgzv5goa2jfi8q7WHIF63Bq4SqM5/exec'; // Google Apps Script URL
+// Web App URL (đã deploy) của Google Apps Script
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxDCVgmOCpsNOwZiFE-W5JbCq31H_a9GPYqn6SwiDmdfZ66BZbrUYvCTMTo84N7Z8kj/exec'; // Google Apps Script URL
 
 // Weight levels data
 let weightLevels = [];
