@@ -1411,51 +1411,75 @@ function updateComparisonTable() {
 }
 
 // Send data to Google Sheets
+// ĐỂ TRÁNH LỖI CORS KHI CHẠY TRÊN GITHUB PAGES, KHÔNG DÙNG fetch CORS NỮA
+// Thay vào đó dùng form POST (application/x-www-form-urlencoded) – trình duyệt KHÔNG preflight
+// Google Apps Script sẽ nhận dữ liệu ở e.parameter.data và parse JSON.
 async function sendToGoogleSheets(rowData) {
-    try {
-        console.log('Sending data to Google Sheets:', {
-            url: GOOGLE_SCRIPT_URL,
-            dataLength: rowData.length,
-            firstFewFields: rowData.slice(0, 5)
-        });
-        
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ data: rowData })
-        });
-        
-        // Đọc response để kiểm tra kết quả
-        const responseText = await response.text();
-        console.log('Response status:', response.status);
-        console.log('Response text:', responseText);
-        
-        let result;
+    const payload = { data: rowData };
+    const jsonString = JSON.stringify(payload);
+
+    console.log('Sending data to Google Sheets bằng FORM POST:', {
+        url: GOOGLE_SCRIPT_URL,
+        dataLength: rowData.length,
+        firstFewFields: rowData.slice(0, 5),
+        jsonPreview: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '')
+    });
+
+    return new Promise((resolve, reject) => {
         try {
-            result = JSON.parse(responseText);
-        } catch (e) {
-            // Nếu không parse được JSON, có thể là HTML error page
-            throw new Error('Không nhận được phản hồi hợp lệ từ server. Vui lòng kiểm tra lại Google Apps Script URL.');
+            // Tạo (hoặc lấy lại) iframe ẩn để không mở tab mới và không redirect trang
+            let iframe = document.getElementById('gsheet_hidden_iframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'gsheet_hidden_iframe';
+                iframe.name = 'gsheet_hidden_iframe';
+                iframe.style.display = 'none';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = 'none';
+                document.body.appendChild(iframe);
+            }
+
+            // Tạo form ẩn
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = GOOGLE_SCRIPT_URL;
+            form.target = iframe.name; // Gửi vào iframe ẩn để tránh mở tab mới / redirect
+            form.style.display = 'none';
+
+            // Truyền JSON vào field "data"
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'data';
+            // KHÔNG encodeURIComponent – Apps Script sẽ tự decode và trả về string gốc trong e.parameter.data
+            input.value = jsonString;
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+
+            // Submit form
+            form.submit();
+
+            console.log('Form POST submitted tới Google Apps Script.');
+            // Xóa form sau 2 giây cho sạch DOM
+            setTimeout(() => {
+                if (document.body.contains(form)) {
+                    document.body.removeChild(form);
+                }
+            }, 2000);
+
+            // Không đọc được response (do chạy ở tab mới / cross-origin), nhưng request chắc chắn đã được gửi
+            resolve({ success: true, noCors: true });
+        } catch (error) {
+            console.error('Error sending to Google Sheets (form POST):', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                data: rowData
+            });
+            reject(error);
         }
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Lỗi khi gửi dữ liệu lên Google Sheets');
-        }
-        
-        console.log('Data saved successfully! Row number:', result.rowNumber);
-        return result;
-    } catch (error) {
-        console.error('Error sending to Google Sheets:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            data: rowData
-        });
-        throw error;
-    }
+    });
 }
 
 // Show success/error message
