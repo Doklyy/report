@@ -1239,36 +1239,44 @@ async function handleFormSubmit(e) {
             console.log('Data sent successfully!', result);
             
             // Hiển thị thông báo thành công
-            const successMsg = result.rowNumber 
-                ? `Dữ liệu đã được gửi thành công! Dòng ${result.rowNumber} đã được thêm vào Google Sheets.`
-                : 'Dữ liệu đã được gửi thành công!';
-            showMessage('success', successMsg);
-            submitBtn.textContent = '✓ Gửi thành công!';
-            submitBtn.style.backgroundColor = '#10b981';
+            let successMsg;
+            if (result.rowNumber) {
+                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDòng ${result.rowNumber} đã được thêm vào Google Sheets.`;
+            } else if (result.noCors) {
+                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi. Vui lòng kiểm tra Google Sheets để xác nhận.`;
+            } else {
+                successMsg = `✓ GỬI THÀNH CÔNG!\n\nDữ liệu đã được gửi thành công!`;
+            }
             
-            // Không reset form ngay, để người dùng có thể xem kết quả
-            // Chỉ reset sau khi người dùng xác nhận hoặc sau 10 giây
+            // Hiển thị thông báo thành công rõ ràng
+            showMessage('success', successMsg);
+            submitBtn.textContent = '✓ GỬI THÀNH CÔNG!';
+            submitBtn.style.backgroundColor = '#10b981';
+            submitBtn.style.color = '#ffffff';
+            submitBtn.style.fontWeight = 'bold';
+            submitBtn.disabled = false; // Cho phép gửi lại nếu cần
+            
+            // Sau 5 giây, đổi nút thành "Gửi báo cáo mới"
             setTimeout(() => {
-                const confirmReset = confirm('Dữ liệu đã được gửi thành công!\n\nBạn có muốn reset form để nhập báo cáo mới không?');
-                if (confirmReset) {
-                    const form = document.getElementById('reportForm');
-                    if (form) {
-                        form.reset();
-                    }
-                    submitBtn.textContent = originalText;
-                    submitBtn.style.backgroundColor = '';
-                    submitBtn.disabled = false;
-                    initializeForm();
-                    hideMessages();
-                    // Scroll to top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    submitBtn.textContent = originalText;
-                    submitBtn.style.backgroundColor = '';
-                    submitBtn.disabled = false;
-                    hideMessages();
+                if (submitBtn.textContent.includes('THÀNH CÔNG')) {
+                    submitBtn.textContent = 'Gửi báo cáo mới';
+                    submitBtn.style.backgroundColor = '#3b82f6';
+                    submitBtn.onclick = function() {
+                        const form = document.getElementById('reportForm');
+                        if (form) {
+                            form.reset();
+                        }
+                        submitBtn.textContent = originalText;
+                        submitBtn.style.backgroundColor = '';
+                        submitBtn.style.color = '';
+                        submitBtn.style.fontWeight = '';
+                        submitBtn.onclick = null;
+                        initializeForm();
+                        hideMessages();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    };
                 }
-            }, 10000);
+            }, 5000);
         } else {
             console.warn('GOOGLE_SCRIPT_URL is not set');
             throw new Error('Google Script URL chưa được cấu hình. Vui lòng liên hệ quản trị viên.');
@@ -1484,9 +1492,13 @@ function showMessage(type, message) {
     if (type === 'success') {
         if (successEl) {
             if (message) {
-                successEl.textContent = message;
+                // Format message với line breaks
+                successEl.innerHTML = message.replace(/\n/g, '<br>');
             }
             successEl.style.display = 'block';
+            successEl.style.padding = '20px';
+            successEl.style.fontSize = '16px';
+            successEl.style.fontWeight = 'bold';
             // Scroll to top để người dùng thấy thông báo
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
@@ -1495,9 +1507,13 @@ function showMessage(type, message) {
     } else {
         if (errorEl) {
             if (message) {
-                errorEl.textContent = message;
+                // Format message với line breaks
+                errorEl.innerHTML = message.replace(/\n/g, '<br>');
             }
             errorEl.style.display = 'block';
+            errorEl.style.padding = '20px';
+            errorEl.style.fontSize = '16px';
+            errorEl.style.fontWeight = 'bold';
             // Scroll to top để người dùng thấy thông báo
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
