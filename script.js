@@ -1451,21 +1451,20 @@ async function sendToGoogleSheets(rowData) {
             console.log('Data saved successfully! Row number:', result.rowNumber);
             return result;
         } catch (corsError) {
-            console.warn('CORS error, trying with no-cors mode:', corsError);
-            // Fallback: dùng no-cors mode (không thể đọc response nhưng request vẫn được gửi)
+            console.warn('CORS error, trying with no-cors mode (simple request):', corsError);
+            // Fallback: dùng no-cors mode với "simple request" (không custom headers) để tránh preflight
             try {
                 response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    // KHÔNG set headers ở đây để tránh preflight CORS
+                    // Gửi JSON dạng text/plain, Apps Script vẫn đọc được qua e.postData.contents
                     body: JSON.stringify({ data: rowData })
                 });
                 
                 // Với no-cors, không thể đọc response nhưng request đã được gửi
                 // Đợi một chút để đảm bảo request được xử lý
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1200));
                 
                 // Trả về result giả định thành công
                 return { 
@@ -1474,7 +1473,7 @@ async function sendToGoogleSheets(rowData) {
                     noCors: true
                 };
             } catch (noCorsError) {
-                console.error('Error with no-cors mode:', noCorsError);
+                console.error('Error with no-cors simple request:', noCorsError);
                 throw new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại.');
             }
         }
