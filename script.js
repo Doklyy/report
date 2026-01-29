@@ -1408,9 +1408,11 @@ function updateComparisonTable() {
 }
 
 // Send data to Google Sheets
-// CHỈ dùng FORM POST vào iframe - KHÔNG dùng fetch (tránh CORS khi gọi từ GitHub Pages).
-// Form submit không bị CORS chặn vì không phải XHR/fetch.
-// Thêm ?debug=1 để mở response trong tab mới (xem success/error từ server).
+// CHỈ dùng FORM POST vào iframe - bypass CORS hoàn toàn (form submit không bị CORS chặn).
+// Không dùng fetch vì Apps Script không trả Access-Control-Allow-Origin.
+// Thêm ?debug=1 để mở response trong tab mới (xem JSON success/error từ server).
+const IFRAME_NAME = 'gsheet_hidden_iframe';
+
 async function sendToGoogleSheets(rowData) {
     const payload = { data: rowData };
     const jsonString = JSON.stringify(payload);
@@ -1418,44 +1420,57 @@ async function sendToGoogleSheets(rowData) {
 
     console.log('Sending data to Google Sheets (form POST):', {
         url: GOOGLE_SCRIPT_URL,
-        dataLength: rowData.length
+        dataLength: rowData.length,
+        debug: isDebug
     });
 
-    // Form POST vào iframe (hoặc tab mới nếu debug)
     return new Promise((resolve, reject) => {
         try {
-            let targetFrame = isDebug ? '_blank' : 'gsheet_hidden_iframe';
-            if (!isDebug) {
-                let iframe = document.getElementById('gsheet_hidden_iframe');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.id = 'gsheet_hidden_iframe';
-                    iframe.name = 'gsheet_hidden_iframe';
-                    iframe.style.cssText = 'display:none;width:0;height:0;border:none';
-                    document.body.appendChild(iframe);
-                }
-                targetFrame = iframe.name;
+            // 1. Tạo iframe ẩn TRƯỚC (bắt buộc để form.target hoạt động)
+            let iframe = document.getElementById(IFRAME_NAME);
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = IFRAME_NAME;
+                iframe.name = IFRAME_NAME;
+                iframe.style.cssText = 'display:none;width:0;height:0;border:none;position:absolute';
+                document.body.appendChild(iframe);
             }
+
+            // 2. Dùng string name trực tiếp (ổn định hơn iframe.name)
+            const targetFrame = isDebug ? '_blank' : IFRAME_NAME;
+
+            // 3. Tạo form và append vào DOM trước khi submit
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = GOOGLE_SCRIPT_URL;
             form.target = targetFrame;
             form.style.display = 'none';
+
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'data';
             input.value = jsonString;
             form.appendChild(input);
+
             document.body.appendChild(form);
             form.submit();
-            setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 2000);
-            console.log('Form POST đã gửi. Không có lỗi CORS.');
+
+            console.log('Form submitted to:', GOOGLE_SCRIPT_URL, '| target:', targetFrame);
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/4cf9a031-24e2-4e46-85e5-d75b11ddfb25',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:sendToGoogleSheets',message:'Form POST submitted',data:{url:GOOGLE_SCRIPT_URL,target:targetFrame,dataLength:rowData.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+            // #endregion
+
+            setTimeout(() => {
+                if (form.parentNode) form.parentNode.removeChild(form);
+            }, 2000);
+
             resolve({
                 success: true,
                 noCors: true,
                 message: 'Đã gửi. Vui lòng kiểm tra Google Sheet để xác nhận.'
             });
         } catch (e) {
+            console.error('Form submit error:', e);
             reject(e);
         }
     });
