@@ -660,16 +660,6 @@ function handleOtherInput(input) {
     checkbox.checked = input.value.trim().length > 0;
 }
 
-// Toggle panel Kết quả & Ghi chú - bấm thanh để mở/đóng
-function toggleResultPanel() {
-    const panel = document.getElementById('resultPanel');
-    const bar = document.getElementById('resultToggleBar');
-    if (panel && bar) {
-        panel.classList.toggle('show');
-        bar.classList.toggle('expanded');
-    }
-}
-
 // Collect form data
 function collectFormData() {
     const formData = {
@@ -727,11 +717,7 @@ function collectFormData() {
         reporterPhone: document.querySelector('input[name="reporterPhone"]') ? document.querySelector('input[name="reporterPhone"]').value.trim() : '',
         branch: document.querySelector('select[name="branch"]') ? document.querySelector('select[name="branch"]').value : '',
         postOfficeName: document.querySelector('input[name="postOfficeName"]') ? document.querySelector('input[name="postOfficeName"]').value.trim() : '',
-        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value.trim() : '',
-        
-        // Kết quả & Ghi chú (AU, AV)
-        result: document.getElementById('result') ? document.getElementById('result').value.trim() : '',
-        note: document.getElementById('note') ? document.getElementById('note').value.trim() : ''
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]') ? document.querySelector('input[name="postOfficeCode"]').value.trim() : ''
     };
     
     // Collect weight levels and volumes
@@ -971,8 +957,8 @@ function formatDataForSheets(formData) {
         formData.title || '',                                  // 43. Chức danh
         formData.branch || '',                                 // 44. Chi nhánh
         (formData.postOfficeCode || '').toString(),           // 45. Mã Bưu cục
-        formData.result || '',                                // 46. Kết quả (AU)
-        formData.note || ''                                   // 47. Ghi chú (AV)
+        '',                                                    // 46. Kết quả (AU) - điền trong Sheet
+        ''                                                     // 47. Ghi chú (AV) - điền trong Sheet
     ];
     
     // Tạo 1 row cho mỗi mốc trọng lượng
