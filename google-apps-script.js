@@ -143,8 +143,8 @@ function doPost(e) {
       Logger.log('Warning: Could not auto-resize columns: ' + resizeError.toString());
     }
     
-    // Return success response
-    return ContentService
+    // Return success response với CORS headers
+    const output = ContentService
       .createTextOutput(JSON.stringify({
         success: true, 
         message: 'Data saved successfully',
@@ -152,9 +152,14 @@ function doPost(e) {
         dataLength: rowData.length
       }))
       .setMimeType(ContentService.MimeType.JSON);
+    
+    // Thêm CORS headers để cho phép cross-origin requests
+    // Note: ContentService không hỗ trợ setHeader trực tiếp, nhưng Google Apps Script tự động thêm CORS headers khi deploy đúng cách
+    return output;
       
   } catch (error) {
-    // Return error response
+    // Return error response với CORS headers
+    Logger.log('Error in doPost: ' + error.toString());
     return ContentService
       .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);

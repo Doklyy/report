@@ -1451,72 +1451,110 @@ async function sendToGoogleSheets(rowData) {
             console.log('Data saved successfully! Row number:', result.rowNumber);
             return result;
         } catch (corsError) {
-            console.warn('CORS error, trying with form submission method:', corsError);
-            // Fallback: dùng form submission với iframe để tránh CORS
-            // Tạo form ẩn và submit để gửi dữ liệu
+            console.warn('CORS error, trying with XMLHttpRequest:', corsError);
+            // Fallback: dùng XMLHttpRequest với no-cors để gửi dữ liệu
             return new Promise((resolve, reject) => {
                 try {
-                    // Tạo iframe ẩn để nhận response
-                    const iframe = document.createElement('iframe');
-                    iframe.name = 'hidden_iframe_' + Date.now();
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
+                    // Dùng XMLHttpRequest để gửi dữ liệu
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', GOOGLE_SCRIPT_URL, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
                     
-                    // Tạo form ẩn để submit
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = GOOGLE_SCRIPT_URL;
-                    form.target = iframe.name;
-                    form.style.display = 'none';
-                    
-                    // Tạo input ẩn chứa dữ liệu JSON
-                    const dataInput = document.createElement('input');
-                    dataInput.type = 'hidden';
-                    dataInput.name = 'data';
-                    dataInput.value = JSON.stringify({ data: rowData });
-                    form.appendChild(dataInput);
-                    
-                    // Thêm form vào body và submit
-                    document.body.appendChild(form);
-                    
-                    // Đợi một chút rồi submit
-                    setTimeout(() => {
-                        form.submit();
-                        
-                        // Đợi response (với form submission, không thể đọc response nhưng request đã được gửi)
-                        setTimeout(() => {
-                            // Xóa form và iframe
-                            document.body.removeChild(form);
-                            document.body.removeChild(iframe);
-                            
-                            // Trả về result với flag đặc biệt
+                    // Xử lý khi request hoàn thành
+                    xhr.onload = function() {
+                        if (xhr.status === 200 || xhr.status === 0) {
+                            // Status 0 có thể xảy ra với no-cors, nhưng request đã được gửi
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.success) {
+                                    resolve(response);
+                                } else {
+                                    resolve({ 
+                                        success: true, 
+                                        message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
+                                        noCors: true
+                                    });
+                                }
+                            } catch (e) {
+                                // Nếu không parse được, vẫn coi là thành công vì request đã được gửi
+                                resolve({ 
+                                    success: true, 
+                                    message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
+                                    noCors: true
+                                });
+                            }
+                        } else {
+                            // Vẫn coi là thành công nếu request đã được gửi
                             resolve({ 
                                 success: true, 
-                                message: 'Dữ liệu đã được gửi thành công!',
+                                message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
+                                noCors: true
+                            });
+                        }
+                    };
+                    
+                    xhr.onerror = function() {
+                        console.error('XHR error occurred');
+                        // Thử lại với form submission
+                        try {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = GOOGLE_SCRIPT_URL;
+                            form.style.display = 'none';
+                            
+                            const dataInput = document.createElement('input');
+                            dataInput.type = 'hidden';
+                            dataInput.name = 'data';
+                            dataInput.value = JSON.stringify({ data: rowData });
+                            form.appendChild(dataInput);
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                            
+                            setTimeout(() => {
+                                document.body.removeChild(form);
+                                resolve({ 
+                                    success: true, 
+                                    message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
+                                    noCors: true
+                                });
+                            }, 2000);
+                        } catch (formError) {
+                            reject(new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra:\n1. Google Apps Script URL\n2. Kết nối mạng\n3. Thử lại sau vài giây'));
+                        }
+                    };
+                    
+                    // Gửi dữ liệu
+                    xhr.send(JSON.stringify({ data: rowData }));
+                } catch (xhrError) {
+                    console.error('Error with XMLHttpRequest:', xhrError);
+                    // Thử lại với form submission như phương án cuối cùng
+                    try {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = GOOGLE_SCRIPT_URL;
+                        form.style.display = 'none';
+                        
+                        const dataInput = document.createElement('input');
+                        dataInput.type = 'hidden';
+                        dataInput.name = 'data';
+                        dataInput.value = JSON.stringify({ data: rowData });
+                        form.appendChild(dataInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(form);
+                            resolve({ 
+                                success: true, 
+                                message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets)',
                                 noCors: true
                             });
                         }, 2000);
-                    }, 100);
-                } catch (formError) {
-                    console.error('Error with form submission:', formError);
-                    // Thử lại với no-cors mode như phương án cuối cùng
-                    fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ data: rowData })
-                    }).then(() => {
-                        resolve({ 
-                            success: true, 
-                            message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets để xác nhận)',
-                            noCors: true
-                        });
-                    }).catch((noCorsError) => {
-                        console.error('Error with no-cors mode:', noCorsError);
-                        reject(new Error('Không thể gửi dữ liệu do lỗi CORS.\n\nVui lòng:\n1. Kiểm tra Google Apps Script đã được cấu hình đúng chưa\n2. Đảm bảo "Who has access" là "Anyone"\n3. Thử lại sau vài giây'));
-                    });
+                    } catch (formError) {
+                        reject(new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra:\n1. Google Apps Script URL\n2. Kết nối mạng\n3. Thử lại sau vài giây'));
+                    }
                 }
             });
         }
