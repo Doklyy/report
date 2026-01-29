@@ -1451,32 +1451,74 @@ async function sendToGoogleSheets(rowData) {
             console.log('Data saved successfully! Row number:', result.rowNumber);
             return result;
         } catch (corsError) {
-            console.warn('CORS error, trying with no-cors mode:', corsError);
-            // Fallback: dùng no-cors mode (không thể đọc response nhưng request vẫn được gửi)
-            try {
-                response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ data: rowData })
-                });
-                
-                // Với no-cors, không thể đọc response nhưng request đã được gửi
-                // Đợi một chút để đảm bảo request được xử lý
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Trả về result với flag đặc biệt để biết là no-cors
-                return { 
-                    success: true, 
-                    message: 'Dữ liệu đã được gửi thành công!',
-                    noCors: true // Flag để biết là dùng no-cors mode
-                };
-            } catch (noCorsError) {
-                console.error('Error with no-cors mode:', noCorsError);
-                throw new Error('Không thể gửi dữ liệu. Vui lòng kiểm tra:\n1. Kết nối mạng\n2. Google Apps Script URL\n3. Thử lại sau vài giây');
-            }
+            console.warn('CORS error, trying with form submission method:', corsError);
+            // Fallback: dùng form submission với iframe để tránh CORS
+            // Tạo form ẩn và submit để gửi dữ liệu
+            return new Promise((resolve, reject) => {
+                try {
+                    // Tạo iframe ẩn để nhận response
+                    const iframe = document.createElement('iframe');
+                    iframe.name = 'hidden_iframe_' + Date.now();
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                    
+                    // Tạo form ẩn để submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = GOOGLE_SCRIPT_URL;
+                    form.target = iframe.name;
+                    form.style.display = 'none';
+                    
+                    // Tạo input ẩn chứa dữ liệu JSON
+                    const dataInput = document.createElement('input');
+                    dataInput.type = 'hidden';
+                    dataInput.name = 'data';
+                    dataInput.value = JSON.stringify({ data: rowData });
+                    form.appendChild(dataInput);
+                    
+                    // Thêm form vào body và submit
+                    document.body.appendChild(form);
+                    
+                    // Đợi một chút rồi submit
+                    setTimeout(() => {
+                        form.submit();
+                        
+                        // Đợi response (với form submission, không thể đọc response nhưng request đã được gửi)
+                        setTimeout(() => {
+                            // Xóa form và iframe
+                            document.body.removeChild(form);
+                            document.body.removeChild(iframe);
+                            
+                            // Trả về result với flag đặc biệt
+                            resolve({ 
+                                success: true, 
+                                message: 'Dữ liệu đã được gửi thành công!',
+                                noCors: true
+                            });
+                        }, 2000);
+                    }, 100);
+                } catch (formError) {
+                    console.error('Error with form submission:', formError);
+                    // Thử lại với no-cors mode như phương án cuối cùng
+                    fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ data: rowData })
+                    }).then(() => {
+                        resolve({ 
+                            success: true, 
+                            message: 'Dữ liệu đã được gửi (vui lòng kiểm tra Google Sheets để xác nhận)',
+                            noCors: true
+                        });
+                    }).catch((noCorsError) => {
+                        console.error('Error with no-cors mode:', noCorsError);
+                        reject(new Error('Không thể gửi dữ liệu do lỗi CORS.\n\nVui lòng:\n1. Kiểm tra Google Apps Script đã được cấu hình đúng chưa\n2. Đảm bảo "Who has access" là "Anyone"\n3. Thử lại sau vài giây'));
+                    });
+                }
+            });
         }
     } catch (error) {
         console.error('Error sending to Google Sheets:', error);
