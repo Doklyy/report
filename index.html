@@ -6,6 +6,34 @@
     <title>Đề xuất chính sách giá hàng nặng</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .nav-item {
+            white-space: nowrap;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .nav-item:hover {
+            color: #9f224e;
+        }
+        .nav-item.active {
+            color: #9f224e;
+            font-weight: bold;
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #9f224e;
+        }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -179,10 +207,43 @@
         .result-note-bar input:focus {
             border-color: #f59e0b !important;
         }
+        /* Thanh Kết quả - bấm để mở rộng */
+        .result-toggle-bar {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        .result-toggle-bar:hover {
+            background: linear-gradient(180deg, #e2e8f0 0%, #f1f5f9 100%) !important;
+        }
+        .result-toggle-bar .chevron {
+            transition: transform 0.3s ease;
+        }
+        .result-toggle-bar.expanded .chevron {
+            transform: rotate(180deg);
+        }
+        .result-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .result-panel.show {
+            max-height: 300px;
+        }
     </style>
 </head>
 <body class="p-2 md:p-8">
-    <div class="max-w-5xl mx-auto card p-4 md:p-6">
+    <!-- Thanh menu điều hướng -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center px-4 h-12">
+            <div class="flex items-center space-x-10 text-[16px] font-medium text-[#757575]">
+                <a href="index.html" class="nav-item active">Đề xuất</a>
+                <a href="dashboard.html" class="nav-item">Kết quả</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto card p-4 md:p-6 mt-6">
         <h1 class="text-xl md:text-2xl font-bold text-center mb-2 text-gray-800">Đề xuất chính sách giá hàng nặng</h1>
         <p class="text-center text-gray-600 mb-6 text-sm">Vui lòng điền đầy đủ thông tin vào các mục dưới đây</p>
 
@@ -194,16 +255,26 @@
         </div>
 
         <form id="reportForm" onsubmit="return false;">
-            <!-- Kết quả & Ghi chú - Thanh ngang (AU, AV) - Hiển thị ngay đầu form -->
+            <!-- Kết quả & Ghi chú - Thanh bấm để mở (AU, AV) -->
             <div class="mb-6">
-                <div class="result-note-bar flex flex-wrap items-center gap-3 p-3 bg-gray-100 rounded-lg border border-gray-200 overflow-x-auto">
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Kết quả:</span>
-                        <input type="text" name="result" id="result" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập kết quả">
+                <div class="result-note-bar rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                    <div id="resultToggleBar" class="result-toggle-bar flex items-center justify-between gap-3 px-4 py-3 bg-gray-100" onclick="toggleResultPanel()">
+                        <span class="text-sm font-semibold text-gray-700">Kết quả & Ghi chú</span>
+                        <svg class="chevron w-5 h-5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Ghi chú:</span>
-                        <input type="text" name="note" id="note" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 min-w-[120px]" placeholder="Nhập ghi chú">
+                    <div id="resultPanel" class="result-panel bg-white border-t border-gray-200">
+                        <div class="p-4 flex flex-wrap items-center gap-4">
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Kết quả:</span>
+                                <input type="text" name="result" id="result" class="bg-yellow-50 border-2 border-amber-200 rounded px-3 py-1.5 text-sm min-w-[180px]" placeholder="Nhập kết quả">
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">Ghi chú:</span>
+                                <input type="text" name="note" id="note" class="bg-yellow-50 border-2 border-amber-200 rounded px-3 py-1.5 text-sm min-w-[180px]" placeholder="Nhập ghi chú">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
