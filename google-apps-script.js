@@ -3,18 +3,34 @@ const SHEET_NAME = 'Data';
 
 /**
  * Xử lý yêu cầu POST (Ghi dữ liệu)
+ * 
+ * LƯU Ý 2 LỖI THƯỜNG GẶP:
+ * 1. KHÔNG dùng: const contents = e.postData.contents; (e có thể undefined khi chạy từ Editor)
+ * 2. KHÔNG dùng: console.error() - Apps Script không có console, phải dùng Logger.log()
  */
 function doPost(e) {
   try {
-    // 1. Kiểm tra đối tượng event e - dùng optional chaining để tránh lỗi khi e undefined
-    var postContents = (e && e.postData && e.postData.contents) ? e.postData.contents : null;
-    if (!postContents && e && e.parameter && e.parameter.data) {
-      postContents = e.parameter.data; // Hỗ trợ form-encoded
+    // 1. BẮT BUỘC kiểm tra e trước - tránh lỗi "Cannot read properties of undefined (reading 'postData')"
+    if (e == null || e === undefined) {
+      return createJsonResponse({
+        success: false,
+        error: 'Lỗi: Không có dữ liệu sự kiện. Vui lòng KHÔNG chạy doPost trực tiếp từ Editor. Hãy dùng hàm testDoPost() hoặc gọi từ Web App.'
+      });
     }
+    
+    // 2. Lấy dữ liệu - LUÔN kiểm tra e.postData trước, KHÔNG dùng "const contents = e.postData.contents"
+    var postContents = null;
+    if (e.postData) {
+      postContents = e.postData.contents;
+    }
+    if (!postContents && e.parameter && e.parameter.data) {
+      postContents = e.parameter.data;
+    }
+    
     if (!postContents) {
       return createJsonResponse({
         success: false,
-        error: 'Lỗi: Không có dữ liệu sự kiện. Vui lòng không chạy doPost trực tiếp từ Editor. Hãy dùng hàm testDoPost() hoặc gọi từ Web App.'
+        error: 'Lỗi: Không có dữ liệu POST. Vui lòng dùng testDoPost() hoặc gửi từ form Web.'
       });
     }
 
@@ -96,9 +112,10 @@ function doPost(e) {
       numberOfRows: numRows
     });
 
-  } catch (error) {
-    Logger.log('doPost error: ' + error.toString());
-    return createJsonResponse({ success: false, error: error.toString() });
+  } catch (err) {
+    // Lưu ý: Google Apps Script KHÔNG có console - phải dùng Logger.log
+    Logger.log('Lỗi doPost: ' + (err && err.message ? err.message : String(err)));
+    return createJsonResponse({ success: false, error: (err && err.message ? err.message : String(err)) });
   }
 }
 
