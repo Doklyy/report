@@ -549,14 +549,13 @@ function updateCompetitorPriceTable() {
         
         const saved = savedPrices[index] || {};
         
-        // Đảm bảo các giá trị không phải undefined; bỏ % khi hiển thị trong input number
-        const stripPercent = (v) => ((v || '').toString().replace(/%/g, '').trim());
+        // Đảm bảo các giá trị không phải undefined
         const savedProvince = saved.province || '';
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        const savedCurrentReturnRate = stripPercent(saved.currentReturnRate);
-        const savedCompetitorReturnRate = stripPercent(saved.competitorReturnRate);
+        const savedCurrentReturnRate = saved.currentReturnRate || '';
+        const savedCompetitorReturnRate = saved.competitorReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -571,8 +570,8 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><span class="inline-flex items-center"><input type="number" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50 w-12" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"><span class="text-gray-500 ml-0.5">%</span></span></td>
-            <td class="border border-gray-300 p-1"><span class="inline-flex items-center"><input type="number" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50 w-12" step="0.01" value="${savedCompetitorReturnRate}" placeholder="Tỷ lệ hoàn đối thủ"><span class="text-gray-500 ml-0.5">%</span></span></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorCurrentReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCurrentReturnRate}" placeholder="Tỷ lệ hoàn hiện tại"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorReturnRate_${index}" class="p-0 text-center bg-blue-50" step="0.01" value="${savedCompetitorReturnRate}" placeholder="Tỷ lệ hoàn đối thủ"></td>
         `;
         
         tbody.appendChild(tr);
@@ -617,13 +616,12 @@ function updateProposedPriceTable() {
         
         const saved = savedPrices[index] || {};
         
-        // Đảm bảo các giá trị không phải undefined; bỏ % khi hiển thị trong input number
-        const stripPercent = (v) => ((v || '').toString().replace(/%/g, '').trim());
+        // Đảm bảo các giá trị không phải undefined
         const savedProvince = saved.province || '';
         const savedRegion = saved.region || '';
         const savedAdjacent = saved.adjacent || '';
         const savedInter = saved.inter || '';
-        const savedProposedReturnRate = stripPercent(saved.proposedReturnRate);
+        const savedProposedReturnRate = saved.proposedReturnRate || '';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -638,7 +636,7 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            <td class="border border-gray-300 p-1"><span class="inline-flex items-center"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50 w-12" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"><span class="text-gray-500 ml-0.5">%</span></span></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedReturnRate_${index}" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>
         `;
         
         tbody.appendChild(tr);
@@ -904,13 +902,6 @@ function formatDataForSheets(formData) {
     // Tạo mảng các rows - mỗi mốc trọng lượng = 1 row
     const rows = [];
     
-    // Hàm thêm % sau số nếu chưa có (cho Tỷ lệ hoàn)
-    const addPercentSuffix = (v) => {
-        const s = (v || '').toString().trim();
-        if (!s) return '';
-        return s.endsWith('%') ? s : s + '%';
-    };
-    
     // Các thông tin chung (sẽ được merge)
     const commonData = [
         formData.timestamp,                                    // 1. Thời gian
@@ -919,7 +910,7 @@ function formatDataForSheets(formData) {
         formData.address,                                      // 4. Địa chỉ
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng cho mỗi row)
         '',                                                    // 6. Sản lượng hàng gửi (Nội tỉnh/Nội miền/Cận miền/Liên miền - sẽ điền riêng cho mỗi row)
-        '',                                                    // 7. Tổng sản lượng các mốc (Từ-Đến: tổng - sẽ điền riêng cho mỗi row)
+        grandTotal,                                            // 7. Tổng sản lượng các mốc
         totalWeightLevels.toString(),                          // 8. Tỷ trọng sản lượng
         percentByArea,                                         // 9. Tỷ trọng % theo khu vực
         formData.over12mRatio || '',                          // 10. Tỷ trọng hàng trên 1.2m
@@ -950,8 +941,8 @@ function formatDataForSheets(formData) {
         competitorAvg.region || '',                            // 28. Đơn giá bình quân Nội miền (ĐT)
         competitorAvg.adjacent || '',                          // 29. Đơn giá bình quân Cận miền (ĐT)
         competitorAvg.inter || '',                             // 30. Đơn giá bình quân Liên miền (ĐT)
-        addPercentSuffix(competitorCurrentReturnRate),         // 31. Tỷ lệ hoàn hiện tại (thêm %)
-        addPercentSuffix(competitorReturnRate),                // 32. Tỷ lệ hoàn đối thủ miễn phí (thêm %)
+        competitorCurrentReturnRate || '',                     // 31. Tỷ lệ hoàn hiện tại
+        competitorReturnRate || '',                            // 32. Tỷ lệ hoàn đối thủ miễn phí
         formData.competitorOtherPolicies || '',                // 33. Chính sách đặc thù đối thủ
         '',                                                    // 34. Giá đề xuất (sẽ điền riêng cho mỗi row)
         proposedAvg.province || '',                            // 35. Đơn giá bình quân Nội tỉnh (ĐX)
@@ -959,7 +950,7 @@ function formatDataForSheets(formData) {
         proposedAvg.adjacent || '',                            // 37. Đơn giá bình quân Cận miền (ĐX)
         proposedAvg.inter || '',                               // 38. Đơn giá bình quân Liên miền (ĐX)
         formData.proposedOtherPolicies || '',                  // 39. Chính sách đặc thù đề xuất
-        addPercentSuffix(proposedReturnRate),                   // 40. Tỷ lệ hoàn đề xuất (thêm %)
+        proposedReturnRate || '',                             // 40. Tỷ lệ hoàn đề xuất
         comparisonAvg,                                         // 41. So sánh đơn giá bình quân
         formData.reporterName || '',                           // 42. Họ và tên người báo cáo
         formData.reporterPhone || '',                          // 43. Điện thoại người báo cáo
@@ -993,18 +984,10 @@ function formatDataForSheets(formData) {
         const volume = formData.volumes[index] || {};
         const volumeStr = `${volume.province || '0'}/${volume.region || '0'}/${volume.adjacent || '0'}/${volume.inter || '0'}`;
         
-        // Tổng sản lượng mốc này = tổng Nội tỉnh + Nội miền + Cận miền + Liên miền (chỉ số tổng, không phải breakdown)
-        const volProvince = parseFloat(volume.province || 0);
-        const volRegion = parseFloat(volume.region || 0);
-        const volAdjacent = parseFloat(volume.adjacent || 0);
-        const volInter = parseFloat(volume.inter || 0);
-        const rowTotal = volProvince + volRegion + volAdjacent + volInter;
-        
         // Tạo row mới với thông tin chung + thông tin riêng của mốc này
         const row = [...commonData];
-        row[4] = weightRange;  // 5. Các mốc trọng lượng (Từ-Đến)
-        row[5] = volumeStr;   // 6. Sản lượng hàng gửi (Nội tỉnh/Nội miền/Cận miền/Liên miền - sản lượng mỗi mốc)
-        row[6] = String(rowTotal);  // 7. Tổng sản lượng các mốc (chỉ số tổng của mốc đó)
+        row[4] = weightRange;  // 5. Các mốc trọng lượng
+        row[5] = volumeStr;    // 6. Sản lượng hàng gửi (Nội tỉnh/Nội miền/Cận miền/Liên miền)
         row[25] = competitorPriceStr;  // 26. Giá đối thủ
         row[33] = proposedPriceStr;   // 34. Giá đề xuất
         
@@ -1251,15 +1234,13 @@ async function sendToGoogleSheets(rowsData) {
             firstRowFirstFewFields: rowsData[0] ? rowsData[0].slice(0, 5) : []
         });
         
-        // Dùng form-encoded để tương thích tốt hơn với no-cors (tránh CORS preflight)
-        const payload = { data: rowsData, mergeCells: true };
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             },
-            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+            body: JSON.stringify({ data: rowsData, mergeCells: true }) // Thêm flag để merge cells
         });
         
         // Với no-cors mode, không thể đọc response nhưng request đã được gửi
