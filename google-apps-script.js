@@ -133,10 +133,10 @@ function setupHeaders(sheet) {
  * getRange(row, column, numRows, numColumns) - tham số 3 là SỐ DÒNG, 4 là SỐ CỘT
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
-  // Không merge cột 5,6 (mốc trọng lượng, sản lượng hàng gửi), cột 26 (Giá đối thủ), cột 34 (Giá đề xuất) - vì khác nhau mỗi dòng
+  // Không merge cột 5,6,7 (mốc trọng lượng, sản lượng hàng gửi, tổng SL các mốc), cột 26 (Giá đối thủ), cột 34 (Giá đề xuất) - vì khác nhau mỗi dòng
   const mergeRanges = [
     { startCol: 1, endCol: 4 },   // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
-    { startCol: 7, endCol: 23 }, // Cột 7-23: Tổng SL đến Ngành hàng
+    { startCol: 8, endCol: 23 },  // Cột 8-23: Tỷ trọng SL đến Ngành hàng (bỏ cột 7 Tổng SL các mốc)
     { startCol: 25, endCol: 25 },// Cột 25: Đối thủ khác
     { startCol: 27, endCol: 33 },// Cột 27-33: Đơn giá ĐT đến Chính sách đặc thù đối thủ (bỏ cột 26 Giá đối thủ)
     { startCol: 35, endCol: 49 } // Cột 35-49: Đơn giá ĐX đến Ghi chú (bỏ cột 34 Giá đề xuất)
