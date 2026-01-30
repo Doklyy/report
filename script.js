@@ -1251,13 +1251,15 @@ async function sendToGoogleSheets(rowsData) {
             firstRowFirstFewFields: rowsData[0] ? rowsData[0].slice(0, 5) : []
         });
         
+        // Dùng form-encoded để tương thích tốt hơn với no-cors (tránh CORS preflight)
+        const payload = { data: rowsData, mergeCells: true };
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({ data: rowsData, mergeCells: true }) // Thêm flag để merge cells
+            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
         });
         
         // Với no-cors mode, không thể đọc response nhưng request đã được gửi
