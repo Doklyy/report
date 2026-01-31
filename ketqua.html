@@ -107,7 +107,8 @@
     </main>
 
     <script>
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec';
+        // Dùng CÙNG URL với form gửi dữ liệu (script.js) - doGet đọc từ cùng sheet
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwchdja-3mDkc3OqC9dqgQ721L8lZNNxt45wcAq1Cim3IacpwxKjFjALv0bHiXhBJQIAw/exec';
         let allData = [];
 
         function normalizeStatus(s) {
@@ -175,7 +176,13 @@
                 return;
             }
 
-            const filtered = allData.filter(i => (i.phone || '').replace(/\s/g, '').includes(phone));
+            // Chuẩn hóa SĐT: bỏ khoảng trắng, so sánh có/không có số 0 đầu
+            const normalizePhone = (p) => (p || '').toString().replace(/\s/g, '').replace(/^0+/, '') || '';
+            const phoneNorm = normalizePhone(phone);
+            const filtered = allData.filter(i => {
+                const p = normalizePhone(i.phone);
+                return p === phoneNorm || (i.phone || '').replace(/\s/g, '').includes(phone) || phone.includes(p);
+            });
 
             if (filtered.length === 0) {
                 notFoundArea.classList.remove('hidden');
