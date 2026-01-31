@@ -97,10 +97,10 @@ function doPost(e) {
         performMerge(sheet, startRow, numRows, stringRowsData[0]);
       }
 
-      // Xóa dropdown ở cột Kết quả (63) và Ghi chú (64) cho các dòng vừa ghi
-      if (numCols >= 64) {
+      // Xóa dropdown ở cột Kết quả (62) và Ghi chú (63) cho các dòng vừa ghi
+      if (numCols >= 63) {
         try {
-          var newRowsRange = sheet.getRange(startRow, 63, numRows, 2);
+          var newRowsRange = sheet.getRange(startRow, 62, numRows, 2);
           newRowsRange.setDataValidation(null);
         } catch (vErr) { Logger.log('Validation clear: ' + vErr); }
       }
@@ -135,7 +135,7 @@ function setupHeaders(sheet) {
   var headers = [
     'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
     'Tổng sản lượng các mốc', '', '', '',  // 6-9: merge 1 header
-    'Tổng', 'Tỷ trọng sản lượng',
+    'Tổng',
     'Tỷ trọng % Nội tỉnh', 'Tỷ trọng % Nội miền', 'Tỷ trọng % Cận miền', 'Tỷ trọng % Liên miền',
     'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên',
     'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền',
@@ -153,6 +153,10 @@ function setupHeaders(sheet) {
     'Họ và tên người báo cáo', 'Điện thoại người báo cáo', 'Tên Bưu cục',
     'Chức danh', 'Chi nhánh', 'Mã Bưu cục', 'Kết quả', 'Ghi chú'
   ];
+  // Unmerge hàng 1 trước (tránh lỗi khi merge ô đã được gộp trước đó)
+  try {
+    sheet.getRange(1, 1, 1, Math.max(headers.length, 20)).breakApart();
+  } catch (e) {}
   var range = sheet.getRange(1, 1, 1, headers.length);
   range.setValues([headers]);
   range.setFontWeight('bold').setBackground('#4CAF50').setFontColor('white');
@@ -163,10 +167,10 @@ function setupHeaders(sheet) {
   } catch (m) { Logger.log('Merge header: ' + m); }
   sheet.setFrozenRows(1);
 
-  // Xóa data validation (dropdown) ở cột Kết quả (63) và Ghi chú (64)
+  // Xóa data validation (dropdown) ở cột Kết quả (62) và Ghi chú (63)
   var lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    var resultNoteRange = sheet.getRange(2, 63, lastRow - 1, 2);
+    var resultNoteRange = sheet.getRange(2, 62, lastRow - 1, 2);
     resultNoteRange.setDataValidation(null);
     resultNoteRange.clearDataValidations();
     resultNoteRange.clear({ validationsOnly: true });
@@ -178,14 +182,14 @@ function setupHeaders(sheet) {
  * Không gộp: 5-9 (mốc + SL 4 cột + Tổng), 33-36 (Giá ĐT 4 cột), 44-47 (Giá ĐX 4 cột) - khác nhau mỗi dòng
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
-  // Không gộp col 23 (Tỷ trọng %) - khác nhau mỗi mốc trọng lượng
+  // Không gộp col 22 (Tỷ trọng %) - khác nhau mỗi mốc trọng lượng. Đã xóa col 12 (Tỷ trọng sản lượng)
   var columnsToMerge = [
     1, 2, 3, 4,
-    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-    24, 25, 26, 27, 28, 29, 30, 31, 32,
-    37, 38, 39, 40, 41, 42, 43,
-    48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
-    58, 59, 60, 61, 62, 63, 64
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    23, 24, 25, 26, 27, 28, 29, 30, 31,
+    36, 37, 38, 39, 40, 41, 42,
+    47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+    58, 59, 60, 61, 62, 63
   ];
   columnsToMerge.forEach(function(col) {
     try {
@@ -198,7 +202,7 @@ function performMerge(sheet, startRow, numRows, firstRowData) {
       Logger.log('Warning: Merge col ' + col + ' - ' + mergeError.toString());
     }
   });
-  sheet.getRange(startRow, 1, startRow + numRows - 1, 64).setVerticalAlignment('middle');
+  sheet.getRange(startRow, 1, startRow + numRows - 1, 63).setVerticalAlignment('middle');
 }
 
 /**
@@ -213,7 +217,7 @@ function createJsonResponse(data) {
  * Hàm Test - DÙNG CÁI NÀY ĐỂ TEST TRONG EDITOR
  */
 function testDoPost() {
-  var dummyData = Array(64).fill('Test Value');
+  var dummyData = Array(63).fill('Test Value');
   dummyData[0] = new Date().toLocaleString('vi-VN');
   dummyData[1] = 'Test Customer';
   dummyData[2] = '0123456789';
@@ -221,8 +225,8 @@ function testDoPost() {
   dummyData[4] = '0-1000';
   dummyData[5] = '100'; dummyData[6] = '200'; dummyData[7] = '300'; dummyData[8] = '400';
   dummyData[9] = '1000';  // Tổng mỗi mốc
-  dummyData[62] = 'Phê duyệt';
-  dummyData[63] = 'Test ghi chú';
+  dummyData[61] = 'Phê duyệt';
+  dummyData[62] = 'Test ghi chú';
 
   const testPayload = {
     postData: {
