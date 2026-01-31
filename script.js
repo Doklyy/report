@@ -948,10 +948,10 @@ function formatDataForSheets(formData) {
         totalInter,                                            // 15. Sản lượng Liên miền
         grandTotal,                                            // 16. Tổng sản lượng
         percentRatio,                                          // 17. Tỷ trọng %
-        formData.productNormal ? 'Có' : 'Không',              // 18. Hàng thông thường
-        formData.productLiquid ? 'Có' : 'Không',               // 19. Chất lỏng
-        formData.productFlammable ? 'Có' : 'Không',            // 20. Dễ cháy
-        formData.productFragile ? 'Có' : 'Không',              // 21. Dễ vỡ
+        formData.productNormal ? 'Thông thường' : '',         // 18. Hàng thông thường
+        formData.productLiquid ? 'Chất lỏng' : '',            // 19. Chất lỏng
+        formData.productFlammable ? 'Dễ cháy' : '',           // 20. Dễ cháy
+        formData.productFragile ? 'Dễ vỡ' : '',               // 21. Dễ vỡ
         (() => {
             // Kết hợp industries và industryOther - NGÀNH HÀNG
             const industryList = formData.industries.filter(i => i && i.trim() !== '');
