@@ -169,28 +169,26 @@ function setupHeaders(sheet) {
 }
 
 /**
- * Hàm thực hiện Merge các ô giống nhau
- * Không merge: 5-9 (mốc + SL 4 cột), 32-35 (Giá ĐT 4 cột), 43-46 (Giá ĐX 4 cột) - khác nhau mỗi dòng
+ * Gộp ô nếu có nhiều mốc trọng lượng (nhiều dòng cùng 1 đơn)
+ * Không gộp: 5-9 (mốc + SL 4 cột), 32-35 (Giá ĐT 4 cột), 43-46 (Giá ĐX 4 cột) - khác nhau mỗi dòng
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
-  const mergeRanges = [
-    { startCol: 1, endCol: 4 },    // 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
-    { startCol: 10, endCol: 31 },  // 10-31: Tổng SL các mốc đến Đối thủ khác (bỏ 5-9)
-    { startCol: 36, endCol: 42 },  // 36-42: Đơn giá ĐT đến Chính sách đặc thù đối thủ (bỏ 32-35)
-    { startCol: 47, endCol: 64 }   // 47-64: Đơn giá ĐX đến Ghi chú (bỏ 43-46)
+  var columnsToMerge = [
+    1, 2, 3, 4,
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    36, 37, 38, 39, 40, 41, 42,
+    47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
+    57, 58, 59, 60, 61, 62, 63, 64
   ];
-
-  mergeRanges.forEach(range => {
-    for (let col = range.startCol; col <= range.endCol; col++) {
-      try {
-        const cellRange = sheet.getRange(startRow, col, numRows, 1);
-        cellRange.merge();
-        if (cellRange.getValue() === '') {
-          cellRange.setValue(firstRowData[col - 1] || '');
-        }
-      } catch (mergeError) {
-        Logger.log('Warning: Merge col ' + col + ' - ' + mergeError.toString());
+  columnsToMerge.forEach(function(col) {
+    try {
+      var cellRange = sheet.getRange(startRow, col, numRows, 1);
+      cellRange.mergeVertically();
+      if (cellRange.getValue() === '' || cellRange.getValue() === null) {
+        cellRange.setValue(firstRowData[col - 1] || '');
       }
+    } catch (mergeError) {
+      Logger.log('Warning: Merge col ' + col + ' - ' + mergeError.toString());
     }
   });
 }
