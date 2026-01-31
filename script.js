@@ -584,8 +584,8 @@ function updateCompetitorPriceTable() {
         
         const tr = document.createElement('tr');
         const returnRateCells = index === 0
-            ? `<td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.current}" placeholder="%"></td>
-               <td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.competitor}" placeholder="%"></td>`
+            ? `<td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.current}" placeholder="%" required></td>
+               <td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.competitor}" placeholder="%" required></td>`
             : '';
         
         tr.innerHTML = `
@@ -596,10 +596,10 @@ function updateCompetitorPriceTable() {
                     <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${savedProvince}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}" required></td>
             ${returnRateCells}
         `;
         
@@ -649,7 +649,7 @@ function updateProposedPriceTable() {
         
         const tr = document.createElement('tr');
         const returnRateCell = index === 0
-            ? `<td class="border border-gray-300 p-1 bg-amber-50" rowspan="${numRows}"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" value="${savedProposedReturnRate}" placeholder="%"></td>`
+            ? `<td class="border border-gray-300 p-1 bg-amber-50" rowspan="${numRows}"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" value="${savedProposedReturnRate}" placeholder="%" required></td>`
             : '';
         
         tr.innerHTML = `
@@ -660,10 +660,10 @@ function updateProposedPriceTable() {
                     <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProvince}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}" required></td>
             ${returnRateCell}
         `;
         
