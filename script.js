@@ -871,11 +871,17 @@ function formatDataForSheets(formData) {
     const percentAdjacent = grandTotalNum > 0 ? ((parseFloat(totalAdjacent) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
     const percentInter = grandTotalNum > 0 ? ((parseFloat(totalInter) / grandTotalNum) * 100).toFixed(1) + '%' : '0%';
     
-    // Lấy tỷ lệ hoàn từ các ô trong bảng
-    const competitorCurrentReturnRate = document.querySelector('input[name="competitorCurrentReturnRate_0"]') ? document.querySelector('input[name="competitorCurrentReturnRate_0"]').value : '';
-    const competitorReturnRate = document.querySelector('input[name="competitorReturnRate_0"]') ? document.querySelector('input[name="competitorReturnRate_0"]').value : '';
-    
-    const proposedReturnRate = formData.proposedReturnRate || '';
+    // Lấy tỷ lệ hoàn từ các ô trong bảng - thêm % khi gửi lên Sheet
+    const fmtPercent = (v) => {
+      const s = (v != null && v !== '') ? String(v).trim() : '';
+      if (!s) return '';
+      if (s.includes('%')) return s;
+      const n = parseFloat(s);
+      return isNaN(n) ? s : n + '%';
+    };
+    const competitorCurrentReturnRate = fmtPercent(document.querySelector('input[name="competitorCurrentReturnRate_0"]')?.value || '');
+    const competitorReturnRate = fmtPercent(document.querySelector('input[name="competitorReturnRate_0"]')?.value || '');
+    const proposedReturnRate = fmtPercent(formData.proposedReturnRate || '');
     
     // Tính đơn giá bình quân cho đối thủ và đề xuất
     const calculateWeightedAverage = (prices, volumes) => {
@@ -998,8 +1004,8 @@ function formatDataForSheets(formData) {
         competitorAvg.region || '',                            // 37. Đơn giá bình quân Nội miền (ĐT)
         competitorAvg.adjacent || '',                          // 38. Đơn giá bình quân Cận miền (ĐT)
         competitorAvg.inter || '',                             // 39. Đơn giá bình quân Liên miền (ĐT)
-        competitorCurrentReturnRate || '',                     // 40. Tỷ lệ hoàn hiện tại
-        competitorReturnRate || '',                            // 41. Tỷ lệ hoàn đối thủ miễn phí
+        competitorCurrentReturnRate,                           // 40. Tỷ lệ hoàn hiện tại (đã thêm %)
+        competitorReturnRate,                                  // 41. Tỷ lệ hoàn đối thủ miễn phí (đã thêm %)
         formData.competitorOtherPolicies || '',                // 42. Chính sách đặc thù đối thủ
         '', '', '', '',                                        // 43-46. Giá đề xuất: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
         proposedAvg.province || '',                            // 47. Đơn giá bình quân Nội tỉnh (ĐX)
@@ -1007,7 +1013,7 @@ function formatDataForSheets(formData) {
         proposedAvg.adjacent || '',                            // 49. Đơn giá bình quân Cận miền (ĐX)
         proposedAvg.inter || '',                               // 50. Đơn giá bình quân Liên miền (ĐX)
         formData.proposedOtherPolicies || '',                  // 51. Chính sách đặc thù đề xuất
-        proposedReturnRate || '',                             // 52. Tỷ lệ hoàn đề xuất
+        proposedReturnRate,                                   // 52. Tỷ lệ hoàn đề xuất (đã thêm %)
         comparisonProvince, comparisonRegion, comparisonAdjacent, comparisonInter,  // 53-56. So sánh đơn giá bình quân (4 cột)
         formData.reporterName || '',                           // 57. Họ và tên người báo cáo
         fmtPhone(formData.reporterPhone),                      // 58. Điện thoại người báo cáo (giữ số 0)
@@ -1314,7 +1320,7 @@ async function sendToGoogleSheets(rowsData) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: rowsData, mergeCells: false }) // false = không gộp ô, mỗi hàng có đủ dữ liệu
+            body: JSON.stringify({ data: rowsData, mergeCells: true }) // true = gộp ô (trừ mốc, SL, Giá ĐT/Giá ĐX - mỗi hàng riêng)
         });
         
         // Với no-cors mode, không thể đọc response nhưng request đã được gửi
