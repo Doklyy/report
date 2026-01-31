@@ -148,22 +148,28 @@
                 </p>
             </div>
             <div class="table-scroll p-4">
-                <table class="w-full text-sm text-left min-w-[800px]">
+                <table class="w-full text-sm text-left min-w-[1000px]">
                     <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
                         <tr>
                             <th class="px-4 py-3 border">Thời gian</th>
                             <th class="px-4 py-3 border">Tên KH</th>
                             <th class="px-4 py-3 border">Điện thoại</th>
                             <th class="px-4 py-3 border">Địa chỉ</th>
+                            <th class="px-4 py-3 border">Mốc TL</th>
                             <th class="px-4 py-3 border">Ngành hàng</th>
                             <th class="px-4 py-3 border">Đối thủ</th>
                             <th class="px-4 py-3 border">Tổng SL</th>
+                            <th class="px-4 py-3 border">Giá đối thủ</th>
+                            <th class="px-4 py-3 border">Tỷ lệ hoàn ĐT</th>
+                            <th class="px-4 py-3 border">Giá đề xuất</th>
+                            <th class="px-4 py-3 border">Tỷ lệ hoàn ĐX</th>
+                            <th class="px-4 py-3 border">Đơn giá/TL</th>
                             <th class="px-4 py-3 border text-center">Kết quả</th>
                             <th class="px-4 py-3 border">Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody id="sphnTableBody" class="divide-y divide-gray-100">
-                        <tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">Đang tải...</td></tr>
+                        <tr><td colspan="14" class="px-4 py-8 text-center text-gray-400">Đang tải...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -251,39 +257,101 @@
             renderSPHNTable(rows);
         }
 
+        // Định dạng số kiểu VN: 1.000.000
+        function formatNumberVN(val) {
+            const num = parseFloat(String(val).replace(/[^\d.-]/g, '').replace(',', '.'));
+            if (isNaN(num)) return val || '-';
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Tính Đơn giá bình quân / Trọng lượng (công thức: đơn giá bình quân / trọng lượng)
+        function calcDonGiaTrenTL(donGiaStr, weightRangeStr) {
+            const dg = parseFloat(String(donGiaStr || '').replace(',', '.'));
+            if (isNaN(dg)) return '-';
+            const m = String(weightRangeStr || '').match(/(\d+)\s*-\s*(\d+)/);
+            if (!m) return '-';
+            const from = parseInt(m[1], 10);
+            const to = parseInt(m[2], 10);
+            const midpoint = (from + to) / 2;
+            if (midpoint <= 0) return '-';
+            const result = dg / midpoint;
+            return isNaN(result) ? '-' : result.toFixed(2);
+        }
+
+        // Format chuỗi giá (vd: "0-1000: 100/200/300/400") thành 100.000, 200.000...
+        function formatPriceDisplay(str) {
+            if (!str || typeof str !== 'string') return '-';
+            const parts = str.split(':');
+            const nums = (parts[1] || parts[0] || '').split('/').map(s => parseFloat(String(s).trim().replace(',', '.'))).filter(n => !isNaN(n));
+            if (nums.length === 0) return str;
+            return nums.map(n => formatNumberVN(n)).join(' / ');
+        }
+
         function renderSPHNTable(rows) {
             const tbody = document.getElementById('sphnTableBody');
             if (!rows || rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="14" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu</td></tr>';
                 return;
             }
-            
-            let lastNote = '';
-            const seen = new Set();
-            
-            tbody.innerHTML = rows.map((row, idx) => {
+
+            // Propagate merged cell values - mỗi dòng đều hiển thị đầy đủ (ô merge trống kế thừa từ dòng trước)
+            const propagated = [];
+            rows.forEach((row, idx) => {
+                const r = {};
+                Object.keys(row).forEach(k => { r[k] = row[k]; });
+                if (idx > 0) {
+                    const prev = propagated[idx - 1];
+                    const mergeCols = ['Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Ngành hàng', 'Đối thủ',
+                        'Tỷ lệ hoàn hiện tại', 'Tỷ lệ hoàn đối thủ miễn phí', 'Tỷ lệ hoàn đề xuất'];
+                    mergeCols.forEach(col => {
+                        const v = (r[col] || '').toString().trim();
+                        if (!v && prev && prev[col]) r[col] = prev[col];
+                    });
+                }
+                propagated.push(r);
+            });
+
+            tbody.innerHTML = propagated.map((row) => {
+                const time = (row['Thời gian'] || '').toString().trim();
                 const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
-                // Ô Kết quả trống = Chờ kết quả
+                const phone = (row['Điện thoại'] || '').toString().trim();
+                const address = (row['Địa chỉ'] || '').toString().trim();
+                const weightRange = (row['Các mốc trọng lượng'] || '').toString().trim();
+                const industry = (row['Ngành hàng'] || '').toString().trim();
+                const competitor = (row['Đối thủ'] || '').toString().trim();
+                const totalVol = (row['Tổng sản lượng các mốc'] || row['Tổng sản lượng'] || '').toString().trim();
+                const giaDoiThu = (row['Giá đối thủ'] || '').toString().trim();
+                const giaDeXuat = (row['Giá đề xuất'] || '').toString().trim();
+                const tyLeHoanHienTai = (row['Tỷ lệ hoàn hiện tại'] || '').toString().trim();
+                const tyLeHoanDoiThu = (row['Tỷ lệ hoàn đối thủ miễn phí'] || '').toString().trim();
+                const tyLeHoanDX = (row['Tỷ lệ hoàn đề xuất'] || '').toString().trim();
+                const tyLeHoanDT = tyLeHoanDoiThu || tyLeHoanHienTai;
+                const donGiaDT = (row['Đơn giá bình quân Nội tỉnh (ĐT)'] || '').toString().trim();
+                const donGiaDX = (row['Đơn giá bình quân Nội tỉnh (ĐX)'] || '').toString().trim();
                 const status = (row['Kết quả'] || '').toString().trim();
-                let note = (row['Ghi chú'] || '').toString().trim();
-                if (note) lastNote = note;
-                else note = lastNote;
-                
-                const key = `${row['Thời gian']}_${name}_${idx}`;
-                if (seen.has(key)) return '';
-                seen.add(key);
-                
+                const note = (row['Ghi chú'] || '').toString().trim();
+
+                const donGiaTL = calcDonGiaTrenTL(donGiaDX || donGiaDT, weightRange);
+                const giaDTFormatted = giaDoiThu ? formatPriceDisplay(giaDoiThu) : '-';
+                const giaDXFormatted = giaDeXuat ? formatPriceDisplay(giaDeXuat) : '-';
+
                 return `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 border text-gray-600">${row['Thời gian'] || '-'}</td>
+                    <td class="px-4 py-3 border text-gray-600 whitespace-nowrap">${time || '-'}</td>
                     <td class="px-4 py-3 border font-medium">${name || '-'}</td>
-                    <td class="px-4 py-3 border">${row['Điện thoại'] || '-'}</td>
-                    <td class="px-4 py-3 border max-w-[150px] truncate" title="${(row['Địa chỉ'] || '').replace(/"/g, '')}">${row['Địa chỉ'] || '-'}</td>
-                    <td class="px-4 py-3 border max-w-[120px] truncate">${row['Ngành hàng'] || '-'}</td>
-                    <td class="px-4 py-3 border">${row['Đối thủ'] || '-'}</td>
-                    <td class="px-4 py-3 border text-right">${row['Tổng sản lượng'] || '-'}</td>
+                    <td class="px-4 py-3 border">${phone || '-'}</td>
+                    <td class="px-4 py-3 border max-w-[120px] truncate" title="${(address || '').replace(/"/g, '')}">${address || '-'}</td>
+                    <td class="px-4 py-3 border">${weightRange || '-'}</td>
+                    <td class="px-4 py-3 border max-w-[100px] truncate">${industry || '-'}</td>
+                    <td class="px-4 py-3 border">${competitor || '-'}</td>
+                    <td class="px-4 py-3 border text-right">${totalVol || '-'}</td>
+                    <td class="px-4 py-3 border text-right font-mono text-xs">${giaDTFormatted}</td>
+                    <td class="px-4 py-3 border text-center">${tyLeHoanDT ? tyLeHoanDT + '%' : '-'}</td>
+                    <td class="px-4 py-3 border text-right font-mono text-xs">${giaDXFormatted}</td>
+                    <td class="px-4 py-3 border text-center">${tyLeHoanDX ? tyLeHoanDX + '%' : '-'}</td>
+                    <td class="px-4 py-3 border text-right">${donGiaTL}</td>
                     <td class="px-4 py-3 border text-center"><span class="${getStatusBadgeClass(status)}">${status || 'Chờ kết quả'}</span></td>
-                    <td class="px-4 py-3 border max-w-[180px] truncate text-xs" title="${(note || '').replace(/"/g, '')}">${note || '-'}</td>
+                    <td class="px-4 py-3 border max-w-[150px] truncate text-xs" title="${(note || '').replace(/"/g, '')}">${note || '-'}</td>
                 </tr>
                 `;
             }).join('');
