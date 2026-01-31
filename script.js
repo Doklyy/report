@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec'; // Google Apps Script URL
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwchdja-3mDkc3OqC9dqgQ721L8lZNNxt45wcAq1Cim3IacpwxKjFjALv0bHiXhBJQIAw/exec'; // Google Apps Script URL
 
 // Weight levels data
 let weightLevels = [];
@@ -795,8 +795,8 @@ function collectFormData() {
             region: volumeInputs[1] ? volumeInputs[1].value : '0',
             adjacent: volumeInputs[2] ? volumeInputs[2].value : '0',
             inter: volumeInputs[3] ? volumeInputs[3].value : '0',
-            total: row.querySelector('[data-total]').getAttribute('data-total'),
-            percent: row.querySelector('[data-percent]').getAttribute('data-percent')
+            total: row.querySelector('[data-total]')?.getAttribute('data-total') || '0',
+            percent: row.querySelector('[data-percent]')?.getAttribute('data-percent') || '0%'
         });
     });
     
@@ -1019,7 +1019,10 @@ function formatDataForSheets(formData) {
         ''                                                     // 64. Ghi chú - điền trong Sheet
     ];
     
-    // Tạo 1 row cho mỗi mốc trọng lượng (2 hàng nếu 2 mốc)
+    // Format giá 1.000.000 khi gửi lên Google Sheet
+    const fmtPrice = (v) => { const n = parseFormattedPrice(v || ''); return n > 0 ? formatPriceWithDots(n) : (v || ''); };
+
+    // Tạo 1 row cho mỗi mốc trọng lượng (2 hàng nếu 2 mốc) - MỖI HÀNG PHẢI CÓ ĐỦ 64 CỘT
     formData.weightLevels.forEach((weightLevel, index) => {
         const from = (weightLevel.from && weightLevel.from.trim() !== '') ? weightLevel.from : '0';
         const to = (weightLevel.to && weightLevel.to.trim() !== '') ? weightLevel.to : '0';
@@ -1041,16 +1044,16 @@ function formatDataForSheets(formData) {
         const grandTotalNum = parseFloat(grandTotal) || 0;
         const rowPercent = grandTotalNum > 0 ? ((volP + volR + volA + volI) / grandTotalNum * 100).toFixed(1) + '%' : '0%';
         
-        const row = [...commonData];
+        // Tạo row mới từ commonData - dùng slice để copy, đảm bảo mỗi hàng có đủ dữ liệu
+        const row = commonData.slice(0, 64);
+        // Điền các cột riêng theo mỗi mốc
         row[4] = weightRange;   // 5. Các mốc trọng lượng
-        row[21] = rowPercent;   // 22. Tỷ trọng % (theo mỗi mốc trọng lượng)
-        row[5] = volume.province || '0';   // 6. Tổng SL các mốc - N.Tỉnh
-        row[6] = volume.region || '0';    // 7. N.Miền
-        row[7] = volume.adjacent || '0';   // 8. C.Miền
-        row[8] = volume.inter || '0';      // 9. L.Miền
-        row[9] = rowTotal;   // 10. Tổng (tổng mỗi mốc)
-        // Format giá 1.000.000 khi gửi lên Google Sheet
-        const fmtPrice = (v) => { const n = parseFormattedPrice(v || ''); return n > 0 ? formatPriceWithDots(n) : (v || ''); };
+        row[5] = volume.province || '0';   // 6. SL Nội tỉnh
+        row[6] = volume.region || '0';    // 7. SL Nội miền
+        row[7] = volume.adjacent || '0';   // 8. SL Cận miền
+        row[8] = volume.inter || '0';      // 9. SL Liên miền
+        row[9] = rowTotal;   // 10. Tổng mỗi mốc
+        row[21] = rowPercent;   // 22. Tỷ trọng % (theo mỗi mốc)
         row[30] = fmtPrice(competitorPrice.province);  // 31. Giá ĐT N.Tỉnh
         row[31] = fmtPrice(competitorPrice.region);   // 32. Giá ĐT N.Miền
         row[32] = fmtPrice(competitorPrice.adjacent); // 33. Giá ĐT C.Miền
@@ -1060,7 +1063,9 @@ function formatDataForSheets(formData) {
         row[43] = fmtPrice(proposedPrice.adjacent);  // 44. Giá ĐX C.Miền
         row[44] = fmtPrice(proposedPrice.inter);     // 45. Giá ĐX L.Miền
         
-        rows.push(row);
+        // Đảm bảo đúng 64 cột (pad nếu thiếu)
+        while (row.length < 64) row.push('');
+        rows.push(row.slice(0, 64));
     });
     
     return rows; // Trả về mảng các rows
