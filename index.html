@@ -411,7 +411,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Will be populated by JavaScript -->
+                            <tr>
+                                <td class="border border-gray-300 p-1 text-center font-bold">
+                                    <span class="inline-flex items-center gap-1">
+                                        <input type="number" name="competitorFrom_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
+                                        <span>-</span>
+                                        <input type="number" name="competitorTo_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
+                                    </span>
+                                </td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_province" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_region" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_adjacent" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_inter" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%"></td>
+                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -445,7 +459,20 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Will be populated by JavaScript -->
+                            <tr>
+                                <td class="border border-gray-300 p-1 text-center font-bold">
+                                    <span class="inline-flex items-center gap-1">
+                                        <input type="number" name="proposedFrom_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
+                                        <span>-</span>
+                                        <input type="number" name="proposedTo_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
+                                    </span>
+                                </td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_province" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_region" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_adjacent" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_inter" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
+                                <td class="border border-gray-300 p-1 bg-amber-50"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="%"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -569,6 +596,6 @@
     </div>
 
     <!-- Thêm query version để trình duyệt luôn lấy file script.js mới nhất, tránh cache cũ -->
-    <script src="script.js?v=20260127-4"></script>
+    <script src="script.js?v=20260130"></script>
 </body>
 </html>
