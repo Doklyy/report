@@ -97,6 +97,14 @@ function doPost(e) {
         performMerge(sheet, startRow, numRows, stringRowsData[0]);
       }
 
+      // Xóa dropdown ở cột Kết quả (63) và Ghi chú (64) cho các dòng vừa ghi
+      if (numCols >= 64) {
+        try {
+          var newRowsRange = sheet.getRange(startRow, 63, numRows, 2);
+          newRowsRange.setDataValidation(null);
+        } catch (vErr) { Logger.log('Validation clear: ' + vErr); }
+      }
+
       // Tự động căn chỉnh cột
       try {
         sheet.autoResizeColumns(1, numCols);
@@ -149,6 +157,15 @@ function setupHeaders(sheet) {
   range.setValues([headers]);
   range.setFontWeight('bold').setBackground('#4CAF50').setFontColor('white');
   sheet.setFrozenRows(1);
+
+  // Xóa data validation (dropdown) ở cột Kết quả (63) và Ghi chú (64)
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    var resultNoteRange = sheet.getRange(2, 63, lastRow - 1, 2);
+    resultNoteRange.setDataValidation(null);
+    resultNoteRange.clearDataValidations();
+    resultNoteRange.clear({ validationsOnly: true });
+  }
 }
 
 /**
