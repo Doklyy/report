@@ -1,5 +1,5 @@
 // Google Sheets Configuration
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec'; // Google Apps Script URL
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoJ0u7JhkBSuTaXLD_jwNDj-K3N6B8SCONYeHRVESqmB0cruDANBpAeKln4tJeYqj1/exec'; // Google Apps Script URL
 
 // Weight levels data
 let weightLevels = [];
