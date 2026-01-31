@@ -33,6 +33,17 @@
         .status-rejected { background-color: #fee2e2; color: #991b1b; }
         .status-pending { background-color: #fef3c7; color: #92400e; }
         .status-waiting { background-color: #e0e7ff; color: #3730a3; }
+        .filter-pill {
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .filter-pill:hover { transform: translateY(-1px); }
+        .filter-pill.active { border-color: currentColor; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="bg-[#f0f2f5] min-h-screen font-sans text-gray-800">
@@ -94,8 +105,33 @@
         </div>
 
         <!-- Kết quả tra cứu -->
-        <div id="resultArea" class="hidden space-y-4">
-            <!-- Cards sẽ được render ở đây -->
+        <div id="resultArea" class="hidden">
+            <!-- Bộ lọc theo trạng thái -->
+            <div class="mb-6 bg-white rounded-xl shadow-md border border-gray-200 p-5">
+                <p class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-filter text-blue-500"></i> Lọc theo trạng thái kết quả
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" data-status="all" class="filter-pill active bg-slate-100 text-slate-700 hover:bg-slate-200">
+                        Tất cả
+                    </button>
+                    <button type="button" data-status="Phê duyệt" class="filter-pill status-approved hover:opacity-90">
+                        Phê duyệt
+                    </button>
+                    <button type="button" data-status="Không phê duyệt" class="filter-pill status-rejected hover:opacity-90">
+                        Không phê duyệt
+                    </button>
+                    <button type="button" data-status="Cần bổ sung" class="filter-pill status-pending hover:opacity-90">
+                        Cần bổ sung
+                    </button>
+                    <button type="button" data-status="Chờ kết quả" class="filter-pill status-waiting hover:opacity-90">
+                        Chờ kết quả
+                    </button>
+                </div>
+            </div>
+            <div id="resultCards" class="space-y-4">
+                <!-- Cards sẽ được render ở đây -->
+            </div>
         </div>
 
         <!-- Lỗi tải dữ liệu -->
@@ -110,13 +146,15 @@
         // Dùng CÙNG URL với form gửi dữ liệu (script.js) - doGet đọc từ cùng sheet
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwchdja-3mDkc3OqC9dqgQ721L8lZNNxt45wcAq1Cim3IacpwxKjFjALv0bHiXhBJQIAw/exec';
         let allData = [];
+        let currentPhoneResults = [];  // Kết quả sau khi lọc SĐT
+        let currentStatusFilter = 'all';
 
         function normalizeStatus(s) {
             if (!s || typeof s !== 'string' || !s.trim()) return 'Chờ kết quả';
             const t = s.trim().toLowerCase();
-            if (t.includes('phê duyệt')) return 'Phê duyệt';
-            if (t.includes('từ chối')) return 'Từ chối';
-            if (t.includes('bổ sung')) return 'Bổ sung';
+            if (t.includes('phê duyệt') && !t.includes('không')) return 'Phê duyệt';
+            if (t.includes('không phê duyệt') || t.includes('từ chối')) return 'Không phê duyệt';
+            if (t.includes('bổ sung')) return 'Cần bổ sung';
             return 'Chờ kết quả';
         }
 
@@ -124,8 +162,8 @@
             const n = normalizeStatus(status);
             if (n === 'Chờ kết quả') return 'status-badge status-waiting';
             if (n === 'Phê duyệt') return 'status-badge status-approved';
-            if (n === 'Từ chối') return 'status-badge status-rejected';
-            if (n === 'Bổ sung') return 'status-badge status-pending';
+            if (n === 'Không phê duyệt') return 'status-badge status-rejected';
+            if (n === 'Cần bổ sung') return 'status-badge status-pending';
             return 'status-badge status-waiting';
         }
 
@@ -189,12 +227,45 @@
                 return;
             }
 
+            currentPhoneResults = filtered;
+            currentStatusFilter = 'all';
+            document.querySelectorAll('.filter-pill[data-status]').forEach(b => {
+                b.classList.toggle('active', b.dataset.status === 'all');
+            });
             resultArea.classList.remove('hidden');
+            applyStatusFilterAndRender();
+        }
+
+        function applyStatusFilterAndRender() {
+            let filtered = currentPhoneResults;
+            if (currentStatusFilter !== 'all') {
+                filtered = currentPhoneResults.filter(i => normalizeStatus(i.status) === currentStatusFilter);
+            }
             renderResultCards(filtered);
+            updateFilterPillCounts();
+        }
+
+        function updateFilterPillCounts() {
+            document.querySelectorAll('.filter-pill[data-status]').forEach(btn => {
+                const status = btn.dataset.status;
+                const count = status === 'all' ? currentPhoneResults.length
+                    : currentPhoneResults.filter(i => normalizeStatus(i.status) === status).length;
+                const label = status === 'all' ? 'Tất cả' : status;
+                btn.textContent = count > 0 ? `${label} (${count})` : label;
+            });
         }
 
         function renderResultCards(items) {
-            const container = document.getElementById('resultArea');
+            const container = document.getElementById('resultCards');
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+                        <i class="fas fa-inbox text-gray-300 text-5xl mb-3"></i>
+                        <p class="text-gray-500">Không có kết quả với trạng thái này</p>
+                    </div>
+                `;
+                return;
+            }
             container.innerHTML = items.map(item => `
                 <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                     <div class="p-6">
@@ -225,8 +296,8 @@
                             </p>
                             <p class="text-sm text-gray-600">
                                 ${item.status === 'Phê duyệt' ? 'Đề xuất đã được phê duyệt.' : 
-                                  item.status === 'Từ chối' ? 'Đề xuất đã bị từ chối.' : 
-                                  item.status === 'Bổ sung' ? 'Cần bổ sung thông tin.' : 
+                                  (item.status === 'Từ chối' || item.status === 'Không phê duyệt') ? 'Đề xuất đã bị từ chối.' : 
+                                  (item.status === 'Bổ sung' || item.status === 'Cần bổ sung') ? 'Cần bổ sung thông tin.' : 
                                   'Đang chờ xử lý.'}
                             </p>
                         </div>
@@ -243,6 +314,15 @@
                 </div>
             `).join('');
         }
+
+        document.addEventListener('click', (e) => {
+            const pill = e.target.closest('.filter-pill[data-status]');
+            if (!pill) return;
+            document.querySelectorAll('.filter-pill[data-status]').forEach(b => b.classList.remove('active'));
+            pill.classList.add('active');
+            currentStatusFilter = pill.dataset.status;
+            applyStatusFilterAndRender();
+        });
 
         async function loadData() {
             const loadingState = document.getElementById('loading-state');
