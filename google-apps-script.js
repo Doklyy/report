@@ -1,5 +1,5 @@
-const SPREADSHEET_ID = '1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s';
-const SHEET_NAME = 'Data';
+const SPREADSHEET_ID = '1eat6olsjZLwydmhDND6R1KA6Tzz4nP9lK3CNlForw1I';
+const SHEET_NAME = 'Sheet1';
 
 /**
  * Xử lý yêu cầu POST (Ghi dữ liệu)
@@ -156,9 +156,9 @@ function setupHeaders(sheet) {
   var range = sheet.getRange(1, 1, 1, headers.length);
   range.setValues([headers]);
   range.setFontWeight('bold').setBackground('#4CAF50').setFontColor('white');
-  // Gộp header "Tổng sản lượng các mốc" cho cột 6-9 (như ảnh mẫu)
+  // Gộp header "Tổng sản lượng các mốc" cho cột 6-9 (4 cột: getRange(row,col,numRows,numCols))
   try {
-    sheet.getRange(1, 6, 1, 9).merge();
+    sheet.getRange(1, 6, 1, 4).merge();
     sheet.getRange(1, 6).setValue('Tổng sản lượng các mốc');
   } catch (m) { Logger.log('Merge header: ' + m); }
   sheet.setFrozenRows(1);
