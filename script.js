@@ -957,10 +957,15 @@ function formatDataForSheets(formData) {
     // 64 cột: Các mốc=2 hàng, SL hàng gửi/Tỷ trọng %/Giá ĐT/Giá ĐX=4 cột mỗi, So sánh=4 cột
     const rows = [];
     
+    // Thêm dấu ' trước MỌI số điện thoại để Google Sheet luôn hiểu là text, giữ số 0 đằng trước
+    const fmtPhone = (p) => {
+      const s = (p != null && p !== '') ? String(p).trim() : '';
+      return s ? ("'" + s) : '';
+    };
     const commonData = [
         formData.timestamp,                                    // 1. Thời gian
         formData.customerName,                                // 2. Tên KH/Tên shop
-        formData.phone,                                        // 3. Điện thoại
+        fmtPhone(formData.phone),                              // 3. Điện thoại (giữ số 0)
         formData.address,                                      // 4. Địa chỉ
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng)
         '', '', '', '',                                        // 6-9. Tổng sản lượng các mốc: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
@@ -1005,7 +1010,7 @@ function formatDataForSheets(formData) {
         proposedReturnRate || '',                             // 52. Tỷ lệ hoàn đề xuất
         comparisonProvince, comparisonRegion, comparisonAdjacent, comparisonInter,  // 53-56. So sánh đơn giá bình quân (4 cột)
         formData.reporterName || '',                           // 57. Họ và tên người báo cáo
-        formData.reporterPhone || '',                          // 58. Điện thoại người báo cáo
+        fmtPhone(formData.reporterPhone),                      // 58. Điện thoại người báo cáo (giữ số 0)
         formData.postOfficeName || '',                         // 59. Tên Bưu cục
         formData.title || '',                                  // 60. Chức danh
         formData.branch || '',                                 // 61. Chi nhánh
