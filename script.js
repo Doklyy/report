@@ -977,8 +977,8 @@ function formatDataForSheets(formData) {
         '', '', '', '',                                        // 6-9. Tổng sản lượng các mốc: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
         '',                                                    // 10. Tổng (tổng mỗi mốc = 6+7+8+9, điền riêng)
         percentProvince, percentRegion, percentAdjacent, percentInter,  // 11-14. Tỷ trọng % theo khu vực (4 cột)
-        formData.over12mRatio || '',                          // 15. Tỷ trọng hàng trên 1.2m
-        formData.over100kgRatio || '',                        // 16. Tỷ trọng hàng nguyên khối từ 100kg trở lên
+        fmtPercent(formData.over12mRatio || ''),              // 15. Tỷ trọng hàng trên 1.2m (đã thêm %)
+        fmtPercent(formData.over100kgRatio || ''),            // 16. Tỷ trọng hàng nguyên khối từ 100kg trở lên (đã thêm %)
         totalProvince,                                         // 17. Sản lượng Nội tỉnh
         totalRegion,                                           // 18. Sản lượng Nội miền
         totalAdjacent,                                         // 19. Sản lượng Cận miền
