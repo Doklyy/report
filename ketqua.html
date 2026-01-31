@@ -3,25 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Kết Quả - Báo Cáo</title>
+    <title>Kết quả đề xuất chính sách giá</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
         .nav-item {
             white-space: nowrap;
             transition: all 0.2s;
             position: relative;
         }
         .nav-item:hover { color: #9f224e; }
-        .nav-item.active {
-            color: #9f224e;
-            font-weight: bold;
-        }
+        .nav-item.active { color: #9f224e; font-weight: bold; }
         .nav-item.active::after {
             content: '';
             position: absolute;
@@ -32,19 +24,26 @@
             background-color: #9f224e;
         }
         .status-badge {
-            transition: all 0.3s ease;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
         }
+        .status-approved { background-color: #dcfce7; color: #166534; }
+        .status-rejected { background-color: #fee2e2; color: #991b1b; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
         .card-hover:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+        .table-scroll { overflow-x: auto; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-[#f0f2f5] min-h-screen font-sans text-gray-800">
 
-    <!-- Thanh menu điều hướng -->
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm -mt-4 -mx-4 md:-mx-8 px-4 md:px-8 mb-6">
-        <div class="max-w-6xl mx-auto flex items-center h-12">
+    <!-- THANH MENU ĐIỀU HƯỚNG -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-6xl mx-auto flex items-center px-4 h-12">
             <div class="flex items-center space-x-10 text-[16px] font-medium text-[#757575]">
                 <a href="index.html" class="nav-item">Đề xuất</a>
                 <a href="ketqua.html" class="nav-item active">Kết quả</a>
@@ -52,23 +51,38 @@
         </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto">
-        <!-- Header Section -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-            <h1 class="text-3xl font-bold text-slate-800">Bảng Kết Quả Phê Duyệt</h1>
-            
-            <div class="flex flex-nowrap gap-3 flex-shrink-0 overflow-x-auto pb-1">
-                <button onclick="filterResults('all')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-medium text-slate-700 transition whitespace-nowrap">Tất cả</button>
-                <button onclick="filterResults('Phê duyệt')" class="px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg font-medium transition whitespace-nowrap">Phê duyệt</button>
-                <button onclick="filterResults('Từ chối')" class="px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg font-medium transition whitespace-nowrap">Từ chối</button>
-                <button onclick="filterResults('Bổ sung')" class="px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg font-medium transition whitespace-nowrap">Bổ sung</button>
-                <button onclick="loadData()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-medium transition whitespace-nowrap">
-                    <i class="fas fa-sync-alt mr-1"></i> Làm mới
-                </button>
+    <!-- GIAO DIỆN KẾT QUẢ -->
+    <main class="max-w-6xl mx-auto mt-8 p-4">
+        <!-- Thanh tìm kiếm -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100 mb-8">
+            <div class="p-8 text-center border-b border-gray-100 bg-gradient-to-b from-white to-blue-50">
+                <h1 class="text-2xl font-bold text-[#1e293b] mb-4">Tra cứu kết quả đề xuất</h1>
+                <div class="max-w-md mx-auto relative">
+                    <input type="tel" id="phoneSearch" placeholder="Nhập số điện thoại khách hàng..." 
+                           class="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-full focus:border-blue-500 focus:ring-0 outline-none transition-all shadow-sm"
+                           oninput="handleSearch(this.value)">
+                    <div class="absolute left-4 top-3.5 text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-gray-500 italic">Nhập số điện thoại để lọc hoặc để trống để xem tất cả</p>
             </div>
         </div>
 
-        <!-- Stats Summary -->
+        <!-- Nút lọc & Làm mới -->
+        <div class="flex flex-wrap gap-3 mb-6 justify-between items-center">
+            <div class="flex flex-wrap gap-3">
+                <button onclick="filterResults('all')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-medium text-slate-700 transition">Tất cả</button>
+                <button onclick="filterResults('Phê duyệt')" class="px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg font-medium transition">Phê duyệt</button>
+                <button onclick="filterResults('Từ chối')" class="px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg font-medium transition">Từ chối</button>
+                <button onclick="filterResults('Bổ sung')" class="px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg font-medium transition">Bổ sung</button>
+            </div>
+            <button onclick="loadData()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-medium transition">
+                <i class="fas fa-sync-alt mr-1"></i> Làm mới
+            </button>
+        </div>
+
+        <!-- Thống kê -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
                 <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
@@ -99,74 +113,101 @@
             </div>
         </div>
 
-        <!-- Loading State -->
+        <!-- Loading -->
         <div id="loading-state" class="text-center py-20">
             <i class="fas fa-spinner fa-spin text-slate-400 text-5xl mb-4"></i>
             <p class="text-slate-500">Đang tải dữ liệu từ Google Sheet...</p>
         </div>
 
-        <!-- Main Content List -->
-        <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-            <!-- Dữ liệu từ Google Sheet sẽ được render ở đây -->
+        <!-- Bảng danh sách phiếu đề xuất -->
+        <div id="resultArea" class="hidden bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 mb-8">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="font-bold text-gray-700 uppercase tracking-wider text-sm">Danh sách phiếu đề xuất</h2>
+                <span id="customerName" class="text-blue-700 font-bold ml-2"></span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-3 border-b">Mã Phiếu</th>
+                            <th class="px-6 py-3 border-b">Tên KH</th>
+                            <th class="px-6 py-3 border-b">Ngày gửi</th>
+                            <th class="px-6 py-3 border-b">Nội dung</th>
+                            <th class="px-6 py-3 border-b text-center">Trạng thái</th>
+                            <th class="px-6 py-3 border-b">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden text-center py-20">
-            <i class="fas fa-search text-slate-300 text-6xl mb-4"></i>
-            <p class="text-slate-500 text-lg">Không tìm thấy kết quả nào phù hợp.</p>
+        <!-- Trạng thái trống -->
+        <div id="emptyArea" class="hidden p-20 text-center text-gray-400 bg-white rounded-xl border border-gray-200">
+            <i class="fas fa-search text-gray-200 text-6xl mb-4"></i>
+            <p>Đang tải dữ liệu hoặc không tìm thấy kết quả phù hợp</p>
         </div>
 
-        <!-- Error State -->
-        <div id="error-state" class="hidden text-center py-20">
-            <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
-            <p class="text-slate-600 text-lg mb-2" id="error-message">Có lỗi xảy ra khi tải dữ liệu.</p>
-            <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">
-                Thử lại
-            </button>
+        <!-- Bảng dữ liệu SPHN (Đề xuất chính sách giá hàng nặng) -->
+        <div id="sphnTableSection" class="mt-12 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <h2 class="text-xl font-bold text-slate-800">
+                    <i class="fas fa-table mr-2 text-blue-600"></i>Bảng dữ liệu SPHN
+                </h2>
+                <p class="text-sm text-slate-500 mt-1">Dữ liệu đề xuất chính sách giá hàng nặng từ Google Sheet</p>
+            </div>
+            <div class="table-scroll p-4">
+                <table class="w-full text-sm text-left min-w-[800px]">
+                    <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+                        <tr>
+                            <th class="px-4 py-3 border">Thời gian</th>
+                            <th class="px-4 py-3 border">Tên KH</th>
+                            <th class="px-4 py-3 border">Điện thoại</th>
+                            <th class="px-4 py-3 border">Địa chỉ</th>
+                            <th class="px-4 py-3 border">Ngành hàng</th>
+                            <th class="px-4 py-3 border">Đối thủ</th>
+                            <th class="px-4 py-3 border">Tổng SL</th>
+                            <th class="px-4 py-3 border text-center">Kết quả</th>
+                            <th class="px-4 py-3 border">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sphnTableBody" class="divide-y divide-gray-100">
+                        <tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script>
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec';
-        let allData = []; // Lưu toàn bộ dữ liệu từ Google Sheet
+        let allData = [];
+        let currentFilter = 'all';
 
-        function normalizeStatus(status) {
-            if (!status || typeof status !== 'string') return 'Khác';
-            const s = status.trim().toLowerCase();
-            if (s.includes('phê duyệt') || s === 'phê duyệt') return 'Phê duyệt';
-            if (s.includes('từ chối') || s === 'từ chối') return 'Từ chối';
-            if (s.includes('bổ sung') || s === 'bổ sung') return 'Bổ sung';
-            return status.trim() || 'Khác';
+        function normalizeStatus(s) {
+            if (!s || typeof s !== 'string') return 'Khác';
+            const t = s.trim().toLowerCase();
+            if (t.includes('phê duyệt')) return 'Phê duyệt';
+            if (t.includes('từ chối')) return 'Từ chối';
+            if (t.includes('bổ sung')) return 'Bổ sung';
+            return s.trim() || 'Chờ xử lý';
         }
 
-        function getStatusClasses(status) {
-            const norm = normalizeStatus(status);
-            switch(norm) {
-                case 'Phê duyệt': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-                case 'Từ chối': return 'bg-rose-100 text-rose-700 border-rose-200';
-                case 'Bổ sung': return 'bg-amber-100 text-amber-700 border-amber-200';
-                default: return 'bg-slate-100 text-slate-700 border-slate-200';
-            }
-        }
-
-        function getStatusIcon(status) {
-            const norm = normalizeStatus(status);
-            switch(norm) {
-                case 'Phê duyệt': return 'fa-check-circle';
-                case 'Từ chối': return 'fa-times-circle';
-                case 'Bổ sung': return 'fa-info-circle';
-                default: return 'fa-question-circle';
-            }
+        function getStatusBadgeClass(status) {
+            const n = normalizeStatus(status);
+            if (n === 'Phê duyệt') return 'status-badge status-approved';
+            if (n === 'Từ chối') return 'status-badge status-rejected';
+            if (n === 'Bổ sung') return 'status-badge status-pending';
+            return 'status-badge status-pending';
         }
 
         function transformSheetData(rows) {
-            // Chuyển dữ liệu từ Google Sheet thành format card
-            // Xử lý merged cells: Kết quả/Ghi chú có thể rỗng ở các dòng sau
             let lastStatus = '', lastNote = '';
             const items = [];
-            const seen = new Set(); // Gộp theo Tên KH + Thời gian (1 hồ sơ = 1 card)
+            const seen = new Set();
             
-            rows.forEach((row, idx) => {
+            rows.forEach((row) => {
                 const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
                 let status = (row['Kết quả'] || '').toString().trim();
                 let note = (row['Ghi chú'] || '').toString().trim();
@@ -179,18 +220,13 @@
                 else note = lastNote;
                 
                 const key = `${time}_${name}`;
-                if (seen.has(key)) return; // Chỉ lấy 1 card/hồ sơ (tránh trùng nhiều mốc trọng lượng)
+                if (seen.has(key)) return;
                 seen.add(key);
-                
                 if (!name) return;
                 
                 items.push({
-                    id: `HS-${String(items.length + 1).padStart(3, '0')}`,
-                    name: name || 'Không có tên',
-                    status: status,
-                    note: note,
-                    time: time,
-                    phone: phone,
+                    id: `#DX-${String(items.length + 1).padStart(4, '0')}`,
+                    name, status, note, time, phone,
                     address: row['Địa chỉ'] || '',
                     volume: row['Tổng sản lượng'] || '',
                     industry: row['Ngành hàng'] || '',
@@ -200,96 +236,151 @@
             return items;
         }
 
-        function renderData(data) {
-            const container = document.getElementById('results-container');
-            const emptyState = document.getElementById('empty-state');
-            const loadingState = document.getElementById('loading-state');
-            const errorState = document.getElementById('error-state');
+        function handleSearch(val) {
+            const phone = (val || '').replace(/\s/g, '');
+            const filtered = phone.length >= 10 
+                ? allData.filter(i => (i.phone || '').replace(/\s/g, '').includes(phone))
+                : applyFilter(allData);
             
-            loadingState.classList.add('hidden');
-            errorState.classList.add('hidden');
-            
-            if (data.length === 0) {
-                container.innerHTML = '';
-                container.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                updateStats(allData);
-                return;
+            renderTable(filtered);
+            if (filtered.length > 0 && phone.length >= 10) {
+                document.getElementById('customerName').textContent = 'KH: ' + (filtered[0].name || '');
+            } else {
+                document.getElementById('customerName').textContent = phone.length >= 10 ? 'Không tìm thấy' : '';
             }
-            
-            emptyState.classList.add('hidden');
-            container.classList.remove('hidden');
-            
-            container.innerHTML = data.map(item => `
-                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm card-hover transition-all duration-300">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${item.id}</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold border ${getStatusClasses(item.status)}">
-                            <i class="fas ${getStatusIcon(item.status)} mr-1"></i> ${item.status || 'Chờ xử lý'}
-                        </span>
-                    </div>
-                    <h4 class="text-lg font-semibold text-slate-800 mb-1">${item.name}</h4>
-                    ${item.time ? `<p class="text-xs text-slate-400 mb-3">${item.time}</p>` : ''}
-                    <div class="bg-slate-50 p-3 rounded-xl">
-                        <p class="text-sm text-slate-600 italic">
-                            <span class="font-medium text-slate-400 not-italic uppercase text-[10px] block mb-1">Ghi chú (AV):</span>
-                            "${item.note || 'Chưa có ghi chú'}"
-                        </p>
-                    </div>
-                    ${item.phone ? `<p class="text-xs text-slate-500 mt-2"><i class="fas fa-phone mr-1"></i>${item.phone}</p>` : ''}
-                </div>
-            `).join('');
-
-            updateStats(allData);
         }
 
-        function updateStats(data) {
-            const approved = data.filter(i => normalizeStatus(i.status) === 'Phê duyệt').length;
-            const rejected = data.filter(i => normalizeStatus(i.status) === 'Từ chối').length;
-            const pending = data.filter(i => normalizeStatus(i.status) === 'Bổ sung').length;
-            
-            document.getElementById('stat-approved').innerText = approved;
-            document.getElementById('stat-rejected').innerText = rejected;
-            document.getElementById('stat-pending').innerText = pending;
+        function applyFilter(data) {
+            if (currentFilter === 'all') return data;
+            return data.filter(i => normalizeStatus(i.status) === currentFilter);
         }
 
         function filterResults(status) {
-            if (status === 'all') {
-                renderData(allData);
-            } else {
-                const filtered = allData.filter(item => normalizeStatus(item.status) === status);
-                renderData(filtered);
+            currentFilter = status;
+            const phone = document.getElementById('phoneSearch').value.replace(/\s/g, '');
+            let filtered = phone.length >= 10 
+                ? allData.filter(i => (i.phone || '').replace(/\s/g, '').includes(phone))
+                : allData;
+            filtered = applyFilter(filtered);
+            renderTable(filtered);
+        }
+
+        function renderTable(data) {
+            const resultArea = document.getElementById('resultArea');
+            const emptyArea = document.getElementById('emptyArea');
+            const tbody = document.getElementById('resultTableBody');
+            
+            if (data.length === 0) {
+                resultArea.classList.add('hidden');
+                emptyArea.classList.remove('hidden');
+                return;
             }
+            
+            resultArea.classList.remove('hidden');
+            emptyArea.classList.add('hidden');
+            
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 font-medium text-blue-600">${item.id}</td>
+                    <td class="px-6 py-4">${item.name}</td>
+                    <td class="px-6 py-4 text-gray-500">${item.time}</td>
+                    <td class="px-6 py-4">${item.industry || '-'} / ${item.competitor || '-'}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="${getStatusBadgeClass(item.status)}">${item.status || 'Chờ xử lý'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 text-xs max-w-[200px] truncate" title="${(item.note || '').replace(/"/g, '')}">${item.note || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSPHNTable(rows) {
+            const tbody = document.getElementById('sphnTableBody');
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu</td></tr>';
+                return;
+            }
+            
+            let lastStatus = '', lastNote = '';
+            const seen = new Set();
+            
+            tbody.innerHTML = rows.map((row, idx) => {
+                const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
+                let status = (row['Kết quả'] || '').toString().trim();
+                let note = (row['Ghi chú'] || '').toString().trim();
+                if (status) lastStatus = status;
+                else status = lastStatus;
+                if (note) lastNote = note;
+                else note = lastNote;
+                
+                const key = `${row['Thời gian']}_${name}_${idx}`;
+                if (seen.has(key)) return '';
+                seen.add(key);
+                
+                return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 border text-gray-600">${row['Thời gian'] || '-'}</td>
+                    <td class="px-4 py-3 border font-medium">${name || '-'}</td>
+                    <td class="px-4 py-3 border">${row['Điện thoại'] || '-'}</td>
+                    <td class="px-4 py-3 border max-w-[150px] truncate" title="${(row['Địa chỉ'] || '').replace(/"/g, '')}">${row['Địa chỉ'] || '-'}</td>
+                    <td class="px-4 py-3 border max-w-[120px] truncate">${row['Ngành hàng'] || '-'}</td>
+                    <td class="px-4 py-3 border">${row['Đối thủ'] || '-'}</td>
+                    <td class="px-4 py-3 border text-right">${row['Tổng sản lượng'] || '-'}</td>
+                    <td class="px-4 py-3 border text-center"><span class="${getStatusBadgeClass(status)}">${status || '-'}</span></td>
+                    <td class="px-4 py-3 border max-w-[180px] truncate text-xs" title="${(note || '').replace(/"/g, '')}">${note || '-'}</td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStats(data) {
+            const d = data || allData;
+            document.getElementById('stat-approved').innerText = d.filter(i => normalizeStatus(i.status) === 'Phê duyệt').length;
+            document.getElementById('stat-rejected').innerText = d.filter(i => normalizeStatus(i.status) === 'Từ chối').length;
+            document.getElementById('stat-pending').innerText = d.filter(i => normalizeStatus(i.status) === 'Bổ sung').length;
         }
 
         async function loadData() {
             const loadingState = document.getElementById('loading-state');
-            const errorState = document.getElementById('error-state');
-            const container = document.getElementById('results-container');
+            const emptyArea = document.getElementById('emptyArea');
+            const resultArea = document.getElementById('resultArea');
             
             loadingState.classList.remove('hidden');
-            errorState.classList.add('hidden');
-            container.classList.add('hidden');
+            emptyArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
             
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const result = await response.json();
                 
-                if (result.success && result.data && result.data.length > 0) {
+                if (result.success && result.data) {
                     allData = transformSheetData(result.data);
-                    renderData(allData);
-                } else if (result.success && (!result.data || result.data.length === 0)) {
-                    allData = [];
-                    renderData([]);
+                    const filtered = applyFilter(allData);
+                    renderTable(filtered);
+                    renderSPHNTable(result.data);
+                    updateStats(allData);
+                    
+                    if (filtered.length > 0) {
+                        resultArea.classList.remove('hidden');
+                    } else {
+                        emptyArea.classList.remove('hidden');
+                    }
                 } else {
-                    throw new Error(result.error || 'Không thể tải dữ liệu');
+                    allData = [];
+                    renderTable([]);
+                    renderSPHNTable([]);
+                    updateStats([]);
+                    emptyArea.classList.remove('hidden');
                 }
+                loadingState.classList.add('hidden');
             } catch (error) {
                 console.error('Error:', error);
                 loadingState.classList.add('hidden');
-                errorState.classList.remove('hidden');
-                document.getElementById('error-message').textContent = 
-                    error.message || 'Có lỗi xảy ra khi tải dữ liệu từ Google Sheet.';
+                emptyArea.classList.remove('hidden');
+                document.getElementById('emptyArea').innerHTML = `
+                    <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
+                    <p class="text-slate-600 mb-2">Có lỗi khi tải dữ liệu</p>
+                    <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">Thử lại</button>
+                `;
             }
         }
 
