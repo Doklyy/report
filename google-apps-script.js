@@ -97,10 +97,10 @@ function doPost(e) {
         performMerge(sheet, startRow, numRows, stringRowsData[0]);
       }
 
-      // Xóa dropdown ở cột Kết quả (45) và Ghi chú (46) cho các dòng vừa ghi
-      if (numCols >= 46) {
+      // Xóa dropdown ở cột Kết quả (63) và Ghi chú (64) cho các dòng vừa ghi
+      if (numCols >= 64) {
         try {
-          var newRowsRange = sheet.getRange(startRow, 45, numRows, 2);
+          var newRowsRange = sheet.getRange(startRow, 63, numRows, 2);
           newRowsRange.setDataValidation(null);
         } catch (vErr) { Logger.log('Validation clear: ' + vErr); }
       }
@@ -128,22 +128,28 @@ function doPost(e) {
 }
 
 /**
- * Hàm tạo Header cho Sheet - 46 cột (A1-AT1) khớp với createTableHeaders
+ * Hàm tạo Header cho Sheet - 64 cột
+ * Các mốc=2 hàng, SL hàng gửi/Tỷ trọng %/Giá ĐT/Giá ĐX=4 cột mỗi, So sánh=4 cột
  */
 function setupHeaders(sheet) {
   var headers = [
     'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-    'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng', 'Tỷ trọng % theo khu vực',
+    'SL Nội tỉnh (mốc)', 'SL Nội miền (mốc)', 'SL Cận miền (mốc)', 'SL Liên miền (mốc)',
+    'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng',
+    'Tỷ trọng % Nội tỉnh', 'Tỷ trọng % Nội miền', 'Tỷ trọng % Cận miền', 'Tỷ trọng % Liên miền',
     'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên',
     'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền',
-    'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ',
-    'Ngành hàng', 'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ',
+    'Tổng sản lượng', 'Tỷ trọng %', 'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ',
+    'Ngành hàng', 'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác',
+    'Giá ĐT N.Tỉnh', 'Giá ĐT N.Miền', 'Giá ĐT C.Miền', 'Giá ĐT L.Miền',
     'Đơn giá bình quân Nội tỉnh (ĐT)', 'Đơn giá bình quân Nội miền (ĐT)',
     'Đơn giá bình quân Cận miền (ĐT)', 'Đơn giá bình quân Liên miền (ĐT)',
     'Tỷ lệ hoàn hiện tại', 'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ',
-    'Giá đề xuất', 'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
+    'Giá ĐX N.Tỉnh', 'Giá ĐX N.Miền', 'Giá ĐX C.Miền', 'Giá ĐX L.Miền',
+    'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
     'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
-    'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất', 'So sánh đơn giá bình quân',
+    'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất',
+    'So sánh N.Tỉnh', 'So sánh N.Miền', 'So sánh C.Miền', 'So sánh L.Miền',
     'Họ và tên người báo cáo', 'Điện thoại người báo cáo', 'Tên Bưu cục',
     'Chức danh', 'Chi nhánh', 'Mã Bưu cục', 'Kết quả', 'Ghi chú'
   ];
@@ -152,10 +158,10 @@ function setupHeaders(sheet) {
   range.setFontWeight('bold').setBackground('#4CAF50').setFontColor('white');
   sheet.setFrozenRows(1);
 
-  // Xóa data validation (dropdown) ở cột Kết quả (45) và Ghi chú (46)
+  // Xóa data validation (dropdown) ở cột Kết quả (63) và Ghi chú (64)
   var lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    var resultNoteRange = sheet.getRange(2, 45, lastRow - 1, 2);
+    var resultNoteRange = sheet.getRange(2, 63, lastRow - 1, 2);
     resultNoteRange.setDataValidation(null);
     resultNoteRange.clearDataValidations();
     resultNoteRange.clear({ validationsOnly: true });
@@ -164,14 +170,15 @@ function setupHeaders(sheet) {
 
 /**
  * Gộp ô nếu có nhiều dòng (cùng 1 đơn hàng/khách hàng)
- * Không gộp: 5 (Các mốc trọng lượng), 23 (Giá đối thủ), 31 (Giá đề xuất) - khác nhau mỗi dòng
+ * Không gộp: 5-9 (mốc + SL 4 cột), 32-35 (Giá ĐT 4 cột), 43-46 (Giá ĐX 4 cột) - khác nhau mỗi dòng
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
   var columnsToMerge = [
     1, 2, 3, 4,
-    6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-    24, 25, 26, 27, 28, 29, 30,
-    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    36, 37, 38, 39, 40, 41, 42,
+    47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
+    57, 58, 59, 60, 61, 62, 63, 64
   ];
   columnsToMerge.forEach(function(col) {
     try {
@@ -184,8 +191,7 @@ function performMerge(sheet, startRow, numRows, firstRowData) {
       Logger.log('Warning: Merge col ' + col + ' - ' + mergeError.toString());
     }
   });
-  // Căn giữa nội dung sau khi gộp
-  sheet.getRange(startRow, 1, startRow + numRows - 1, 46).setVerticalAlignment('middle');
+  sheet.getRange(startRow, 1, startRow + numRows - 1, 64).setVerticalAlignment('middle');
 }
 
 /**
@@ -200,15 +206,15 @@ function createJsonResponse(data) {
  * Hàm Test - DÙNG CÁI NÀY ĐỂ TEST TRONG EDITOR
  */
 function testDoPost() {
-  var dummyData = Array(46).fill('Test Value');
+  var dummyData = Array(64).fill('Test Value');
   dummyData[0] = new Date().toLocaleString('vi-VN');
   dummyData[1] = 'Test Customer';
   dummyData[2] = '0123456789';
   dummyData[3] = 'Test Address';
   dummyData[4] = '0-1000';
-  dummyData[5] = '100/200/300/400';
-  dummyData[44] = 'Phê duyệt';
-  dummyData[45] = 'Test ghi chú';
+  dummyData[5] = '100'; dummyData[6] = '200'; dummyData[7] = '300'; dummyData[8] = '400';
+  dummyData[62] = 'Phê duyệt';
+  dummyData[63] = 'Test ghi chú';
 
   const testPayload = {
     postData: {
