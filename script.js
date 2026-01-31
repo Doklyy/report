@@ -543,6 +543,11 @@ function updateCompetitorPriceTable() {
     const tbody = document.querySelector('#competitorPriceTable tbody');
     if (!tbody) return;
     
+    const savedReturnRates = {
+        current: document.querySelector('input[name="competitorCurrentReturnRate_0"]')?.value || '',
+        competitor: document.querySelector('input[name="competitorReturnRate_0"]')?.value || ''
+    };
+    
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
     existingRows.forEach((row, idx) => {
@@ -563,6 +568,8 @@ function updateCompetitorPriceTable() {
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
     
+    const numRows = rows.length;
+    
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
@@ -576,6 +583,11 @@ function updateCompetitorPriceTable() {
         const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
+        const returnRateCells = index === 0
+            ? `<td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.current}" placeholder="%"></td>
+               <td class="border border-gray-300 p-1 bg-blue-50" rowspan="${numRows}"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.competitor}" placeholder="%"></td>`
+            : '';
+        
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
                 <span class="inline-flex items-center gap-1">
@@ -588,6 +600,7 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
+            ${returnRateCells}
         `;
         
         tbody.appendChild(tr);
@@ -597,6 +610,8 @@ function updateCompetitorPriceTable() {
 function updateProposedPriceTable() {
     const tbody = document.querySelector('#proposedPriceTable tbody');
     if (!tbody) return;
+    
+    const savedProposedReturnRate = document.querySelector('input[name="proposedReturnRate_0"]')?.value || '';
     
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
@@ -618,6 +633,8 @@ function updateProposedPriceTable() {
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
     
+    const numRows = rows.length;
+    
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
         const toInput = row.querySelector('.weight-to');
@@ -631,6 +648,10 @@ function updateProposedPriceTable() {
         const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
+        const returnRateCell = index === 0
+            ? `<td class="border border-gray-300 p-1 bg-amber-50" rowspan="${numRows}"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" value="${savedProposedReturnRate}" placeholder="%"></td>`
+            : '';
+        
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
                 <span class="inline-flex items-center gap-1">
@@ -643,6 +664,7 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
+            ${returnRateCell}
         `;
         
         tbody.appendChild(tr);
