@@ -97,10 +97,10 @@ function doPost(e) {
         performMerge(sheet, startRow, numRows, stringRowsData[0]);
       }
 
-      // Xóa dropdown ở cột Kết quả (63) và Ghi chú (64) cho các dòng vừa ghi
-      if (numCols >= 64) {
+      // Xóa dropdown ở cột Kết quả (64) và Ghi chú (65) cho các dòng vừa ghi
+      if (numCols >= 65) {
         try {
-          var newRowsRange = sheet.getRange(startRow, 63, numRows, 2);
+          var newRowsRange = sheet.getRange(startRow, 64, numRows, 2);
           newRowsRange.setDataValidation(null);
         } catch (vErr) { Logger.log('Validation clear: ' + vErr); }
       }
@@ -128,14 +128,14 @@ function doPost(e) {
 }
 
 /**
- * Hàm tạo Header cho Sheet - 64 cột
- * Các mốc=2 hàng, SL hàng gửi/Tỷ trọng %/Giá ĐT/Giá ĐX=4 cột mỗi, So sánh=4 cột
+ * Hàm tạo Header cho Sheet - 65 cột
+ * Cột 6-9: header gộp "Tổng sản lượng các mốc" (4 cột dữ liệu), cột 10: Tổng
  */
 function setupHeaders(sheet) {
   var headers = [
     'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-    'SL Nội tỉnh (mốc)', 'SL Nội miền (mốc)', 'SL Cận miền (mốc)', 'SL Liên miền (mốc)',
-    'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng',
+    'Tổng sản lượng các mốc', '', '', '',  // 6-9: merge 1 header
+    'Tổng', 'Tỷ trọng sản lượng',
     'Tỷ trọng % Nội tỉnh', 'Tỷ trọng % Nội miền', 'Tỷ trọng % Cận miền', 'Tỷ trọng % Liên miền',
     'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên',
     'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền',
@@ -156,12 +156,17 @@ function setupHeaders(sheet) {
   var range = sheet.getRange(1, 1, 1, headers.length);
   range.setValues([headers]);
   range.setFontWeight('bold').setBackground('#4CAF50').setFontColor('white');
+  // Gộp header "Tổng sản lượng các mốc" cho cột 6-9 (như ảnh mẫu)
+  try {
+    sheet.getRange(1, 6, 1, 9).merge();
+    sheet.getRange(1, 6).setValue('Tổng sản lượng các mốc');
+  } catch (m) { Logger.log('Merge header: ' + m); }
   sheet.setFrozenRows(1);
 
-  // Xóa data validation (dropdown) ở cột Kết quả (63) và Ghi chú (64)
+  // Xóa data validation (dropdown) ở cột Kết quả (64) và Ghi chú (65)
   var lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    var resultNoteRange = sheet.getRange(2, 63, lastRow - 1, 2);
+    var resultNoteRange = sheet.getRange(2, 64, lastRow - 1, 2);
     resultNoteRange.setDataValidation(null);
     resultNoteRange.clearDataValidations();
     resultNoteRange.clear({ validationsOnly: true });
@@ -170,15 +175,15 @@ function setupHeaders(sheet) {
 
 /**
  * Gộp ô nếu có nhiều dòng (cùng 1 đơn hàng/khách hàng)
- * Không gộp: 5-9 (mốc + SL 4 cột), 32-35 (Giá ĐT 4 cột), 43-46 (Giá ĐX 4 cột) - khác nhau mỗi dòng
+ * Không gộp: 5-9 (mốc + SL 4 cột + Tổng), 33-36 (Giá ĐT 4 cột), 44-47 (Giá ĐX 4 cột) - khác nhau mỗi dòng
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
   var columnsToMerge = [
     1, 2, 3, 4,
-    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    36, 37, 38, 39, 40, 41, 42,
-    47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-    57, 58, 59, 60, 61, 62, 63, 64
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+    37, 38, 39, 40, 41, 42, 43,
+    48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+    58, 59, 60, 61, 62, 63, 64, 65
   ];
   columnsToMerge.forEach(function(col) {
     try {
@@ -191,7 +196,7 @@ function performMerge(sheet, startRow, numRows, firstRowData) {
       Logger.log('Warning: Merge col ' + col + ' - ' + mergeError.toString());
     }
   });
-  sheet.getRange(startRow, 1, startRow + numRows - 1, 64).setVerticalAlignment('middle');
+  sheet.getRange(startRow, 1, startRow + numRows - 1, 65).setVerticalAlignment('middle');
 }
 
 /**
@@ -206,15 +211,16 @@ function createJsonResponse(data) {
  * Hàm Test - DÙNG CÁI NÀY ĐỂ TEST TRONG EDITOR
  */
 function testDoPost() {
-  var dummyData = Array(64).fill('Test Value');
+  var dummyData = Array(65).fill('Test Value');
   dummyData[0] = new Date().toLocaleString('vi-VN');
   dummyData[1] = 'Test Customer';
   dummyData[2] = '0123456789';
   dummyData[3] = 'Test Address';
   dummyData[4] = '0-1000';
   dummyData[5] = '100'; dummyData[6] = '200'; dummyData[7] = '300'; dummyData[8] = '400';
-  dummyData[62] = 'Phê duyệt';
-  dummyData[63] = 'Test ghi chú';
+  dummyData[9] = '1000';  // Tổng mỗi mốc
+  dummyData[63] = 'Phê duyệt';
+  dummyData[64] = 'Test ghi chú';
 
   const testPayload = {
     postData: {
