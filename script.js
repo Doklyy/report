@@ -626,10 +626,10 @@ function updateCompetitorPriceTable() {
                     <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_province" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedProvince}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_region" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedRegion}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_adjacent" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedAdjacent}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_inter" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedInter}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_province" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_region" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_adjacent" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_inter" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="" value="${savedInter}" required></td>
             ${returnRateCells}
         `;
         
@@ -690,10 +690,10 @@ function updateProposedPriceTable() {
                     <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_province" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedProvince}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_region" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedRegion}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_adjacent" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedAdjacent}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_inter" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedInter}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_province" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_region" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder=" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_adjacent" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_inter" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedInter}" required></td>
             ${returnRateCell}
         `;
         
