@@ -818,6 +818,7 @@ function collectFormData() {
     });
     
     // Collect proposed prices (Tỷ lệ hoàn đề xuất lấy từ ô duy nhất _0)
+    // Luôn push cho mỗi hàng để index khớp với weightLevels (tránh lệch khi hàng 2 không có giá)
     const proposedReturnRate = document.querySelector('input[name="proposedReturnRate_0"]')?.value || '';
     const proposedRows = document.querySelectorAll('#proposedPriceTable tbody tr');
     proposedRows.forEach((row, index) => {
@@ -828,21 +829,15 @@ function collectFormData() {
         const adjacentInput = row.querySelector(`input[name="proposedPrice_${index}_adjacent"]`);
         const interInput = row.querySelector(`input[name="proposedPrice_${index}_inter"]`);
         
-        const hasValue = (fromInput && fromInput.value) || (toInput && toInput.value) || 
-                        (provinceInput && provinceInput.value) || (regionInput && regionInput.value) ||
-                        (adjacentInput && adjacentInput.value) || (interInput && interInput.value);
-        
-        if (hasValue) {
-            formData.proposedPrices.push({
-                from: fromInput ? fromInput.value : '',
-                to: toInput ? toInput.value : '',
-                province: provinceInput ? provinceInput.value : '',
-                region: regionInput ? regionInput.value : '',
-                adjacent: adjacentInput ? adjacentInput.value : '',
-                inter: interInput ? interInput.value : '',
-                proposedReturnRate: proposedReturnRate
-            });
-        }
+        formData.proposedPrices.push({
+            from: fromInput ? fromInput.value : '',
+            to: toInput ? toInput.value : '',
+            province: provinceInput ? provinceInput.value : '',
+            region: regionInput ? regionInput.value : '',
+            adjacent: adjacentInput ? adjacentInput.value : '',
+            inter: interInput ? interInput.value : '',
+            proposedReturnRate: proposedReturnRate
+        });
     });
     
     formData.proposedReturnRate = proposedReturnRate;
