@@ -949,9 +949,8 @@ function formatDataForSheets(formData) {
         totalRegion,                                           // 20. Sản lượng Nội miền
         totalAdjacent,                                         // 21. Sản lượng Cận miền
         totalInter,                                            // 22. Sản lượng Liên miền
-        grandTotal,                                            // 23. Tổng sản lượng
-        percentRatio,                                          // 24. Tỷ trọng %
-        formData.productNormal ? 'Thông thường' : '',         // 25. Hàng thông thường
+        '',                                                    // 23. Tỷ trọng % (điền riêng theo mỗi mốc - đã xóa cột Tổng sản lượng)
+        formData.productNormal ? 'Thông thường' : '',         // 24. Hàng thông thường (sau khi xóa Tổng sản lượng)
         formData.productLiquid ? 'Chất lỏng' : '',            // 26. Chất lỏng
         formData.productFlammable ? 'Dễ cháy' : '',           // 27. Dễ cháy
         formData.productFragile ? 'Dễ vỡ' : '',               // 28. Dễ vỡ
@@ -1009,9 +1008,13 @@ function formatDataForSheets(formData) {
         const volA = parseFloat(volume.adjacent || 0);
         const volI = parseFloat(volume.inter || 0);
         const rowTotal = (volP + volR + volA + volI).toString();
+        // Tỷ trọng % theo mốc = (tổng mỗi mốc / tổng sản lượng) * 100
+        const grandTotalNum = parseFloat(grandTotal) || 0;
+        const rowPercent = grandTotalNum > 0 ? ((volP + volR + volA + volI) / grandTotalNum * 100).toFixed(1) + '%' : '0%';
         
         const row = [...commonData];
         row[4] = weightRange;   // 5. Các mốc trọng lượng
+        row[22] = rowPercent;   // 23. Tỷ trọng % (theo mỗi mốc trọng lượng)
         row[5] = volume.province || '0';   // 6. Tổng SL các mốc - N.Tỉnh
         row[6] = volume.region || '0';    // 7. N.Miền
         row[7] = volume.adjacent || '0';   // 8. C.Miền
