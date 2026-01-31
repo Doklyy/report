@@ -1309,7 +1309,7 @@ async function sendToGoogleSheets(rowsData) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: rowsData, mergeCells: true }) // Thêm flag để merge cells
+            body: JSON.stringify({ data: rowsData, mergeCells: false }) // false = không gộp ô, mỗi hàng có đủ dữ liệu
         });
         
         // Với no-cors mode, không thể đọc response nhưng request đã được gửi
