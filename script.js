@@ -1043,7 +1043,7 @@ function formatDataForSheets(formData) {
         
         const row = [...commonData];
         row[4] = weightRange;   // 5. Các mốc trọng lượng
-        row[21] = rowPercent;   // 22. Tỷ trọng % (theo mỗi mốc trọng lượng)
+        row[20] = rowPercent;   // 21. Tỷ trọng % (theo mỗi mốc trọng lượng)
         row[5] = volume.province || '0';   // 6. Tổng SL các mốc - N.Tỉnh
         row[6] = volume.region || '0';    // 7. N.Miền
         row[7] = volume.adjacent || '0';   // 8. C.Miền
