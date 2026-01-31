@@ -24,20 +24,15 @@
             background-color: #9f224e;
         }
         .status-badge {
-            padding: 4px 12px;
+            padding: 8px 16px;
             border-radius: 9999px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
         }
         .status-approved { background-color: #dcfce7; color: #166534; }
         .status-rejected { background-color: #fee2e2; color: #991b1b; }
         .status-pending { background-color: #fef3c7; color: #92400e; }
         .status-waiting { background-color: #e0e7ff; color: #3730a3; }
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .table-scroll { overflow-x: auto; }
     </style>
 </head>
 <body class="bg-[#f0f2f5] min-h-screen font-sans text-gray-800">
@@ -53,7 +48,7 @@
     </nav>
 
     <!-- GIAO DIỆN KẾT QUẢ -->
-    <main class="max-w-6xl mx-auto mt-8 p-4">
+    <main class="max-w-2xl mx-auto mt-12 p-4">
         <!-- Thanh tìm kiếm -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100 mb-8">
             <div class="p-8 text-center border-b border-gray-100 bg-gradient-to-b from-white to-blue-50">
@@ -66,124 +61,47 @@
                         <i class="fas fa-search"></i>
                     </div>
                 </div>
-                <p class="mt-3 text-sm text-gray-500 italic">Nhập số điện thoại để lọc bảng SPHN, để trống để xem tất cả</p>
-            </div>
-        </div>
-
-        <!-- Nút lọc & Làm mới -->
-        <div class="flex flex-wrap gap-3 mb-6 justify-between items-center">
-            <div class="flex flex-wrap gap-3">
-                <button onclick="filterResults('all')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg font-medium text-slate-700 transition">Tất cả</button>
-                <button onclick="filterResults('Chờ kết quả')" class="px-4 py-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg font-medium transition">Chờ kết quả</button>
-                <button onclick="filterResults('Phê duyệt')" class="px-4 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg font-medium transition">Phê duyệt</button>
-                <button onclick="filterResults('Từ chối')" class="px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-lg font-medium transition">Từ chối</button>
-                <button onclick="filterResults('Bổ sung')" class="px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg font-medium transition">Bổ sung</button>
-            </div>
-            <button onclick="loadData()" class="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-medium transition">
-                <i class="fas fa-sync-alt mr-1"></i> Làm mới
-            </button>
-        </div>
-
-        <!-- Thống kê - 4 thẻ -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
-                    <i class="fas fa-clock text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500 font-medium">Chờ kết quả</p>
-                    <h3 class="text-2xl font-bold text-slate-800" id="stat-waiting">0</h3>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                    <i class="fas fa-check-circle text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500 font-medium">Phê duyệt</p>
-                    <h3 class="text-2xl font-bold text-slate-800" id="stat-approved">0</h3>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
-                    <i class="fas fa-times-circle text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500 font-medium">Từ chối</p>
-                    <h3 class="text-2xl font-bold text-slate-800" id="stat-rejected">0</h3>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
-                    <i class="fas fa-exclamation-triangle text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-slate-500 font-medium">Cần bổ sung</p>
-                    <h3 class="text-2xl font-bold text-slate-800" id="stat-pending">0</h3>
-                </div>
+                <p class="mt-3 text-sm text-gray-500 italic">Nhập số điện thoại để xem kết quả phê duyệt</p>
             </div>
         </div>
 
         <!-- Loading -->
-        <div id="loading-state" class="text-center py-20">
-            <i class="fas fa-spinner fa-spin text-slate-400 text-5xl mb-4"></i>
-            <p class="text-slate-500">Đang tải dữ liệu từ Google Sheet...</p>
+        <div id="loading-state" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-slate-400 text-4xl mb-4"></i>
+            <p class="text-slate-500">Đang tải dữ liệu...</p>
         </div>
 
-        <!-- Trạng thái trống / Lỗi -->
-        <div id="emptyArea" class="hidden p-20 text-center text-gray-400 bg-white rounded-xl border border-gray-200 mb-8">
-            <i class="fas fa-search text-gray-200 text-6xl mb-4"></i>
-            <p>Đang tải dữ liệu hoặc không tìm thấy kết quả phù hợp</p>
+        <!-- Chưa nhập số điện thoại -->
+        <div id="promptArea" class="hidden text-center py-16 bg-white rounded-xl border border-gray-200">
+            <i class="fas fa-phone-alt text-blue-200 text-6xl mb-4"></i>
+            <p class="text-gray-500">Vui lòng nhập số điện thoại khách hàng để tra cứu kết quả</p>
         </div>
 
-        <!-- Bảng dữ liệu SPHN (Đề xuất chính sách giá hàng nặng) -->
-        <div id="sphnTableSection" class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-            <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-                <h2 class="text-xl font-bold text-slate-800">
-                    <i class="fas fa-table mr-2 text-blue-600"></i>Bảng dữ liệu SPHN
-                </h2>
-                <p class="text-sm text-slate-500 mt-1">
-                    Dữ liệu đề xuất chính sách giá hàng nặng từ
-                    <a href="https://docs.google.com/spreadsheets/d/1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s/edit?gid=0#gid=0" target="_blank" rel="noopener" class="text-blue-600 hover:underline font-medium">Google Sheet</a>
-                </p>
-            </div>
-            <div class="table-scroll p-4">
-                <table class="w-full text-sm text-left min-w-[1000px]">
-                    <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
-                        <tr>
-                            <th class="px-4 py-3 border">Thời gian</th>
-                            <th class="px-4 py-3 border">Tên KH</th>
-                            <th class="px-4 py-3 border">Điện thoại</th>
-                            <th class="px-4 py-3 border">Địa chỉ</th>
-                            <th class="px-4 py-3 border">Mốc TL</th>
-                            <th class="px-4 py-3 border">Ngành hàng</th>
-                            <th class="px-4 py-3 border">Đối thủ</th>
-                            <th class="px-4 py-3 border">Tổng SL</th>
-                            <th class="px-4 py-3 border">Giá đối thủ</th>
-                            <th class="px-4 py-3 border">Tỷ lệ hoàn ĐT</th>
-                            <th class="px-4 py-3 border">Giá đề xuất</th>
-                            <th class="px-4 py-3 border">Tỷ lệ hoàn ĐX</th>
-                            <th class="px-4 py-3 border">Đơn giá/TL</th>
-                            <th class="px-4 py-3 border text-center">Kết quả</th>
-                            <th class="px-4 py-3 border">Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sphnTableBody" class="divide-y divide-gray-100">
-                        <tr><td colspan="14" class="px-4 py-8 text-center text-gray-400">Đang tải...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Không tìm thấy -->
+        <div id="notFoundArea" class="hidden text-center py-16 bg-white rounded-xl border border-gray-200">
+            <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+            <p class="text-gray-600 font-medium">Không tìm thấy thông tin</p>
+            <p class="text-gray-500 text-sm mt-2">Không có kết quả cho số điện thoại này</p>
+        </div>
+
+        <!-- Kết quả tra cứu -->
+        <div id="resultArea" class="hidden space-y-4">
+            <!-- Cards sẽ được render ở đây -->
+        </div>
+
+        <!-- Lỗi tải dữ liệu -->
+        <div id="errorArea" class="hidden p-12 text-center bg-white rounded-xl border border-gray-200">
+            <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
+            <p class="text-slate-600 mb-2">Có lỗi khi tải dữ liệu</p>
+            <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">Thử lại</button>
         </div>
     </main>
 
     <script>
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXH7AcaybEumsO-M2pWkxZEEJ9YVmRWmKplLGhqqzg7zn6Jj5uOcdIu_YByFkxpbaUzA/exec';
         let allData = [];
-        let rawRows = [];
-        let currentFilter = 'all';
 
         function normalizeStatus(s) {
-            // Ô Kết quả trống = Chờ kết quả
             if (!s || typeof s !== 'string' || !s.trim()) return 'Chờ kết quả';
             const t = s.trim().toLowerCase();
             if (t.includes('phê duyệt')) return 'Phê duyệt';
@@ -202,205 +120,144 @@
         }
 
         function transformSheetData(rows) {
-            let lastNote = '';
+            let lastStatus = '', lastNote = '';
             const items = [];
             const seen = new Set();
-            
+
             rows.forEach((row) => {
                 const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
-                // Ô Kết quả trống = Chờ kết quả (không kế thừa từ ô trước)
-                const status = (row['Kết quả'] || '').toString().trim();
+                let status = (row['Kết quả'] || '').toString().trim();
                 let note = (row['Ghi chú'] || '').toString().trim();
                 const time = (row['Thời gian'] || '').toString().trim();
                 const phone = (row['Điện thoại'] || '').toString().trim();
-                
+                const address = (row['Địa chỉ'] || '').toString().trim();
+
+                if (status) lastStatus = status;
+                else status = lastStatus;
                 if (note) lastNote = note;
                 else note = lastNote;
-                
+
                 const key = `${time}_${name}`;
                 if (seen.has(key)) return;
                 seen.add(key);
                 if (!name) return;
-                
+
                 items.push({
-                    id: `#DX-${String(items.length + 1).padStart(4, '0')}`,
-                    name, status, note, time, phone,
-                    address: row['Địa chỉ'] || '',
-                    volume: row['Tổng sản lượng'] || '',
-                    industry: row['Ngành hàng'] || '',
-                    competitor: row['Đối thủ'] || ''
+                    name, status, note, time, phone, address
                 });
             });
             return items;
         }
 
-        function getFilteredRows() {
-            const phone = (document.getElementById('phoneSearch').value || '').replace(/\s/g, '');
-            let rows = rawRows;
-            if (phone.length >= 10) {
-                rows = rows.filter(r => ((r['Điện thoại'] || '').toString().replace(/\s/g, '')).includes(phone));
-            }
-            if (currentFilter !== 'all') {
-                rows = rows.filter(r => normalizeStatus((r['Kết quả'] || '').toString().trim()) === currentFilter);
-            }
-            return rows;
-        }
-
         function handleSearch() {
-            const rows = getFilteredRows();
-            renderSPHNTable(rows);
-        }
+            const phone = (document.getElementById('phoneSearch').value || '').replace(/\s/g, '');
+            const loadingState = document.getElementById('loading-state');
+            const promptArea = document.getElementById('promptArea');
+            const notFoundArea = document.getElementById('notFoundArea');
+            const resultArea = document.getElementById('resultArea');
 
-        function filterResults(status) {
-            currentFilter = status;
-            const rows = getFilteredRows();
-            renderSPHNTable(rows);
-        }
+            loadingState.classList.add('hidden');
+            promptArea.classList.add('hidden');
+            notFoundArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
 
-        // Định dạng số kiểu VN: 1.000.000
-        function formatNumberVN(val) {
-            const num = parseFloat(String(val).replace(/[^\d.-]/g, '').replace(',', '.'));
-            if (isNaN(num)) return val || '-';
-            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        }
-
-        // Tính Đơn giá bình quân / Trọng lượng (công thức: đơn giá bình quân / trọng lượng)
-        function calcDonGiaTrenTL(donGiaStr, weightRangeStr) {
-            const dg = parseFloat(String(donGiaStr || '').replace(',', '.'));
-            if (isNaN(dg)) return '-';
-            const m = String(weightRangeStr || '').match(/(\d+)\s*-\s*(\d+)/);
-            if (!m) return '-';
-            const from = parseInt(m[1], 10);
-            const to = parseInt(m[2], 10);
-            const midpoint = (from + to) / 2;
-            if (midpoint <= 0) return '-';
-            const result = dg / midpoint;
-            return isNaN(result) ? '-' : result.toFixed(2);
-        }
-
-        // Format chuỗi giá (vd: "0-1000: 100/200/300/400") thành 100.000, 200.000...
-        function formatPriceDisplay(str) {
-            if (!str || typeof str !== 'string') return '-';
-            const parts = str.split(':');
-            const nums = (parts[1] || parts[0] || '').split('/').map(s => parseFloat(String(s).trim().replace(',', '.'))).filter(n => !isNaN(n));
-            if (nums.length === 0) return str;
-            return nums.map(n => formatNumberVN(n)).join(' / ');
-        }
-
-        function renderSPHNTable(rows) {
-            const tbody = document.getElementById('sphnTableBody');
-            if (!rows || rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="14" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu</td></tr>';
+            if (phone.length < 10) {
+                promptArea.classList.remove('hidden');
                 return;
             }
 
-            // Propagate merged cell values - mỗi dòng đều hiển thị đầy đủ (ô merge trống kế thừa từ dòng trước)
-            const propagated = [];
-            rows.forEach((row, idx) => {
-                const r = {};
-                Object.keys(row).forEach(k => { r[k] = row[k]; });
-                if (idx > 0) {
-                    const prev = propagated[idx - 1];
-                    const mergeCols = ['Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Ngành hàng', 'Đối thủ',
-                        'Tỷ lệ hoàn hiện tại', 'Tỷ lệ hoàn đối thủ miễn phí', 'Tỷ lệ hoàn đề xuất'];
-                    mergeCols.forEach(col => {
-                        const v = (r[col] || '').toString().trim();
-                        if (!v && prev && prev[col]) r[col] = prev[col];
-                    });
-                }
-                propagated.push(r);
-            });
+            const filtered = allData.filter(i => (i.phone || '').replace(/\s/g, '').includes(phone));
 
-            tbody.innerHTML = propagated.map((row) => {
-                const time = (row['Thời gian'] || '').toString().trim();
-                const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
-                const phone = (row['Điện thoại'] || '').toString().trim();
-                const address = (row['Địa chỉ'] || '').toString().trim();
-                const weightRange = (row['Các mốc trọng lượng'] || '').toString().trim();
-                const industry = (row['Ngành hàng'] || '').toString().trim();
-                const competitor = (row['Đối thủ'] || '').toString().trim();
-                const totalVol = (row['Tổng sản lượng các mốc'] || row['Tổng sản lượng'] || '').toString().trim();
-                const giaDoiThu = (row['Giá đối thủ'] || '').toString().trim();
-                const giaDeXuat = (row['Giá đề xuất'] || '').toString().trim();
-                const tyLeHoanHienTai = (row['Tỷ lệ hoàn hiện tại'] || '').toString().trim();
-                const tyLeHoanDoiThu = (row['Tỷ lệ hoàn đối thủ miễn phí'] || '').toString().trim();
-                const tyLeHoanDX = (row['Tỷ lệ hoàn đề xuất'] || '').toString().trim();
-                const tyLeHoanDT = tyLeHoanDoiThu || tyLeHoanHienTai;
-                const donGiaDT = (row['Đơn giá bình quân Nội tỉnh (ĐT)'] || '').toString().trim();
-                const donGiaDX = (row['Đơn giá bình quân Nội tỉnh (ĐX)'] || '').toString().trim();
-                const status = (row['Kết quả'] || '').toString().trim();
-                const note = (row['Ghi chú'] || '').toString().trim();
+            if (filtered.length === 0) {
+                notFoundArea.classList.remove('hidden');
+                return;
+            }
 
-                const donGiaTL = calcDonGiaTrenTL(donGiaDX || donGiaDT, weightRange);
-                const giaDTFormatted = giaDoiThu ? formatPriceDisplay(giaDoiThu) : '-';
-                const giaDXFormatted = giaDeXuat ? formatPriceDisplay(giaDeXuat) : '-';
-
-                return `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 border text-gray-600 whitespace-nowrap">${time || '-'}</td>
-                    <td class="px-4 py-3 border font-medium">${name || '-'}</td>
-                    <td class="px-4 py-3 border">${phone || '-'}</td>
-                    <td class="px-4 py-3 border max-w-[120px] truncate" title="${(address || '').replace(/"/g, '')}">${address || '-'}</td>
-                    <td class="px-4 py-3 border">${weightRange || '-'}</td>
-                    <td class="px-4 py-3 border max-w-[100px] truncate">${industry || '-'}</td>
-                    <td class="px-4 py-3 border">${competitor || '-'}</td>
-                    <td class="px-4 py-3 border text-right">${totalVol || '-'}</td>
-                    <td class="px-4 py-3 border text-right font-mono text-xs">${giaDTFormatted}</td>
-                    <td class="px-4 py-3 border text-center">${tyLeHoanDT ? tyLeHoanDT + '%' : '-'}</td>
-                    <td class="px-4 py-3 border text-right font-mono text-xs">${giaDXFormatted}</td>
-                    <td class="px-4 py-3 border text-center">${tyLeHoanDX ? tyLeHoanDX + '%' : '-'}</td>
-                    <td class="px-4 py-3 border text-right">${donGiaTL}</td>
-                    <td class="px-4 py-3 border text-center"><span class="${getStatusBadgeClass(status)}">${status || 'Chờ kết quả'}</span></td>
-                    <td class="px-4 py-3 border max-w-[150px] truncate text-xs" title="${(note || '').replace(/"/g, '')}">${note || '-'}</td>
-                </tr>
-                `;
-            }).join('');
+            resultArea.classList.remove('hidden');
+            renderResultCards(filtered);
         }
 
-        function updateStats(data) {
-            const d = data || allData;
-            document.getElementById('stat-waiting').innerText = d.filter(i => normalizeStatus(i.status) === 'Chờ kết quả').length;
-            document.getElementById('stat-approved').innerText = d.filter(i => normalizeStatus(i.status) === 'Phê duyệt').length;
-            document.getElementById('stat-rejected').innerText = d.filter(i => normalizeStatus(i.status) === 'Từ chối').length;
-            document.getElementById('stat-pending').innerText = d.filter(i => normalizeStatus(i.status) === 'Bổ sung').length;
+        function renderResultCards(items) {
+            const container = document.getElementById('resultArea');
+            container.innerHTML = items.map(item => `
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-user text-blue-600"></i> Thông tin cá nhân
+                        </h3>
+                        <dl class="space-y-2 text-sm">
+                            <div class="flex">
+                                <dt class="text-gray-500 w-24 flex-shrink-0">Tên KH:</dt>
+                                <dd class="font-medium text-slate-800">${item.name || '-'}</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-500 w-24 flex-shrink-0">Điện thoại:</dt>
+                                <dd class="font-medium text-slate-800">${item.phone || '-'}</dd>
+                            </div>
+                            <div class="flex">
+                                <dt class="text-gray-500 w-24 flex-shrink-0">Địa chỉ:</dt>
+                                <dd class="text-slate-700">${item.address || '-'}</dd>
+                            </div>
+                        </dl>
+
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-check-circle text-blue-600"></i> Kết quả
+                            </h3>
+                            <p class="mb-2">
+                                <span class="${getStatusBadgeClass(item.status)}">${item.status || 'Chờ kết quả'}</span>
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                ${item.status === 'Phê duyệt' ? 'Đề xuất đã được phê duyệt.' : 
+                                  item.status === 'Từ chối' ? 'Đề xuất đã bị từ chối.' : 
+                                  item.status === 'Bổ sung' ? 'Cần bổ sung thông tin.' : 
+                                  'Đang chờ xử lý.'}
+                            </p>
+                        </div>
+
+                        ${(item.note || '').trim() ? `
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <i class="fas fa-sticky-note text-amber-600"></i> Ghi chú
+                            </h3>
+                            <p class="text-sm text-slate-600 bg-amber-50 p-3 rounded-lg">${(item.note || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
         async function loadData() {
             const loadingState = document.getElementById('loading-state');
-            const emptyArea = document.getElementById('emptyArea');
-            const sphnSection = document.getElementById('sphnTableSection');
-            
+            const promptArea = document.getElementById('promptArea');
+            const notFoundArea = document.getElementById('notFoundArea');
+            const resultArea = document.getElementById('resultArea');
+            const errorArea = document.getElementById('errorArea');
+
             loadingState.classList.remove('hidden');
-            emptyArea.classList.add('hidden');
-            sphnSection.classList.remove('hidden');
-            
+            promptArea.classList.add('hidden');
+            notFoundArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
+            errorArea.classList.add('hidden');
+
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const result = await response.json();
-                
+
                 if (result.success && result.data) {
                     allData = transformSheetData(result.data);
-                    rawRows = result.data;
-                    updateStats(allData);
-                    const rows = getFilteredRows();
-                    renderSPHNTable(rows);
+                    loadingState.classList.add('hidden');
+                    handleSearch();
                 } else {
                     allData = [];
-                    rawRows = [];
-                    renderSPHNTable([]);
-                    updateStats([]);
+                    loadingState.classList.add('hidden');
+                    promptArea.classList.remove('hidden');
                 }
-                loadingState.classList.add('hidden');
             } catch (error) {
                 console.error('Error:', error);
                 loadingState.classList.add('hidden');
-                sphnSection.classList.add('hidden');
-                emptyArea.classList.remove('hidden');
-                document.getElementById('emptyArea').innerHTML = `
-                    <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
-                    <p class="text-slate-600 mb-2">Có lỗi khi tải dữ liệu</p>
-                    <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">Thử lại</button>
-                `;
+                errorArea.classList.remove('hidden');
             }
         }
 
