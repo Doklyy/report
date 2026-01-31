@@ -109,6 +109,16 @@ function setupEventListeners() {
     // Form submission
     const form = document.getElementById('reportForm');
     form.addEventListener('submit', handleFormSubmit);
+    
+    // Auto-save thông tin người báo cáo khi thay đổi (blur/change)
+    const reporterFields = ['reporterName', 'title', 'reporterPhone', 'branch', 'postOfficeName', 'postOfficeCode'];
+    reporterFields.forEach(name => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el) {
+            el.addEventListener('blur', () => saveReporterInfoToStorage(getReporterInfoFromForm()));
+            el.addEventListener('change', () => saveReporterInfoToStorage(getReporterInfoFromForm()));
+        }
+    });
 }
 
 // Lưu thông tin người báo cáo vào localStorage
@@ -117,13 +127,27 @@ function saveReporterInfoToStorage(formData) {
         const data = {
             reporterName: formData.reporterName || '',
             title: formData.title || '',
+            reporterPhone: formData.reporterPhone || '',
             branch: formData.branch || '',
-            postOfficeName: formData.postOfficeName || ''
+            postOfficeName: formData.postOfficeName || '',
+            postOfficeCode: formData.postOfficeCode || ''
         };
         localStorage.setItem('reporterInfo', JSON.stringify(data));
     } catch (e) {
         console.warn('Không thể lưu thông tin người báo cáo vào trình duyệt:', e);
     }
+}
+
+// Lấy thông tin người báo cáo từ form (dùng cho auto-save)
+function getReporterInfoFromForm() {
+    return {
+        reporterName: document.querySelector('input[name="reporterName"]')?.value?.trim() || '',
+        title: document.querySelector('select[name="title"]')?.value || '',
+        reporterPhone: document.querySelector('input[name="reporterPhone"]')?.value?.trim() || '',
+        branch: document.querySelector('select[name="branch"]')?.value || '',
+        postOfficeName: document.querySelector('input[name="postOfficeName"]')?.value?.trim() || '',
+        postOfficeCode: document.querySelector('input[name="postOfficeCode"]')?.value?.trim() || ''
+    };
 }
 
 // Khôi phục thông tin người báo cáo từ localStorage
@@ -136,11 +160,15 @@ function restoreReporterInfoFromStorage() {
         const titleSelect = document.querySelector('select[name="title"]');
         const branchSelect = document.querySelector('select[name="branch"]');
         const poNameInput = document.querySelector('input[name="postOfficeName"]');
+        const poCodeInput = document.querySelector('input[name="postOfficeCode"]');
+        const phoneInput = document.querySelector('input[name="reporterPhone"]');
         
         if (nameInput && data.reporterName) nameInput.value = data.reporterName;
         if (titleSelect && data.title) titleSelect.value = data.title;
         if (branchSelect && data.branch) branchSelect.value = data.branch;
         if (poNameInput && data.postOfficeName) poNameInput.value = data.postOfficeName;
+        if (poCodeInput && data.postOfficeCode) poCodeInput.value = data.postOfficeCode;
+        if (phoneInput && data.reporterPhone) phoneInput.value = data.reporterPhone;
     } catch (e) {
         console.warn('Không thể khôi phục thông tin người báo cáo từ trình duyệt:', e);
     }
