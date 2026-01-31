@@ -121,21 +121,27 @@ function doPost(e) {
 
 /**
  * Hàm hỗ trợ tạo Header cho Sheet
+ * Các trường 100/200/300/400 đã tách thành 4 cột riêng: N.Tỉnh, N.Miền, C.Miền, L.Miền
  */
 function setupHeaders(sheet) {
   const headers = [
     'Thời gian', 'Tên KH/Tên shop', 'Điện thoại', 'Địa chỉ', 'Các mốc trọng lượng',
-    'Sản lượng hàng gửi', 'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng', 'Tỷ trọng % theo khu vực',
+    'SL Nội tỉnh (mốc)', 'SL Nội miền (mốc)', 'SL Cận miền (mốc)', 'SL Liên miền (mốc)',
+    'Tổng sản lượng các mốc', 'Tỷ trọng sản lượng',
+    'Tỷ trọng % Nội tỉnh', 'Tỷ trọng % Nội miền', 'Tỷ trọng % Cận miền', 'Tỷ trọng % Liên miền',
     'Tỷ trọng hàng trên 1.2m', 'Tỷ trọng hàng nguyên khối từ 100kg trở lên',
     'Sản lượng Nội tỉnh', 'Sản lượng Nội miền', 'Sản lượng Cận miền', 'Sản lượng Liên miền',
     'Tổng sản lượng', 'Tỷ trọng %', 'Hàng thông thường', 'Chất lỏng', 'Dễ cháy', 'Dễ vỡ',
-    'Ngành hàng', 'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác', 'Giá đối thủ',
+    'Ngành hàng', 'Tên sản phẩm', 'Đối thủ', 'Đối thủ khác',
+    'Giá ĐT N.Tỉnh', 'Giá ĐT N.Miền', 'Giá ĐT C.Miền', 'Giá ĐT L.Miền',
     'Đơn giá bình quân Nội tỉnh (ĐT)', 'Đơn giá bình quân Nội miền (ĐT)',
     'Đơn giá bình quân Cận miền (ĐT)', 'Đơn giá bình quân Liên miền (ĐT)',
     'Tỷ lệ hoàn hiện tại', 'Tỷ lệ hoàn đối thủ miễn phí', 'Chính sách đặc thù đối thủ',
-    'Giá đề xuất', 'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
+    'Giá ĐX N.Tỉnh', 'Giá ĐX N.Miền', 'Giá ĐX C.Miền', 'Giá ĐX L.Miền',
+    'Đơn giá bình quân Nội tỉnh (ĐX)', 'Đơn giá bình quân Nội miền (ĐX)',
     'Đơn giá bình quân Cận miền (ĐX)', 'Đơn giá bình quân Liên miền (ĐX)',
-    'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất', 'So sánh đơn giá bình quân',
+    'Chính sách đặc thù đề xuất', 'Tỷ lệ hoàn đề xuất',
+    'So sánh N.Tỉnh', 'So sánh N.Miền', 'So sánh C.Miền', 'So sánh L.Miền',
     'Họ và tên người báo cáo', 'Điện thoại người báo cáo', 'Tên Bưu cục',
     'Chức danh', 'Chi nhánh', 'Mã Bưu cục', 'Kết quả', 'Ghi chú'
   ];
@@ -147,16 +153,14 @@ function setupHeaders(sheet) {
 
 /**
  * Hàm thực hiện Merge các ô giống nhau
- * getRange(row, column, numRows, numColumns) - tham số 3 là SỐ DÒNG, 4 là SỐ CỘT
+ * Không merge: 5-9 (mốc + SL 4 cột), 32-35 (Giá ĐT 4 cột), 43-46 (Giá ĐX 4 cột) - khác nhau mỗi dòng
  */
 function performMerge(sheet, startRow, numRows, firstRowData) {
-  // Không merge cột 5,6,7 (mốc trọng lượng, sản lượng hàng gửi, tổng SL các mốc), cột 26 (Giá đối thủ), cột 34 (Giá đề xuất) - vì khác nhau mỗi dòng
   const mergeRanges = [
-    { startCol: 1, endCol: 4 },   // Cột 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
-    { startCol: 8, endCol: 23 },  // Cột 8-23: Tỷ trọng SL đến Ngành hàng (bỏ cột 7 Tổng SL các mốc)
-    { startCol: 25, endCol: 25 },// Cột 25: Đối thủ khác
-    { startCol: 27, endCol: 33 },// Cột 27-33: Đơn giá ĐT đến Chính sách đặc thù đối thủ (bỏ cột 26 Giá đối thủ)
-    { startCol: 35, endCol: 49 } // Cột 35-49: Đơn giá ĐX đến Ghi chú (bỏ cột 34 Giá đề xuất)
+    { startCol: 1, endCol: 4 },    // 1-4: Thời gian, Tên KH, Điện thoại, Địa chỉ
+    { startCol: 10, endCol: 31 },  // 10-31: Tổng SL các mốc đến Đối thủ khác (bỏ 5-9)
+    { startCol: 36, endCol: 42 },  // 36-42: Đơn giá ĐT đến Chính sách đặc thù đối thủ (bỏ 32-35)
+    { startCol: 47, endCol: 64 }   // 47-64: Đơn giá ĐX đến Ghi chú (bỏ 43-46)
   ];
 
   mergeRanges.forEach(range => {
@@ -186,15 +190,15 @@ function createJsonResponse(data) {
  * Hàm Test - DÙNG CÁI NÀY ĐỂ TEST TRONG EDITOR
  */
 function testDoPost() {
-  const dummyData = Array(49).fill('Test Value');
+  const dummyData = Array(64).fill('Test Value');
   dummyData[0] = new Date().toLocaleString('vi-VN');
   dummyData[1] = 'Test Customer';
   dummyData[2] = '0123456789';
   dummyData[3] = 'Test Address';
   dummyData[4] = '0-1000';
-  dummyData[5] = '100/200/300/400';
-  dummyData[47] = 'Phê duyệt';
-  dummyData[48] = 'Test ghi chú';
+  dummyData[5] = '100'; dummyData[6] = '200'; dummyData[7] = '300'; dummyData[8] = '400';
+  dummyData[62] = 'Phê duyệt';
+  dummyData[63] = 'Test ghi chú';
 
   const testPayload = {
     postData: {
