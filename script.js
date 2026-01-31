@@ -543,10 +543,8 @@ function updateCompetitorPriceTable() {
     const tbody = document.querySelector('#competitorPriceTable tbody');
     if (!tbody) return;
     
-    // Lưu lại giá đã nhập trước khi cập nhật trọng lượng
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
-    const savedReturnRates = { current: '', competitor: '' };
     existingRows.forEach((row, idx) => {
         const fromInput = row.querySelector(`input[name="competitorFrom_${idx}"]`);
         const toInput = row.querySelector(`input[name="competitorTo_${idx}"]`);
@@ -558,18 +556,12 @@ function updateCompetitorPriceTable() {
             adjacent: row.querySelector(`input[name="competitorPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="competitorPrice_${idx}_inter"]`)?.value || ''
         };
-        if (idx === 0) {
-            savedReturnRates.current = row.querySelector('input[name="competitorCurrentReturnRate_0"]')?.value || '';
-            savedReturnRates.competitor = row.querySelector('input[name="competitorReturnRate_0"]')?.value || '';
-        }
     });
     
     tbody.innerHTML = '';
     
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
-    
-    const numRows = rows.length;
     
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
@@ -584,12 +576,6 @@ function updateCompetitorPriceTable() {
         const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
-        // Chỉ dòng đầu có Tỷ lệ hoàn (rowspan) - 1 ô duy nhất cho cả 2 cột
-        const returnRateCells = index === 0
-            ? `<td class="border border-gray-300 p-1" rowspan="${numRows}"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.current}" placeholder="Tỷ lệ hoàn hiện tại"></td>
-               <td class="border border-gray-300 p-1" rowspan="${numRows}"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" value="${savedReturnRates.competitor}" placeholder="Tỷ lệ hoàn đối thủ"></td>`
-            : '';
-        
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
                 <span class="inline-flex items-center gap-1">
@@ -602,7 +588,6 @@ function updateCompetitorPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}"></td>
-            ${returnRateCells}
         `;
         
         tbody.appendChild(tr);
@@ -613,10 +598,8 @@ function updateProposedPriceTable() {
     const tbody = document.querySelector('#proposedPriceTable tbody');
     if (!tbody) return;
     
-    // Lưu lại giá đã nhập trước khi cập nhật trọng lượng
     const existingRows = tbody.querySelectorAll('tr');
     const savedPrices = [];
-    let savedProposedReturnRate = '';
     existingRows.forEach((row, idx) => {
         const fromInput = row.querySelector(`input[name="proposedFrom_${idx}"]`);
         const toInput = row.querySelector(`input[name="proposedTo_${idx}"]`);
@@ -628,17 +611,12 @@ function updateProposedPriceTable() {
             adjacent: row.querySelector(`input[name="proposedPrice_${idx}_adjacent"]`)?.value || '',
             inter: row.querySelector(`input[name="proposedPrice_${idx}_inter"]`)?.value || ''
         };
-        if (idx === 0) {
-            savedProposedReturnRate = row.querySelector('input[name="proposedReturnRate_0"]')?.value || '';
-        }
     });
     
     tbody.innerHTML = '';
     
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
-    
-    const numRows = rows.length;
     
     rows.forEach((row, index) => {
         const fromInput = row.querySelector('.weight-from');
@@ -653,11 +631,6 @@ function updateProposedPriceTable() {
         const savedInter = saved.inter || '';
         
         const tr = document.createElement('tr');
-        // Chỉ dòng đầu có Tỷ lệ hoàn đề xuất (rowspan) - 1 ô duy nhất
-        const returnRateCell = index === 0
-            ? `<td class="border border-gray-300 p-1" rowspan="${numRows}"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" value="${savedProposedReturnRate}" placeholder="Tỷ lệ hoàn đề xuất"></td>`
-            : '';
-        
         tr.innerHTML = `
             <td class="border border-gray-300 p-1 text-center font-bold">
                 <span class="inline-flex items-center gap-1">
@@ -670,7 +643,6 @@ function updateProposedPriceTable() {
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}"></td>
             <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}"></td>
-            ${returnRateCell}
         `;
         
         tbody.appendChild(tr);
