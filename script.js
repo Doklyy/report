@@ -59,6 +59,19 @@ function setupEventListeners() {
         }
     });
 
+    // Định dạng giá 1.000.000 khi blur (rời khỏi ô)
+    document.addEventListener('blur', function(e) {
+        if (e.target.classList && e.target.classList.contains('price-input')) {
+            const val = e.target.value.trim();
+            if (val) {
+                const num = parseFormattedPrice(val);
+                if (num > 0) {
+                    e.target.value = formatPriceWithDots(num);
+                }
+            }
+        }
+    }, true);
+
     // Weight level inputs: khi thay đổi mốc trọng lượng thì bảng giá (III, IV)
     // phải cập nhật lại TRỌNG LƯỢNG tương ứng, nhưng giữ nguyên giá đã nhập
     // Và validate: Từ n < Đến n < Từ n+1 < Đến n+1
@@ -443,6 +456,23 @@ function formatNumber(num) {
     return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
+// Định dạng giá tiền với dấu chấm (1.000.000) - dùng cho Giá Đối thủ và Giá Đề xuất
+function formatPriceWithDots(num) {
+    if (num === null || num === undefined || num === '' || isNaN(num)) return '';
+    const n = parseFloat(String(num).replace(/\./g, '').replace(/,/g, ''));
+    if (isNaN(n) || n === 0) return '';
+    const intPart = Math.round(n).toString();
+    return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Chuyển chuỗi đã format (1.000.000) về số
+function parseFormattedPrice(str) {
+    if (!str || typeof str !== 'string') return 0;
+    const cleaned = String(str).replace(/\./g, '').replace(/,/g, '.').trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+}
+
 // Calculate totals for all rows
 function calculateTotals() {
     const rows = document.querySelectorAll('#weightLevelsTable tr');
@@ -596,10 +626,10 @@ function updateCompetitorPriceTable() {
                     <input type="number" name="competitorTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_province" class="p-0 text-center bg-blue-50" step="0.01" value="${savedProvince}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_region" class="p-0 text-center bg-blue-50" step="0.01" value="${savedRegion}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_adjacent" class="p-0 text-center bg-blue-50" step="0.01" value="${savedAdjacent}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_${index}_inter" class="p-0 text-center bg-blue-50" step="0.01" value="${savedInter}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_province" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_region" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_adjacent" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="competitorPrice_${index}_inter" class="price-input p-0 text-center bg-blue-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedInter}" required></td>
             ${returnRateCells}
         `;
         
@@ -660,10 +690,10 @@ function updateProposedPriceTable() {
                     <input type="number" name="proposedTo_${index}" class="w-10 text-[10px] p-0 text-center bg-yellow-50" value="${toValue}" step="1" readonly disabled>
                 </span>
             </td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_province" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedProvince}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_region" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedRegion}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_adjacent" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedAdjacent}" required></td>
-            <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_${index}_inter" class="p-0 text-center bg-yellow-50" step="0.01" value="${savedInter}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_province" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedProvince}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_region" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_adjacent" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedAdjacent}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_inter" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="VD: 1000000" value="${savedInter}" required></td>
             ${returnRateCell}
         `;
         
@@ -866,10 +896,10 @@ function formatDataForSheets(formData) {
             const volAdjacent = parseFloat(volume.adjacent || 0);
             const volInter = parseFloat(volume.inter || 0);
             
-            const priceProvince = parseFloat(price.province || 0);
-            const priceRegion = parseFloat(price.region || 0);
-            const priceAdjacent = parseFloat(price.adjacent || 0);
-            const priceInter = parseFloat(price.inter || 0);
+            const priceProvince = parseFormattedPrice(price.province || 0);
+            const priceRegion = parseFormattedPrice(price.region || 0);
+            const priceAdjacent = parseFormattedPrice(price.adjacent || 0);
+            const priceInter = parseFormattedPrice(price.inter || 0);
             
             totalWeightProvince += priceProvince * volProvince;
             totalWeightRegion += priceRegion * volRegion;
@@ -1019,14 +1049,16 @@ function formatDataForSheets(formData) {
         row[7] = volume.adjacent || '0';   // 8. C.Miền
         row[8] = volume.inter || '0';      // 9. L.Miền
         row[9] = rowTotal;   // 10. Tổng (tổng mỗi mốc)
-        row[31] = competitorPrice.province || '';  // 32. Giá ĐT N.Tỉnh
-        row[32] = competitorPrice.region || '';    // 33. Giá ĐT N.Miền
-        row[33] = competitorPrice.adjacent || '';  // 34. Giá ĐT C.Miền
-        row[34] = competitorPrice.inter || '';    // 35. Giá ĐT L.Miền
-        row[42] = proposedPrice.province || '';   // 43. Giá ĐX N.Tỉnh
-        row[43] = proposedPrice.region || '';    // 44. Giá ĐX N.Miền
-        row[44] = proposedPrice.adjacent || '';  // 45. Giá ĐX C.Miền
-        row[45] = proposedPrice.inter || '';      // 46. Giá ĐX L.Miền
+        // Format giá 1.000.000 khi gửi lên Google Sheet
+        const fmtPrice = (v) => { const n = parseFormattedPrice(v || ''); return n > 0 ? formatPriceWithDots(n) : (v || ''); };
+        row[31] = fmtPrice(competitorPrice.province);  // 32. Giá ĐT N.Tỉnh
+        row[32] = fmtPrice(competitorPrice.region);    // 33. Giá ĐT N.Miền
+        row[33] = fmtPrice(competitorPrice.adjacent);  // 34. Giá ĐT C.Miền
+        row[34] = fmtPrice(competitorPrice.inter);    // 35. Giá ĐT L.Miền
+        row[42] = fmtPrice(proposedPrice.province);   // 43. Giá ĐX N.Tỉnh
+        row[43] = fmtPrice(proposedPrice.region);    // 44. Giá ĐX N.Miền
+        row[44] = fmtPrice(proposedPrice.adjacent);  // 45. Giá ĐX C.Miền
+        row[45] = fmtPrice(proposedPrice.inter);      // 46. Giá ĐX L.Miền
         
         rows.push(row);
     });
@@ -1189,7 +1221,7 @@ function updateComparisonTable() {
                 const competitorPriceInputs = competitorRow.querySelectorAll('input[name^="competitorPrice_"]');
                 for (let i = 0; i < 4 && i < volumeInputs.length && i < competitorPriceInputs.length; i++) {
                     const volume = parseFloat(volumeInputs[i].value) || 0;
-                    const price = parseFloat(competitorPriceInputs[i].value) || 0;
+                    const price = parseFormattedPrice(competitorPriceInputs[i].value);
                     const weightedAvg = (volume * price) / grandTotal;
                     if (i === 0) competitorAvgProvince += weightedAvg;
                     else if (i === 1) competitorAvgRegion += weightedAvg;
@@ -1202,7 +1234,7 @@ function updateComparisonTable() {
                 const proposedPriceInputs = proposedRow.querySelectorAll('input[name^="proposedPrice_"]');
                 for (let i = 0; i < 4 && i < volumeInputs.length && i < proposedPriceInputs.length; i++) {
                     const volume = parseFloat(volumeInputs[i].value) || 0;
-                    const price = parseFloat(proposedPriceInputs[i].value) || 0;
+                    const price = parseFormattedPrice(proposedPriceInputs[i].value);
                     const weightedAvg = (volume * price) / grandTotal;
                     if (i === 0) proposedAvgProvince += weightedAvg;
                     else if (i === 1) proposedAvgRegion += weightedAvg;
