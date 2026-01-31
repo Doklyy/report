@@ -391,7 +391,7 @@
 
             <!-- III. CHÍNH SÁCH ĐỐI THỦ -->
             <div class="mb-8">
-                <div class="section-title text-blue-900 uppercase">III. Chính sách đối thủ</div>
+                <div class="section-title text-blue-900 uppercase">III. Chính sách đối thủ <span class="text-red-500">*</span></div>
                 <p class="text-[10px] text-gray-500 mb-2 italic">* Vuốt sang phải để xem đầy đủ bảng giá</p>
                 <div class="table-container">
                     <table class="w-full text-[11px] border-collapse" id="competitorPriceTable">
@@ -419,12 +419,12 @@
                                         <input type="number" name="competitorTo_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
                                     </span>
                                 </td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_province" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_region" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_adjacent" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_inter" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%"></td>
-                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%"></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_province" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_region" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_adjacent" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="competitorPrice_0_inter" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorCurrentReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%" required></td>
+                                <td class="border border-gray-300 p-1 bg-blue-50"><input type="number" name="competitorReturnRate_0" class="p-0 text-center bg-blue-50 w-full" step="0.01" placeholder="%" required></td>
                             </tr>
                         </tbody>
                     </table>
@@ -440,7 +440,7 @@
 
             <!-- IV. CHÍNH SÁCH ĐỀ XUẤT -->
             <div class="mb-8">
-                <div class="section-title text-blue-900 uppercase">IV. Chính sách đề xuất</div>
+                <div class="section-title text-blue-900 uppercase">IV. Chính sách đề xuất <span class="text-red-500">*</span></div>
                 
                 <p class="text-[10px] text-gray-500 mb-2 italic">* Vuốt sang phải để xem đầy đủ bảng giá</p>
                 <div class="table-container">
@@ -467,11 +467,11 @@
                                         <input type="number" name="proposedTo_0" class="w-10 text-[10px] p-0 text-center bg-yellow-50" step="1" placeholder="0" readonly disabled>
                                     </span>
                                 </td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_province" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_region" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_adjacent" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_inter" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder=""></td>
-                                <td class="border border-gray-300 p-1 bg-amber-50"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="%"></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_province" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_region" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_adjacent" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1"><input type="number" name="proposedPrice_0_inter" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="" required></td>
+                                <td class="border border-gray-300 p-1 bg-amber-50"><input type="number" name="proposedReturnRate_0" class="p-0 text-center bg-yellow-50 w-full" step="0.01" placeholder="%" required></td>
                             </tr>
                         </tbody>
                     </table>
