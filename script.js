@@ -563,10 +563,10 @@ function updateCompetitorPriceTable() {
         };
     });
     
-    tbody.innerHTML = '';
-    
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
+    
+    tbody.innerHTML = '';
     
     const numRows = rows.length;
     
@@ -628,10 +628,10 @@ function updateProposedPriceTable() {
         };
     });
     
-    tbody.innerHTML = '';
-    
     const rows = document.querySelectorAll('#weightLevelsTable tr');
     if (rows.length === 0) return;
+    
+    tbody.innerHTML = '';
     
     const numRows = rows.length;
     
