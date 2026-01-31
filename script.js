@@ -970,14 +970,14 @@ function formatDataForSheets(formData) {
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng)
         '', '', '', '',                                        // 6-9. Tổng sản lượng các mốc: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
         '',                                                    // 10. Tổng (tổng mỗi mốc = 6+7+8+9, điền riêng)
-        grandTotal,                                            // 11. Tổng sản lượng các mốc (grand total - merge)
-        percentProvince, percentRegion, percentAdjacent, percentInter,  // 12-15. Tỷ trọng % theo khu vực (4 cột)
-        formData.over12mRatio || '',                          // 16. Tỷ trọng hàng trên 1.2m
-        formData.over100kgRatio || '',                        // 17. Tỷ trọng hàng nguyên khối từ 100kg trở lên
-        totalProvince,                                         // 18. Sản lượng Nội tỉnh
-        totalRegion,                                           // 19. Sản lượng Nội miền
-        totalAdjacent,                                         // 20. Sản lượng Cận miền
-        totalInter,                                            // 21. Sản lượng Liên miền
+        percentProvince, percentRegion, percentAdjacent, percentInter,  // 11-14. Tỷ trọng % theo khu vực (4 cột)
+        formData.over12mRatio || '',                          // 15. Tỷ trọng hàng trên 1.2m
+        formData.over100kgRatio || '',                        // 16. Tỷ trọng hàng nguyên khối từ 100kg trở lên
+        totalProvince,                                         // 17. Sản lượng Nội tỉnh
+        totalRegion,                                           // 18. Sản lượng Nội miền
+        totalAdjacent,                                         // 19. Sản lượng Cận miền
+        totalInter,                                            // 20. Sản lượng Liên miền
+        grandTotal,                                            // 21. Tổng sản lượng (grand total - merge)
         '',                                                    // 22. Tỷ trọng % (điền riêng theo mỗi mốc)
         formData.productNormal ? 'Thông thường' : '',         // 23. Hàng thông thường
         formData.productLiquid ? 'Chất lỏng' : '',            // 24. Chất lỏng
@@ -1043,7 +1043,7 @@ function formatDataForSheets(formData) {
         
         const row = [...commonData];
         row[4] = weightRange;   // 5. Các mốc trọng lượng
-        row[20] = rowPercent;   // 21. Tỷ trọng % (theo mỗi mốc trọng lượng)
+        row[21] = rowPercent;   // 22. Tỷ trọng % (theo mỗi mốc trọng lượng)
         row[5] = volume.province || '0';   // 6. Tổng SL các mốc - N.Tỉnh
         row[6] = volume.region || '0';    // 7. N.Miền
         row[7] = volume.adjacent || '0';   // 8. C.Miền
@@ -1051,14 +1051,14 @@ function formatDataForSheets(formData) {
         row[9] = rowTotal;   // 10. Tổng (tổng mỗi mốc)
         // Format giá 1.000.000 khi gửi lên Google Sheet
         const fmtPrice = (v) => { const n = parseFormattedPrice(v || ''); return n > 0 ? formatPriceWithDots(n) : (v || ''); };
-        row[29] = fmtPrice(competitorPrice.province);  // 30. Giá ĐT N.Tỉnh
-        row[30] = fmtPrice(competitorPrice.region);    // 31. Giá ĐT N.Miền
-        row[31] = fmtPrice(competitorPrice.adjacent);  // 32. Giá ĐT C.Miền
-        row[32] = fmtPrice(competitorPrice.inter);     // 33. Giá ĐT L.Miền
-        row[39] = fmtPrice(proposedPrice.province);   // 40. Giá ĐX N.Tỉnh
-        row[40] = fmtPrice(proposedPrice.region);      // 41. Giá ĐX N.Miền
-        row[41] = fmtPrice(proposedPrice.adjacent);   // 42. Giá ĐX C.Miền
-        row[42] = fmtPrice(proposedPrice.inter);      // 43. Giá ĐX L.Miền
+        row[30] = fmtPrice(competitorPrice.province);  // 31. Giá ĐT N.Tỉnh
+        row[31] = fmtPrice(competitorPrice.region);   // 32. Giá ĐT N.Miền
+        row[32] = fmtPrice(competitorPrice.adjacent); // 33. Giá ĐT C.Miền
+        row[33] = fmtPrice(competitorPrice.inter);    // 34. Giá ĐT L.Miền
+        row[41] = fmtPrice(proposedPrice.province);   // 42. Giá ĐX N.Tỉnh
+        row[42] = fmtPrice(proposedPrice.region);    // 43. Giá ĐX N.Miền
+        row[43] = fmtPrice(proposedPrice.adjacent);  // 44. Giá ĐX C.Miền
+        row[44] = fmtPrice(proposedPrice.inter);     // 45. Giá ĐX L.Miền
         
         rows.push(row);
     });
