@@ -1051,14 +1051,14 @@ function formatDataForSheets(formData) {
         row[9] = rowTotal;   // 10. Tổng (tổng mỗi mốc)
         // Format giá 1.000.000 khi gửi lên Google Sheet
         const fmtPrice = (v) => { const n = parseFormattedPrice(v || ''); return n > 0 ? formatPriceWithDots(n) : (v || ''); };
-        row[31] = fmtPrice(competitorPrice.province);  // 32. Giá ĐT N.Tỉnh
-        row[32] = fmtPrice(competitorPrice.region);    // 33. Giá ĐT N.Miền
-        row[33] = fmtPrice(competitorPrice.adjacent);  // 34. Giá ĐT C.Miền
-        row[34] = fmtPrice(competitorPrice.inter);    // 35. Giá ĐT L.Miền
-        row[42] = fmtPrice(proposedPrice.province);   // 43. Giá ĐX N.Tỉnh
-        row[43] = fmtPrice(proposedPrice.region);    // 44. Giá ĐX N.Miền
-        row[44] = fmtPrice(proposedPrice.adjacent);  // 45. Giá ĐX C.Miền
-        row[45] = fmtPrice(proposedPrice.inter);      // 46. Giá ĐX L.Miền
+        row[29] = fmtPrice(competitorPrice.province);  // 30. Giá ĐT N.Tỉnh
+        row[30] = fmtPrice(competitorPrice.region);    // 31. Giá ĐT N.Miền
+        row[31] = fmtPrice(competitorPrice.adjacent);  // 32. Giá ĐT C.Miền
+        row[32] = fmtPrice(competitorPrice.inter);     // 33. Giá ĐT L.Miền
+        row[39] = fmtPrice(proposedPrice.province);   // 40. Giá ĐX N.Tỉnh
+        row[40] = fmtPrice(proposedPrice.region);      // 41. Giá ĐX N.Miền
+        row[41] = fmtPrice(proposedPrice.adjacent);   // 42. Giá ĐX C.Miền
+        row[42] = fmtPrice(proposedPrice.inter);      // 43. Giá ĐX L.Miền
         
         rows.push(row);
     });
