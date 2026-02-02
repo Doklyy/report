@@ -466,10 +466,23 @@ function formatPriceWithDots(num) {
 }
 
 // Định dạng số cho Sheet: 1000→1.000, 4600→4.600 (bỏ .00, dấu chấm phân cách hàng nghìn)
+// Lưu ý: Số thập phân (vd 466.667) phải parse đúng - không strip dấu chấm trước khi parse
 function formatNumberForSheet(val) {
     if (val === null || val === undefined || val === '') return '';
-    const n = parseFloat(String(val).replace(/\./g, '').replace(/,/g, ''));
-    if (isNaN(n)) return String(val);
+    let n;
+    if (typeof val === 'number' && !isNaN(val)) {
+        n = val;  // Số từ JS: dùng trực tiếp, tránh 466.667 thành 466667
+    } else {
+        const str = String(val).trim();
+        // Nhiều dấu chấm (vd "1.234.567") = phân cách hàng nghìn → bỏ chấm
+        const dots = (str.match(/\./g) || []).length;
+        if (dots >= 2) {
+            n = parseFloat(str.replace(/\./g, '').replace(',', '.'));
+        } else {
+            n = parseFloat(str.replace(',', '.'));
+        }
+        if (isNaN(n)) return str || String(val);
+    }
     const intPart = Math.round(n).toString();
     return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
