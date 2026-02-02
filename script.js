@@ -969,15 +969,15 @@ function formatDataForSheets(formData) {
         '',                                                    // 5. Các mốc trọng lượng (sẽ điền riêng)
         '', '', '', '',                                        // 6-9. Tổng sản lượng các mốc: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
         '',                                                    // 10. Tổng (tổng mỗi mốc = 6+7+8+9, điền riêng)
-        percentProvince, percentRegion, percentAdjacent, percentInter,  // 11-14. Tỷ trọng % theo khu vực (4 cột)
-        fmtPercent(formData.over12mRatio || ''),              // 15. Tỷ trọng hàng trên 1.2m (đã thêm %)
-        fmtPercent(formData.over100kgRatio || ''),            // 16. Tỷ trọng hàng nguyên khối từ 100kg trở lên (đã thêm %)
-        totalProvince,                                         // 17. Sản lượng Nội tỉnh
-        totalRegion,                                           // 18. Sản lượng Nội miền
-        totalAdjacent,                                         // 19. Sản lượng Cận miền
-        totalInter,                                            // 20. Sản lượng Liên miền
-        grandTotal,                                            // 21. Tổng sản lượng (grand total - merge)
-        '',                                                    // 22. Tỷ trọng % (điền riêng theo mỗi mốc)
+        '',                                                    // 11. Tỷ trọng % (điền riêng theo mỗi mốc) - sau cột J
+        percentProvince, percentRegion, percentAdjacent, percentInter,  // 12-15. Tỷ trọng % theo khu vực (4 cột)
+        fmtPercent(formData.over12mRatio || ''),              // 16. Tỷ trọng hàng trên 1.2m (đã thêm %)
+        fmtPercent(formData.over100kgRatio || ''),            // 17. Tỷ trọng hàng nguyên khối từ 100kg trở lên (đã thêm %)
+        totalProvince,                                         // 18. Sản lượng Nội tỉnh
+        totalRegion,                                           // 19. Sản lượng Nội miền
+        totalAdjacent,                                         // 20. Sản lượng Cận miền
+        totalInter,                                            // 21. Sản lượng Liên miền
+        grandTotal,                                            // 22. Tổng sản lượng (grand total - merge)
         formData.productNormal ? 'Thông thường' : '',         // 23. Hàng thông thường
         formData.productLiquid ? 'Chất lỏng' : '',            // 24. Chất lỏng
         formData.productFlammable ? 'Dễ cháy' : '',           // 25. Dễ cháy
@@ -1046,7 +1046,7 @@ function formatDataForSheets(formData) {
         row[7] = volume.adjacent || '0';   // 8. SL Cận miền
         row[8] = volume.inter || '0';      // 9. SL Liên miền
         row[9] = rowTotal;   // 10. Tổng mỗi mốc
-        row[21] = rowPercent;   // 22. Tỷ trọng % (theo mỗi mốc)
+        row[10] = rowPercent;   // 11. Tỷ trọng % (theo mỗi mốc) - sau cột J
         row[30] = fmtPrice(competitorPrice.province);  // 31. Giá ĐT N.Tỉnh
         row[31] = fmtPrice(competitorPrice.region);   // 32. Giá ĐT N.Miền
         row[32] = fmtPrice(competitorPrice.adjacent); // 33. Giá ĐT C.Miền
