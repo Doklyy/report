@@ -691,7 +691,7 @@ function updateProposedPriceTable() {
                 </span>
             </td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_province" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedProvince}" required></td>
-            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_region" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder=" value="${savedRegion}" required></td>
+            <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_region" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedRegion}" required></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_adjacent" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedAdjacent}" required></td>
             <td class="border border-gray-300 p-1"><input type="text" name="proposedPrice_${index}_inter" class="price-input p-0 text-center bg-yellow-50" inputmode="decimal" placeholder="" value="${savedInter}" required></td>
             ${returnRateCell}
@@ -710,12 +710,6 @@ function updateComparisonOnChange() {
 function calculateReturnRate(returned, total) {
     if (total === 0) return 0;
     return (returned / total) * 100;
-}
-
-// Handle other input checkbox
-function handleOtherInput(input) {
-    const checkbox = document.getElementById('checkboxOther');
-    checkbox.checked = input.value.trim().length > 0;
 }
 
 // Collect form data
@@ -744,7 +738,6 @@ function collectFormData() {
             const checked = Array.from(document.querySelectorAll('input[name="industry"]:checked'));
             return checked.length > 0 ? [checked[0].value] : [];
         })(),
-        industryOther: document.getElementById('inputOther') ? document.getElementById('inputOther').value.trim() : '',
         
         // Competitors - chỉ lấy 1 đối thủ (radio button)
         competitors: (() => {
@@ -989,13 +982,7 @@ function formatDataForSheets(formData) {
         formData.productLiquid ? 'Chất lỏng' : '',            // 24. Chất lỏng
         formData.productFlammable ? 'Dễ cháy' : '',           // 25. Dễ cháy
         formData.productFragile ? 'Dễ vỡ' : '',               // 26. Dễ vỡ
-        (() => {
-            const industryList = formData.industries.filter(i => i && i.trim() !== '');
-            if (formData.industryOther && formData.industryOther.trim() !== '') {
-                industryList.push(formData.industryOther.trim());
-            }
-            return industryList.join('; ');
-        })(),                                                    // 27. Ngành hàng
+        (formData.industries || []).filter(i => i && i.trim() !== '').join('; ') || '',  // 27. Ngành hàng
         formData.specificProduct || '',                          // 28. Tên sản phẩm
         formData.competitors.length > 0 ? formData.competitors[0] : '', // 29. Đối thủ
         '',                                                    // 31. Đối thủ khác
