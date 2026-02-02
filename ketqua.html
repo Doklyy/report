@@ -64,25 +64,22 @@
         <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100 mb-8">
             <div class="p-8 text-center border-b border-gray-100 bg-gradient-to-b from-white to-blue-50">
                 <h1 class="text-2xl font-bold text-[#1e293b] mb-4">Tra cứu kết quả đề xuất</h1>
-                <div class="max-w-md mx-auto relative">
-                    <input type="tel" id="phoneSearch" placeholder="Nhập số điện thoại khách hàng..." 
-                           class="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-full focus:border-blue-500 focus:ring-0 outline-none transition-all shadow-sm"
-                           oninput="handleSearch()">
-                    <div class="absolute left-4 top-3.5 text-gray-400">
-                        <i class="fas fa-search"></i>
+                <div class="max-w-md mx-auto flex items-center gap-2">
+                    <div class="flex-1 relative">
+                        <input type="tel" id="phoneSearch" placeholder="Nhập số điện thoại khách hàng..." 
+                               class="w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-full focus:border-blue-500 focus:ring-0 outline-none transition-all shadow-sm"
+                               oninput="handleSearch()">
+                        <div class="absolute left-4 top-3.5 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
                     </div>
+                    <button type="button" onclick="loadData()" title="Tải lại dữ liệu" 
+                            class="flex-shrink-0 p-3 rounded-full border-2 border-blue-200 bg-white hover:bg-blue-50 hover:border-blue-400 transition-all shadow-sm">
+                        <i class="fas fa-sync-alt text-blue-600"></i>
+                    </button>
                 </div>
                 <p class="mt-3 text-sm text-gray-500 italic">Nhập số điện thoại để xem kết quả phê duyệt</p>
             </div>
-        </div>
-
-        <!-- Thông tin bảng dữ liệu SPHN -->
-        <div class="bg-white rounded-xl shadow border border-gray-200 p-4 mb-6 flex flex-wrap items-center gap-2">
-            <span class="text-slate-600 font-medium">Bảng dữ liệu của SPHN</span>
-            <span class="text-slate-400">|</span>
-            <a href="https://docs.google.com/spreadsheets/d/1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s/edit?gid=0#gid=0" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-700 hover:underline font-medium inline-flex items-center gap-1">
-                <i class="fas fa-external-link-alt text-sm"></i> Google Sheet
-            </a>
         </div>
 
         <!-- Loading -->
@@ -139,6 +136,15 @@
             <i class="fas fa-exclamation-circle text-rose-400 text-6xl mb-4"></i>
             <p class="text-slate-600 mb-2">Có lỗi khi tải dữ liệu</p>
             <button onclick="loadData()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium mt-4">Thử lại</button>
+        </div>
+
+        <!-- Bảng dữ liệu của SPHN - cuối trang -->
+        <div class="mt-12 pt-8 border-t border-gray-200 bg-white rounded-xl shadow border border-gray-200 p-4 flex flex-wrap items-center gap-2">
+            <span class="text-slate-600 font-medium">Bảng dữ liệu của SPHN</span>
+            <span class="text-slate-400">|</span>
+            <a href="https://docs.google.com/spreadsheets/d/1538u5QD9QeTKOLOKHxXcTyiwzV7b3NdEYaATzaEG60s/edit?gid=0#gid=0" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-700 hover:underline font-medium inline-flex items-center gap-1">
+                <i class="fas fa-external-link-alt text-sm"></i> Google Sheet
+            </a>
         </div>
     </main>
 
