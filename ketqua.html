@@ -181,7 +181,7 @@
             rows.forEach((row) => {
                 const name = (row['Tên KH/Tên shop'] || row['Tên KH'] || '').toString().trim();
                 let status = (row['Kết quả'] || '').toString().trim();
-                let note = (row['Ghi chú'] || '').toString().trim();
+                let note = (row['Nội dung phê duyệt'] || row['Ghi chú'] || '').toString().trim();
                 const time = (row['Thời gian'] || '').toString().trim();
                 const phone = (row['Điện thoại'] || '').toString().trim();
                 const address = (row['Địa chỉ'] || '').toString().trim();
@@ -311,7 +311,7 @@
                         ${(item.note || '').trim() ? `
                         <div class="mt-4 pt-4 border-t border-gray-100">
                             <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <i class="fas fa-sticky-note text-amber-600"></i> Ghi chú
+                                <i class="fas fa-sticky-note text-amber-600"></i> Nội dung phê duyệt
                             </h3>
                             <p class="text-sm text-slate-600 bg-amber-50 p-3 rounded-lg">${(item.note || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
                         </div>
