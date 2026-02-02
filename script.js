@@ -953,7 +953,7 @@ function formatDataForSheets(formData) {
         const compFormatted = formatValue(comp);
         const percentDiff = calcPercentDiff(own, comp);
         if (!ownFormatted && !compFormatted) return '';
-        return `${ownFormatted || '0'}/${compFormatted || '0'}/${percentDiff}`;
+        return `${ownFormatted || '0'} / ${compFormatted || '0'} / ${percentDiff}`;
     };
     
     // So sánh đơn giá bình quân - 4 cột riêng (N.Tỉnh, N.Miền, C.Miền, L.Miền)
@@ -997,18 +997,18 @@ function formatDataForSheets(formData) {
         formData.competitors.length > 0 ? formData.competitors[0] : '', // 29. Đối thủ
         '',                                                    // 31. Đối thủ khác
         '', '', '', '',                                        // 32-35. Giá đối thủ: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
-        competitorAvg.province || '',                          // 36. Đơn giá bình quân Nội tỉnh (ĐT)
-        competitorAvg.region || '',                            // 37. Đơn giá bình quân Nội miền (ĐT)
-        competitorAvg.adjacent || '',                          // 38. Đơn giá bình quân Cận miền (ĐT)
-        competitorAvg.inter || '',                             // 39. Đơn giá bình quân Liên miền (ĐT)
+        formatNumberForSheet(competitorAvg.province || ''),    // 36. Đơn giá bình quân Nội tỉnh (ĐT)
+        formatNumberForSheet(competitorAvg.region || ''),       // 37. Đơn giá bình quân Nội miền (ĐT)
+        formatNumberForSheet(competitorAvg.adjacent || ''),    // 38. Đơn giá bình quân Cận miền (ĐT)
+        formatNumberForSheet(competitorAvg.inter || ''),       // 39. Đơn giá bình quân Liên miền (ĐT)
         competitorCurrentReturnRate,                           // 40. Tỷ lệ hoàn hiện tại (đã thêm %)
         competitorReturnRate,                                  // 41. Tỷ lệ hoàn đối thủ miễn phí (đã thêm %)
         formData.competitorOtherPolicies || '',                // 42. Chính sách đặc thù đối thủ
         '', '', '', '',                                        // 43-46. Giá đề xuất: N.Tỉnh, N.Miền, C.Miền, L.Miền (4 cột, điền riêng)
-        proposedAvg.province || '',                            // 47. Đơn giá bình quân Nội tỉnh (ĐX)
-        proposedAvg.region || '',                              // 48. Đơn giá bình quân Nội miền (ĐX)
-        proposedAvg.adjacent || '',                            // 49. Đơn giá bình quân Cận miền (ĐX)
-        proposedAvg.inter || '',                               // 50. Đơn giá bình quân Liên miền (ĐX)
+        formatNumberForSheet(proposedAvg.province || ''),      // 47. Đơn giá bình quân Nội tỉnh (ĐX)
+        formatNumberForSheet(proposedAvg.region || ''),         // 48. Đơn giá bình quân Nội miền (ĐX)
+        formatNumberForSheet(proposedAvg.adjacent || ''),       // 49. Đơn giá bình quân Cận miền (ĐX)
+        formatNumberForSheet(proposedAvg.inter || ''),          // 50. Đơn giá bình quân Liên miền (ĐX)
         formData.proposedOtherPolicies || '',                  // 51. Chính sách đặc thù đề xuất
         proposedReturnRate,                                   // 52. Tỷ lệ hoàn đề xuất (đã thêm %)
         comparisonProvince, comparisonRegion, comparisonAdjacent, comparisonInter,  // 53-56. So sánh đơn giá bình quân (4 cột)
