@@ -942,9 +942,10 @@ function formatDataForSheets(formData) {
         return sign + diff.toFixed(1) + '%';
     };
     
+    // Format số So sánh: 1380→1.380, 4600→4.600 (dễ nhìn trong Sheet)
     const formatValue = (val) => {
-        const num = parseFloat(val);
-        return isNaN(num) ? '' : num.toFixed(2);
+        const s = formatNumberForSheet(val);
+        return s === '' ? '' : s;
     };
     
     const formatCell = (own, comp) => {
@@ -1277,10 +1278,12 @@ function updateComparisonTable() {
         if (isNaN(p) && isNaN(c)) return '';
         
         let diffText = '';
+        let diffClass = '';
         if (!isNaN(p) && !isNaN(c) && c !== 0) {
             const diffPercent = ((p - c) / c) * 100;
             const sign = diffPercent > 0 ? '+' : '';
             diffText = `${sign}${diffPercent.toFixed(1)}%`;
+            diffClass = diffPercent < 0 ? 'text-red-600 font-semibold' : (diffPercent > 0 ? 'text-green-600 font-semibold' : '');
         }
         
         const pText = !isNaN(p) ? formatNumber(p) : (proposed || '');
@@ -1289,7 +1292,7 @@ function updateComparisonTable() {
         return `
             <div>ĐX: ${pText || '-'}</div>
             <div>ĐT: ${cText || '-'}</div>
-            <div>Δ: ${diffText || '-'}</div>
+            <div class="${diffClass}">Δ: ${diffText || '-'}</div>
         `;
     }
     
