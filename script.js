@@ -465,6 +465,15 @@ function formatPriceWithDots(num) {
     return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+// Định dạng số cho Sheet: 1000→1.000, 4600→4.600 (bỏ .00, dấu chấm phân cách hàng nghìn)
+function formatNumberForSheet(val) {
+    if (val === null || val === undefined || val === '') return '';
+    const n = parseFloat(String(val).replace(/\./g, '').replace(/,/g, ''));
+    if (isNaN(n)) return String(val);
+    const intPart = Math.round(n).toString();
+    return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 // Chuyển chuỗi đã format (1.000.000) về số
 function parseFormattedPrice(str) {
     if (!str || typeof str !== 'string') return 0;
@@ -973,11 +982,11 @@ function formatDataForSheets(formData) {
         percentProvince, percentRegion, percentAdjacent, percentInter,  // 12-15. Tỷ trọng % theo khu vực (4 cột)
         fmtPercent(formData.over12mRatio || ''),              // 16. Tỷ trọng hàng trên 1.2m (đã thêm %)
         fmtPercent(formData.over100kgRatio || ''),            // 17. Tỷ trọng hàng nguyên khối từ 100kg trở lên (đã thêm %)
-        totalProvince,                                         // 18. Sản lượng Nội tỉnh
-        totalRegion,                                           // 19. Sản lượng Nội miền
-        totalAdjacent,                                         // 20. Sản lượng Cận miền
-        totalInter,                                            // 21. Sản lượng Liên miền
-        grandTotal,                                            // 22. Tổng sản lượng (grand total - merge)
+        formatNumberForSheet(totalProvince),                   // 18. Sản lượng Nội tỉnh
+        formatNumberForSheet(totalRegion),                     // 19. Sản lượng Nội miền
+        formatNumberForSheet(totalAdjacent),                   // 20. Sản lượng Cận miền
+        formatNumberForSheet(totalInter),                      // 21. Sản lượng Liên miền
+        formatNumberForSheet(grandTotal),                      // 22. Tổng sản lượng (grand total - merge)
         formData.productNormal ? 'Thông thường' : '',         // 23. Hàng thông thường
         formData.productLiquid ? 'Chất lỏng' : '',            // 24. Chất lỏng
         formData.productFlammable ? 'Dễ cháy' : '',           // 25. Dễ cháy
@@ -1009,7 +1018,7 @@ function formatDataForSheets(formData) {
         formData.branch || '',                                 // 61. Chi nhánh
         (formData.postOfficeCode || '').toString(),           // 62. Mã Bưu cục
         '',                                                    // 63. Kết quả - điền trong Sheet
-        ''                                                     // 64. Ghi chú - điền trong Sheet
+        ''                                                     // 64. Nội dung phê duyệt - điền trong Sheet
     ];
     
     // Format giá 1.000.000 khi gửi lên Google Sheet
@@ -1041,11 +1050,11 @@ function formatDataForSheets(formData) {
         const row = commonData.slice(0, 64);
         // Điền các cột riêng theo mỗi mốc
         row[4] = weightRange;   // 5. Các mốc trọng lượng
-        row[5] = volume.province || '0';   // 6. SL Nội tỉnh
-        row[6] = volume.region || '0';    // 7. SL Nội miền
-        row[7] = volume.adjacent || '0';   // 8. SL Cận miền
-        row[8] = volume.inter || '0';      // 9. SL Liên miền
-        row[9] = rowTotal;   // 10. Tổng mỗi mốc
+        row[5] = formatNumberForSheet(volume.province || 0);   // 6. SL Nội tỉnh
+        row[6] = formatNumberForSheet(volume.region || 0);    // 7. SL Nội miền
+        row[7] = formatNumberForSheet(volume.adjacent || 0);   // 8. SL Cận miền
+        row[8] = formatNumberForSheet(volume.inter || 0);      // 9. SL Liên miền
+        row[9] = formatNumberForSheet(rowTotal);   // 10. Tổng mỗi mốc
         row[10] = rowPercent;   // 11. Tỷ trọng % (theo mỗi mốc) - sau cột J
         row[30] = fmtPrice(competitorPrice.province);  // 31. Giá ĐT N.Tỉnh
         row[31] = fmtPrice(competitorPrice.region);   // 32. Giá ĐT N.Miền
