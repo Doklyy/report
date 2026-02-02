@@ -966,7 +966,7 @@ function formatDataForSheets(formData) {
         const compFormatted = formatValue(comp);
         const percentDiff = calcPercentDiff(own, comp);
         if (!ownFormatted && !compFormatted) return '';
-        return `${ownFormatted || '0'} / ${compFormatted || '0'} / ${percentDiff}`;
+        return `${ownFormatted || '0'}/${compFormatted || '0'}/${percentDiff}`;
     };
     
     // So sánh đơn giá bình quân - 4 cột riêng (N.Tỉnh, N.Miền, C.Miền, L.Miền)
